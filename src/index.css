@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Great+Vibes&family=Lora:ital,wght@0,400..700;1,400..700&family=Nunito:wght@300;400;600;700;800;900&family=Playfair+Display:wght@400..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-lav-100: #f3e8ff;
+  --color-lav-200: #e9d5ff;
+  --color-lav-300: #d8b4fe;
+  --color-lav-acc: #c084fc;
+  --color-lav-dark: #a855f7;
+  
+  --color-pink-50: #fff0f8;
+  --color-pink-100: #fce7f3;
+  --color-pink-200: #fecdd3;
+  --color-pink-acc: #fda4af;
+  --color-pink-dark: #fb7185;
+  
+  --color-text-dark: #2d1b4e;
+  --color-text-mid: #6b5b7b;
+  --color-text-light: #a99ab8;
+  
+  --color-dark-100: #2d1048;
+  --color-dark-200: #1a0a2e;
+  
+  --color-verified: #16a34a;
+  --color-verified-bg: #dcfce7;
+  --color-danger: #ef4444;
+  --color-danger-bg: #fef2f2;
+}
+
+@layer base {
+  body {
+    @apply bg-[#f7f0ff] text-text-dark;
+    font-family: "Lora", serif;
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+  }
+}
+
+@layer utilities {
+  .bg-grad {
+    background: linear-gradient(135deg, var(--color-lav-acc), var(--color-pink-dark));
+  }
+  .bg-grad-r {
+    background: linear-gradient(135deg, var(--color-pink-dark), var(--color-lav-acc));
+  }
+  .text-grad {
+    background: linear-gradient(135deg, var(--color-lav-acc), var(--color-pink-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .landing-page {
+    font-family: "Nunito", sans-serif;
+  }
+
+  .landing-page .font-serif {
+    font-family: "Cormorant Garamond", serif;
+  }
+
+  .landing-page .brand-script {
+    font-family: "Great Vibes", cursive;
+  }
+}
