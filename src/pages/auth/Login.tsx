@@ -24,9 +24,10 @@ const getSocialUrl = (provider: 'Google' | 'Facebook') => {
   const params = new URLSearchParams({
     client_id: clientId,
     response_type: 'code',
-    scope: 'openid email profile',
+    scope: 'openid email profile aws.cognito.signin.user.admin',
     redirect_uri: redirectUri,
     identity_provider: provider,
+    state: `${provider.toUpperCase()}:${crypto.randomUUID()}`,
   });
 
   return `${domain.replace(/\/$/, '')}/oauth2/authorize?${params.toString()}`;

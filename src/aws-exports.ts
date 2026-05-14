@@ -6,8 +6,8 @@ const awsconfig = {
             loginWith: {
                 oauth: {
                     domain: import.meta.env.VITE_AWS_COGNITO_DOMAIN,
-                    scopes: ['openid', 'email', 'profile'],
-                    redirectSignIn: ['http://localhost:5173/'],
+                    scopes: ['openid', 'email', 'profile', 'aws.cognito.signin.user.admin'],
+                    redirectSignIn: ['http://localhost:5173/social/callback'],
                     redirectSignOut: ['http://localhost:5173/'],
                     responseType: 'code'
                 }

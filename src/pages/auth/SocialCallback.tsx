@@ -9,6 +9,22 @@ const processedSocialCodes = new Set<string>();
 
 const codeStorageKey = (code: string) => `happabi_social_code_${code}`;
 
+const getCallbackParams = (search: string, hash: string) => {
+  const params = new URLSearchParams(search);
+  if (hash.startsWith('#')) {
+    const hashParams = new URLSearchParams(hash.slice(1));
+    hashParams.forEach((value, key) => {
+      if (!params.has(key)) params.set(key, value);
+    });
+  }
+  return params;
+};
+
+const parseProviderFromState = (state: string | null) => {
+  const provider = state?.split(':')[0]?.toUpperCase();
+  return provider === 'GOOGLE' || provider === 'FACEBOOK' ? provider : undefined;
+};
+
 const SocialCallback = () => {
   const [error, setError] = useState('');
   const [isSlow, setIsSlow] = useState(false);
@@ -26,12 +42,19 @@ const SocialCallback = () => {
     }, 8000);
 
     const sync = async () => {
-      const params = new URLSearchParams(location.search);
+      const params = getCallbackParams(location.search, location.hash);
       const code = params.get('code');
+      const provider = parseProviderFromState(params.get('state'));
+      const providerError = params.get('error');
+      const providerErrorDescription = params.get('error_description');
       const redirectUri = `${window.location.origin}/social/callback`;
 
       if (!code) {
-        setError('Không nhận được authorization code từ Cognito.');
+        if (providerError || providerErrorDescription) {
+          setError(providerErrorDescription || providerError || 'Cognito không trả về authorization code.');
+        } else {
+          setError('Không nhận được authorization code từ Cognito. Kiểm tra Callback URL, OAuth flow code và scope trên Cognito App client.');
+        }
         return;
       }
 
@@ -50,7 +73,12 @@ const SocialCallback = () => {
       sessionStorage.setItem(storageKey, 'processing');
 
       try {
-        const response = await axiosClient.post('/api/v1/auth/social/sync', { code, redirectUri });
+        const response = await axiosClient.post('/api/v1/auth/social/sync', {
+          code,
+          redirectUri,
+          intent: 'MOTHER_LOGIN_OR_REGISTER',
+          provider,
+        });
         const payload = response.data?.data;
         if (!payload?.accessToken || !payload?.user) {
           throw new Error('SOCIAL_RESPONSE_INVALID');
@@ -87,7 +115,7 @@ const SocialCallback = () => {
     return () => {
       window.clearTimeout(slowTimer);
     };
-  }, [location.search, login, navigate]);
+  }, [location.hash, location.search, login, navigate]);
 
   if (error) {
     return (

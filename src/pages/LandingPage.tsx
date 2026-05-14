@@ -1,6 +1,5 @@
 import { ArrowRight, Baby, CalendarCheck, HeartHandshake, Menu, MessageCircleHeart, ShieldCheck, Sparkles, Stethoscope, X } from 'lucide-react';
-import { useEffect, useRef } from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 import Avatar from '../components/common/Avatar';
@@ -70,7 +69,6 @@ const LandingPage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [babyBirth, setBabyBirth] = useState('');
-  const fetchedMotherProfileFor = useRef<string | null>(null);
 
   const babyDays = useMemo(() => {
     if (!babyBirth) return null;
@@ -82,27 +80,31 @@ const LandingPage = () => {
   }, [babyBirth]);
 
   useEffect(() => {
-    if (!isAuthenticated || primaryRole !== 'MOTHER') return;
-    const userKey = user?.id || user?.phone || user?.email || 'current';
-    if (fetchedMotherProfileFor.current === userKey) return;
-    fetchedMotherProfileFor.current = userKey;
+    if (!isAuthenticated || primaryRole !== 'MOTHER') {
+      setBabyBirth('');
+      return;
+    }
 
     let ignore = false;
-    axiosClient.get('/api/v1/users/me/mother-profile')
-      .then((response) => {
-        const babyBirthDate = response.data?.data?.babyBirthDate;
-        if (!ignore && babyBirthDate) {
-          setBabyBirth(babyBirthDate);
+    const loadBabyBirth = async () => {
+      try {
+        const response = await axiosClient.get('/api/v1/users/me/mother-profile');
+        if (!ignore) {
+          setBabyBirth(response.data?.data?.babyBirthDate || '');
         }
-      })
-      .catch(() => {
+      } catch {
         // Landing still works if the profile is not available yet.
-      });
+      }
+    };
+
+    void loadBabyBirth();
+    window.addEventListener('focus', loadBabyBirth);
 
     return () => {
       ignore = true;
+      window.removeEventListener('focus', loadBabyBirth);
     };
-  }, [isAuthenticated, primaryRole, user?.email, user?.id, user?.phone]);
+  }, [isAuthenticated, primaryRole, user?.id]);
 
   const goHome = () => navigate('/home');
 

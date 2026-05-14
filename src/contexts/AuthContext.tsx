@@ -7,7 +7,9 @@ export interface UserProfile {
   id: string;
   fullName?: string;
   phone?: string;
+  phoneVerified?: boolean;
   email?: string;
+  emailVerified?: boolean;
   roles: UserRole[];
   linkedProviders?: string[];
   avatarUrl?: string;
