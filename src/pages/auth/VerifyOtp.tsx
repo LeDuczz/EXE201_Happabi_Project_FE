@@ -6,18 +6,12 @@ import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
 import Input from '../../components/common/Input';
 import type { UserRole } from '../../contexts/AuthContext';
+import { PHONE_POLICY_MESSAGE, getVietnamPhoneError, normalizeVietnamPhone } from '../../utils/phonePolicy';
 
 interface VerifyState {
   phone?: string;
   role?: Extract<UserRole, 'MOTHER' | 'NURSE'>;
 }
-
-const normalizeVietnamPhone = (value: string) => {
-  const compact = value.replace(/\s+/g, '');
-  if (compact.startsWith('0')) return `+84${compact.slice(1)}`;
-  if (compact.startsWith('84')) return `+${compact}`;
-  return compact;
-};
 
 const getApiErrorMessage = (err: any, fallback: string) => {
   const data = err.response?.data;
@@ -46,6 +40,13 @@ const VerifyOtp = () => {
     event.preventDefault();
     setError('');
     setMessage('');
+
+    const phoneError = getVietnamPhoneError(phone);
+    if (phoneError) {
+      setError(phoneError);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -62,6 +63,13 @@ const VerifyOtp = () => {
   const resend = async () => {
     setError('');
     setMessage('');
+
+    const phoneError = getVietnamPhoneError(phone);
+    if (phoneError) {
+      setError(phoneError);
+      return;
+    }
+
     try {
       await axiosClient.post('/api/v1/auth/resend-otp', { phone: normalizeVietnamPhone(phone) });
       setMessage('Đã gửi lại mã OTP.');
@@ -90,7 +98,7 @@ const VerifyOtp = () => {
         {message && <div className="mb-5 rounded-xl border border-green-200 bg-green-50 p-3 text-sm font-semibold text-green-700">{message}</div>}
 
         <form onSubmit={verify}>
-          <Input label="Số điện thoại" placeholder="+84901234567" value={phone} onChange={(event) => setPhone(event.target.value)} required />
+          <Input label="Số điện thoại" placeholder="0912345678" value={phone} onChange={(event) => setPhone(event.target.value)} hint={PHONE_POLICY_MESSAGE} required />
           <Input
             label="Mã OTP"
             placeholder="123456"

@@ -6,17 +6,12 @@ import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
 import Input from '../../components/common/Input';
 import type { UserRole } from '../../contexts/AuthContext';
+import { PASSWORD_POLICY_MESSAGE, getPasswordPolicyError } from '../../utils/passwordPolicy';
+import { PHONE_POLICY_MESSAGE, getVietnamPhoneError, normalizeVietnamPhone } from '../../utils/phonePolicy';
 
 interface RegisterProps {
   role: Extract<UserRole, 'MOTHER' | 'NURSE'>;
 }
-
-const normalizeVietnamPhone = (value: string) => {
-  const compact = value.replace(/\s+/g, '');
-  if (compact.startsWith('0')) return `+84${compact.slice(1)}`;
-  if (compact.startsWith('84')) return `+${compact}`;
-  return compact;
-};
 
 const getApiErrorMessage = (err: any) => {
   const data = err.response?.data;
@@ -24,7 +19,7 @@ const getApiErrorMessage = (err: any) => {
   if (validationMessage) return validationMessage;
   if (data?.message) return data.message;
   if (err.response?.status === 0 || err.code === 'ERR_NETWORK') {
-    return 'Không kết nối được BE. Kiểm tra backend đang chạy và VITE_API_BASE_URL.';
+    return 'Không kết nối được server. Vui lòng kiểm tra kết nối mạng và thử lại.';
   }
   return 'Đăng ký không thành công. Vui lòng thử lại.';
 };
@@ -42,6 +37,19 @@ const Register = ({ role }: RegisterProps) => {
   const handleRegister = async (event: React.FormEvent) => {
     event.preventDefault();
     setError('');
+
+    const passwordError = getPasswordPolicyError(password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
+    const phoneError = getVietnamPhoneError(phone);
+    if (phoneError) {
+      setError(phoneError);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -97,19 +105,21 @@ const Register = ({ role }: RegisterProps) => {
           />
           <Input
             label="Số điện thoại"
-            placeholder="+84901234567"
+            placeholder="0912345678"
             value={phone}
             onChange={(event) => setPhone(event.target.value)}
             icon={<Phone size={18} />}
+            hint={PHONE_POLICY_MESSAGE}
             required
           />
           <Input
             label="Mật khẩu"
             type={showPassword ? 'text' : 'password'}
-            placeholder="Tối thiểu 8 ký tự"
+            placeholder="Tối thiểu 8 ký tự, bao gồm chữ và số, ít nhất 1 chữ hoa, ít nhất 1 chữ thường, ít nhất 1 ký tự đặc biệt."
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             icon={<Lock size={18} />}
+            hint={PASSWORD_POLICY_MESSAGE}
             required
           />
           <label className="mb-4 flex w-fit cursor-pointer items-center gap-2 text-sm font-bold text-text-mid">

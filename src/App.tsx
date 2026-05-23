@@ -1,10 +1,14 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
+import axiosClient from './api/axiosClient';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LandingPage from './pages/LandingPage';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
+import NurseOnboarding from './pages/NurseOnboarding';
+import DoctorNurseReview from './pages/DoctorNurseReview';
+import ChatPage from './pages/ChatPage';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import VerifyOtp from './pages/auth/VerifyOtp';
@@ -40,8 +44,35 @@ const GuestRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated, isLoading, primaryRole } = useAuth();
 
   if (isLoading) return <LoadingScreen />;
-  if (isAuthenticated) return <Navigate to={primaryRole === 'NURSE' ? '/home' : '/'} replace />;
+  if (isAuthenticated) {
+    const target = primaryRole === 'NURSE'
+      ? '/nurse/onboarding'
+      : primaryRole === 'DOCTOR' || primaryRole === 'ADMIN'
+        ? '/doctor/nurses/review'
+        : '/';
+    return <Navigate to={target} replace />;
+  }
 
+  return <>{children}</>;
+};
+
+const NurseActiveRoute = ({ children }: { children: ReactNode }) => {
+  const { primaryRole } = useAuth();
+  const [status, setStatus] = useState<'loading' | 'active' | 'blocked'>('loading');
+
+  useEffect(() => {
+    if (primaryRole !== 'NURSE') {
+      setStatus('active');
+      return;
+    }
+
+    axiosClient.get('/api/v1/nurses/me/onboarding')
+      .then((response) => setStatus(response.data?.data?.nurseStatus === 'ACTIVE' ? 'active' : 'blocked'))
+      .catch(() => setStatus('blocked'));
+  }, [primaryRole]);
+
+  if (status === 'loading') return <LoadingScreen />;
+  if (status === 'blocked') return <Navigate to="/nurse/onboarding" replace />;
   return <>{children}</>;
 };
 
@@ -60,12 +91,14 @@ const AppRoutes = () => (
     <Route path="/social/callback" element={<SocialCallback />} />
 
     <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-      <Route path="/home" element={<Home />} />
+      <Route path="/nurse/home" element={<NurseActiveRoute><Home /></NurseActiveRoute>} />
+      <Route path="/nurse/onboarding" element={<NurseOnboarding />} />
+      <Route path="/doctor/nurses/review" element={<DoctorNurseReview />} />
       <Route path="/search" element={<Search />} />
       <Route path="/compare" element={<Compare />} />
       <Route path="/bookings" element={<Bookings />} />
       <Route path="/checklist" element={<Checklist />} />
-      <Route path="/chat" element={<div className="text-xl font-bold text-lav-dark">Trang chat đang phát triển</div>} />
+      <Route path="/chat" element={<ChatPage />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/wallet" element={<Wallet />} />
       <Route path="/admin/gmv" element={<GmvDashboard />} />

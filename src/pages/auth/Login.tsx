@@ -6,6 +6,7 @@ import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
 import Input from '../../components/common/Input';
 import { useAuth, type UserRole } from '../../contexts/AuthContext';
+import { PHONE_POLICY_MESSAGE, getVietnamPhoneError, normalizeVietnamPhone } from '../../utils/phonePolicy';
 
 interface LoginProps {
   portalRole: Extract<UserRole, 'MOTHER' | 'NURSE'>;
@@ -31,13 +32,6 @@ const getSocialUrl = (provider: 'Google' | 'Facebook') => {
   });
 
   return `${domain.replace(/\/$/, '')}/oauth2/authorize?${params.toString()}`;
-};
-
-const normalizeVietnamPhone = (value: string) => {
-  const compact = value.replace(/\s+/g, '');
-  if (compact.startsWith('0')) return `+84${compact.slice(1)}`;
-  if (compact.startsWith('84')) return `+${compact}`;
-  return compact;
 };
 
 const getApiErrorMessage = (err: any) => {
@@ -67,6 +61,12 @@ const Login = ({ portalRole }: LoginProps) => {
     event.preventDefault();
     if (submitInFlight.current) return;
 
+    const phoneError = getVietnamPhoneError(phone);
+    if (phoneError) {
+      setError(phoneError);
+      return;
+    }
+
     submitInFlight.current = true;
     setError('');
     setIsLoading(true);
@@ -83,7 +83,7 @@ const Login = ({ portalRole }: LoginProps) => {
         throw new Error('LOGIN_RESPONSE_INVALID');
       }
       login({ accessToken: payload.accessToken, refreshToken: payload.refreshToken, user: payload.user, activeRole: portalRole });
-      navigate(portalRole === 'NURSE' ? '/home' : '/', { replace: true });
+      navigate(portalRole === 'NURSE' ? '/nurse/onboarding' : '/', { replace: true });
     } catch (err: any) {
       if (err.message === 'LOGIN_RESPONSE_INVALID') {
         setError('BE đã phản hồi login nhưng thiếu token hoặc thông tin account.');
@@ -182,10 +182,11 @@ const Login = ({ portalRole }: LoginProps) => {
         <form onSubmit={handleSubmit}>
           <Input
             label="Số điện thoại"
-            placeholder="+84901234567"
+            placeholder="0912345678"
             value={phone}
             onChange={(event) => setPhone(event.target.value)}
             icon={<Phone size={18} />}
+            hint={PHONE_POLICY_MESSAGE}
             required
           />
           <Input

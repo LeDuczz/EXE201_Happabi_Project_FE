@@ -1,4 +1,4 @@
-import { Calendar, ClipboardCheck, Home, LogOut, MessageCircle, Scale, Search, User, Wallet } from 'lucide-react';
+import { Calendar, ClipboardCheck, FileSearch, Home, LogOut, MessageCircle, Scale, Search, ShieldCheck, User, Wallet } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -12,7 +12,8 @@ const motherMenus = [
 ];
 
 const nurseMenus = [
-  { id: '/home', icon: <Home size={18} />, label: 'Trang chủ' },
+  { id: '/nurse/onboarding', icon: <ShieldCheck size={18} />, label: 'Onboarding nurse' },
+  { id: '/home', icon: <Home size={18} />, label: 'Homepage nurse' },
   { id: '/bookings', icon: <Calendar size={18} />, label: 'Lịch làm việc' },
   { id: '/checklist', icon: <ClipboardCheck size={18} />, label: 'AI Checklist' },
   { id: '/wallet', icon: <Wallet size={18} />, label: 'Ví & Thu nhập' },
@@ -27,15 +28,23 @@ const adminMenus = [
   { id: '/admin/users', icon: <User size={18} />, label: 'Quản lý người dùng' },
   { id: '/admin/bookings', icon: <Calendar size={18} />, label: 'Quản lý lịch hẹn' },
   { id: '/profile', icon: <User size={18} />, label: 'Hồ sơ Admin' },
+const doctorMenus = [
+  { id: '/doctor/nurses/review', icon: <FileSearch size={18} />, label: 'Duyệt hồ sơ nurse' },
+  { id: '/chat', icon: <MessageCircle size={18} />, label: 'Thông báo' },
 ];
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, primaryRole } = useAuth();
-
-  const menus = primaryRole === 'ADMIN' ? adminMenus : (primaryRole === 'NURSE' ? nurseMenus : motherMenus);
-  const roleLabel = primaryRole === 'ADMIN' ? 'Hệ thống' : (primaryRole === 'NURSE' ? 'Điều dưỡng' : 'Mẹ bỉm');
+  const menus = primaryRole === 'NURSE' ? nurseMenus : primaryRole === 'DOCTOR' || primaryRole === 'ADMIN' ? doctorMenus : motherMenus;
+  const roleLabel = primaryRole === 'NURSE'
+    ? 'Điều dưỡng'
+    : primaryRole === 'DOCTOR'
+      ? 'Doctor'
+      : primaryRole === 'ADMIN'
+        ? 'Admin'
+        : 'Mẹ bỉm';
 
   const handleLogout = async () => {
     await logout();

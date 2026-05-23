@@ -6,6 +6,8 @@ import Card from '../components/common/Card';
 import Input from '../components/common/Input';
 import Topbar from '../components/layout/Topbar';
 import { useAuth } from '../contexts/AuthContext';
+import { PASSWORD_POLICY_MESSAGE, getPasswordPolicyError } from '../utils/passwordPolicy';
+import { PHONE_POLICY_MESSAGE, getVietnamPhoneError, normalizeVietnamPhone } from '../utils/phonePolicy';
 
 interface MotherProfile {
   id: string;
@@ -29,13 +31,6 @@ const emptyProfile: MotherProfile = {
   address: '',
   city: '',
   avatarUrl: '',
-};
-
-const normalizeVietnamPhone = (value: string) => {
-  const compact = value.replace(/\s+/g, '');
-  if (compact.startsWith('0')) return `+84${compact.slice(1)}`;
-  if (compact.startsWith('84')) return `+${compact}`;
-  return compact;
 };
 
 const getApiErrorMessage = (err: any) => {
@@ -180,6 +175,13 @@ const Profile = () => {
     if (phoneVerified) return;
     setError('');
     setSuccess('');
+
+    const phoneError = getVietnamPhoneError(phoneDraft);
+    if (phoneError) {
+      setError(phoneError);
+      return;
+    }
+
     try {
       const phone = normalizeVietnamPhone(phoneDraft);
       await axiosClient.post('/api/v1/users/me/phone/change', { phone });
@@ -207,6 +209,13 @@ const Profile = () => {
   const createLocalPassword = async () => {
     setError('');
     setSuccess('');
+
+    const passwordError = getPasswordPolicyError(localPassword);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
     try {
       await axiosClient.post('/api/v1/auth/local-password', { password: localPassword });
       await refreshMe();
@@ -283,6 +292,7 @@ const Profile = () => {
                 value={localPassword}
                 onChange={(event) => setLocalPassword(event.target.value)}
                 placeholder="Tối thiểu 8 ký tự"
+                hint={PASSWORD_POLICY_MESSAGE}
               />
               <label className="mb-3 flex cursor-pointer items-center gap-2 text-xs font-bold text-text-mid">
                 <input type="checkbox" checked={showLocalPassword} onChange={(event) => setShowLocalPassword(event.target.checked)} className="h-4 w-4 accent-lav-dark" />
@@ -366,7 +376,7 @@ const Profile = () => {
 
               <div className="rounded-2xl border border-lav-100 bg-[#fff9fb] p-4">
                 <div className="mb-2 text-sm font-black text-text-dark">Số điện thoại</div>
-                <Input value={phoneDraft} onChange={(event) => setPhoneDraft(event.target.value)} placeholder="+84901234567" disabled={phoneVerified} />
+                <Input value={phoneDraft} onChange={(event) => setPhoneDraft(event.target.value)} placeholder="0912345678" hint={phoneVerified ? undefined : PHONE_POLICY_MESSAGE} disabled={phoneVerified} />
                 {phoneVerified ? (
                   <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm font-bold text-green-700">
                     <CheckCircle2 size={16} /> Số điện thoại đã được xác thực.

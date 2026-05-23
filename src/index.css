@@ -30,7 +30,7 @@
 @layer base {
   body {
     @apply bg-[#f7f0ff] text-text-dark;
-    font-family: "Lora", serif;
+    font-family: "Nunito", sans-serif;
     margin: 0;
     min-width: 320px;
     min-height: 100vh;
@@ -70,6 +70,10 @@
   }
 
   .landing-page .font-serif {
+    font-family: "Cormorant Garamond", serif;
+  }
+
+  .font-serif {
     font-family: "Cormorant Garamond", serif;
   }
 

@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import axiosClient from '../api/axiosClient';
 
-export type UserRole = 'MOTHER' | 'NURSE' | 'ADMIN';
+export type UserRole = 'MOTHER' | 'NURSE' | 'DOCTOR' | 'ADMIN';
 
 export interface UserProfile {
   id: string;
@@ -40,6 +40,12 @@ const TOKEN_KEY = 'happabi_access_token';
 const USER_KEY = 'happabi_user';
 const ACTIVE_ROLE_KEY = 'happabi_active_role';
 
+const clearStoredAuth = () => {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(ACTIVE_ROLE_KEY);
+};
+
 const readStoredUser = () => {
   const raw = localStorage.getItem(USER_KEY);
   if (!raw) return null;
@@ -53,7 +59,7 @@ const readStoredUser = () => {
 
 const readStoredActiveRole = () => {
   const raw = localStorage.getItem(ACTIVE_ROLE_KEY) as UserRole | null;
-  return raw === 'MOTHER' || raw === 'NURSE' || raw === 'ADMIN' ? raw : null;
+  return raw === 'MOTHER' || raw === 'NURSE' || raw === 'DOCTOR' || raw === 'ADMIN' ? raw : null;
 };
 
 const normalizeUser = (user: UserProfile): UserProfile => ({
@@ -64,6 +70,8 @@ const normalizeUser = (user: UserProfile): UserProfile => ({
 const getPrimaryRole = (user: UserProfile | null, activeRole: UserRole | null): UserRole | null => {
   if (!user?.roles?.length) return null;
   if (activeRole && user.roles.includes(activeRole)) return activeRole;
+  if (user.roles.includes('DOCTOR')) return 'DOCTOR';
+  if (user.roles.includes('ADMIN')) return 'ADMIN';
   if (user.roles.includes('NURSE')) return 'NURSE';
   if (user.roles.includes('MOTHER')) return 'MOTHER';
   return user.roles[0];
@@ -74,6 +82,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(() => readStoredUser());
   const [activeRole, setActiveRole] = useState<UserRole | null>(() => readStoredActiveRole());
   const [isLoading, setIsLoading] = useState(Boolean(localStorage.getItem(TOKEN_KEY)) && !readStoredUser());
+
+  const clearAuthState = useCallback(() => {
+    clearStoredAuth();
+    setAccessToken(null);
+    setUser(null);
+    setActiveRole(null);
+    setIsLoading(false);
+  }, []);
 
   const login = useCallback((payloadOrToken: AuthPayload | string, maybeUser?: UserProfile) => {
     const payload = typeof payloadOrToken === 'string'
@@ -128,14 +144,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch {
       // Local logout should still happen if the server token is already invalid.
     } finally {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-      localStorage.removeItem(ACTIVE_ROLE_KEY);
-      setAccessToken(null);
-      setUser(null);
-      setActiveRole(null);
+      clearAuthState();
     }
-  }, []);
+  }, [clearAuthState]);
+
+  useEffect(() => {
+    const handleTokenRefreshed = (event: Event) => {
+      const accessToken = (event as CustomEvent<{ accessToken?: string }>).detail?.accessToken;
+      if (accessToken) {
+        setAccessToken(accessToken);
+      }
+    };
+
+    window.addEventListener('happabi:token-refreshed', handleTokenRefreshed);
+    window.addEventListener('happabi:auth-expired', clearAuthState);
+
+    return () => {
+      window.removeEventListener('happabi:token-refreshed', handleTokenRefreshed);
+      window.removeEventListener('happabi:auth-expired', clearAuthState);
+    };
+  }, [clearAuthState]);
 
   useEffect(() => {
     if (!accessToken || user) {
@@ -144,14 +172,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     refreshMe().catch(() => {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
-        localStorage.removeItem(ACTIVE_ROLE_KEY);
-        setAccessToken(null);
-        setUser(null);
-        setActiveRole(null);
+        clearAuthState();
     }).finally(() => setIsLoading(false));
-  }, [accessToken, refreshMe, user]);
+  }, [accessToken, clearAuthState, refreshMe, user]);
 
   const value = useMemo<AuthContextValue>(() => ({
     user,
