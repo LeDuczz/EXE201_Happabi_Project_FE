@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import Profile from './pages/Profile';
 import NurseOnboarding from './pages/NurseOnboarding';
 import DoctorNurseReview from './pages/DoctorNurseReview';
+import ChatPage from './pages/ChatPage';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import VerifyOtp from './pages/auth/VerifyOtp';
@@ -87,7 +88,7 @@ const AppRoutes = () => (
       <Route path="/search" element={<div className="text-xl font-bold text-lav-dark">Trang tìm kiếm đang phát triển</div>} />
       <Route path="/compare" element={<div className="text-xl font-bold text-lav-dark">Trang so sánh / checklist đang phát triển</div>} />
       <Route path="/bookings" element={<div className="text-xl font-bold text-lav-dark">Trang lịch hẹn đang phát triển</div>} />
-      <Route path="/chat" element={<div className="text-xl font-bold text-lav-dark">Trang chat đang phát triển</div>} />
+      <Route path="/chat" element={<ChatPage />} />
       <Route path="/profile" element={<Profile />} />
     </Route>
 
