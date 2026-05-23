@@ -5,13 +5,8 @@ import axiosClient from '../../api/axiosClient';
 import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
 import Input from '../../components/common/Input';
-
-const normalizeVietnamPhone = (value: string) => {
-  const compact = value.replace(/\s+/g, '');
-  if (compact.startsWith('0')) return `+84${compact.slice(1)}`;
-  if (compact.startsWith('84')) return `+${compact}`;
-  return compact;
-};
+import { PASSWORD_POLICY_MESSAGE, getPasswordPolicyError } from '../../utils/passwordPolicy';
+import { PHONE_POLICY_MESSAGE, getVietnamPhoneError, normalizeVietnamPhone } from '../../utils/phonePolicy';
 
 const getApiErrorMessage = (err: any) => {
   const data = err.response?.data;
@@ -36,6 +31,13 @@ const ForgotPassword = () => {
     event.preventDefault();
     setError('');
     setMessage('');
+
+    const phoneError = getVietnamPhoneError(phone);
+    if (phoneError) {
+      setError(phoneError);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -55,6 +57,19 @@ const ForgotPassword = () => {
     event.preventDefault();
     setError('');
     setMessage('');
+
+    const passwordError = getPasswordPolicyError(newPassword);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
+    const phoneError = getVietnamPhoneError(phone);
+    if (phoneError) {
+      setError(phoneError);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -104,10 +119,11 @@ const ForgotPassword = () => {
             <form onSubmit={requestOtp}>
               <Input
                 label="Số điện thoại"
-                placeholder="+84901234567"
+                placeholder="0912345678"
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
                 icon={<Phone size={18} />}
+                hint={PHONE_POLICY_MESSAGE}
                 required
               />
               <Btn full type="submit" disabled={isLoading}>
@@ -118,10 +134,11 @@ const ForgotPassword = () => {
             <form onSubmit={resetPassword}>
               <Input
                 label="Số điện thoại"
-                placeholder="+84901234567"
+                placeholder="0912345678"
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
                 icon={<Phone size={18} />}
+                hint={PHONE_POLICY_MESSAGE}
                 required
               />
               <Input
@@ -139,6 +156,7 @@ const ForgotPassword = () => {
                 value={newPassword}
                 onChange={(event) => setNewPassword(event.target.value)}
                 icon={<Lock size={18} />}
+                hint={PASSWORD_POLICY_MESSAGE}
                 required
               />
               <label className="mb-4 flex w-fit cursor-pointer items-center gap-2 text-sm font-bold text-text-mid">
