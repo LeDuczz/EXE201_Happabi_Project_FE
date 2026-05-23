@@ -12,20 +12,30 @@ const motherMenus = [
 ];
 
 const nurseMenus = [
-  { id: '/home', icon: <Home size={18} />, label: 'Homepage nurse' },
+  { id: '/home', icon: <Home size={18} />, label: 'Trang chủ' },
   { id: '/bookings', icon: <Calendar size={18} />, label: 'Lịch làm việc' },
-  { id: '/compare', icon: <ClipboardCheck size={18} />, label: 'AI Checklist' },
-  { id: '/search', icon: <Wallet size={18} />, label: 'Doanh thu' },
+  { id: '/checklist', icon: <ClipboardCheck size={18} />, label: 'AI Checklist' },
+  { id: '/wallet', icon: <Wallet size={18} />, label: 'Ví & Thu nhập' },
   { id: '/chat', icon: <MessageCircle size={18} />, label: 'Chat & hỗ trợ' },
   { id: '/profile', icon: <User size={18} />, label: 'Hồ sơ nurse' },
+];
+
+const adminMenus = [
+  { id: '/home', icon: <Home size={18} />, label: 'Trang chủ' },
+  { id: '/admin/gmv', icon: <Scale size={18} />, label: 'Dashboard GMV' },
+  { id: '/admin/nurses', icon: <ClipboardCheck size={18} />, label: 'Duyệt điều dưỡng' },
+  { id: '/admin/users', icon: <User size={18} />, label: 'Quản lý người dùng' },
+  { id: '/admin/bookings', icon: <Calendar size={18} />, label: 'Quản lý lịch hẹn' },
+  { id: '/profile', icon: <User size={18} />, label: 'Hồ sơ Admin' },
 ];
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, primaryRole } = useAuth();
-  const menus = primaryRole === 'NURSE' ? nurseMenus : motherMenus;
-  const roleLabel = primaryRole === 'NURSE' ? 'Điều dưỡng' : 'Mẹ bỉm';
+
+  const menus = primaryRole === 'ADMIN' ? adminMenus : (primaryRole === 'NURSE' ? nurseMenus : motherMenus);
+  const roleLabel = primaryRole === 'ADMIN' ? 'Hệ thống' : (primaryRole === 'NURSE' ? 'Điều dưỡng' : 'Mẹ bỉm');
 
   const handleLogout = async () => {
     await logout();
@@ -49,11 +59,10 @@ const Sidebar = () => {
             <div
               key={item.id}
               onClick={() => navigate(item.id)}
-              className={`mb-[3px] flex cursor-pointer items-center gap-2.5 rounded-xl border-l-[3px] px-3.5 py-2.5 text-[13.5px] transition-all duration-150 ${
-                isActive
-                  ? 'border-lav-acc bg-[rgba(192,132,252,0.16)] font-bold text-white'
-                  : 'border-transparent bg-transparent font-normal text-white/50 hover:bg-white/5 hover:text-white/70'
-              }`}
+              className={`mb-[3px] flex cursor-pointer items-center gap-2.5 rounded-xl border-l-[3px] px-3.5 py-2.5 text-[13.5px] transition-all duration-150 ${isActive
+                ? 'border-lav-acc bg-[rgba(192,132,252,0.16)] font-bold text-white'
+                : 'border-transparent bg-transparent font-normal text-white/50 hover:bg-white/5 hover:text-white/70'
+                }`}
             >
               <span className="text-base">{item.icon}</span>
               {item.label}
