@@ -109,76 +109,101 @@ const MotherHome = () => {
   );
 };
 
-const NurseHome = () => (
-  <>
-    <Topbar title="Homepage nurse" subtitle="Quản lý lịch làm, checklist và thu nhập hôm nay." />
+const NurseHome = () => {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Topbar title="Homepage nurse" subtitle="Quản lý lịch làm, checklist và thu nhập hôm nay." />
 
-    <section className="relative mb-6 overflow-hidden rounded-[28px] bg-dark-200 p-7 text-white shadow-lg">
-      <div className="absolute -right-12 -top-12 h-52 w-52 rounded-full bg-lav-acc/20" />
-      <div className="relative z-10">
-        <div className="mb-2 text-xs font-black uppercase tracking-[1.8px] text-lav-acc">Ca làm hôm nay</div>
-        <h2 className="font-serif text-3xl font-black">Bạn có 2 ca sắp tới và 1 checklist cần hoàn tất.</h2>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/58">Homepage này dành riêng cho nurse sau khi đăng nhập bằng phone + password.</p>
-      </div>
-    </section>
+      <section className="relative mb-6 overflow-hidden rounded-[28px] bg-dark-200 p-7 text-white shadow-lg">
+        <div className="absolute -right-12 -top-12 h-52 w-52 rounded-full bg-lav-acc/20" />
+        <div className="relative z-10">
+          <div className="mb-2 text-xs font-black uppercase tracking-[1.8px] text-lav-acc">Ca làm hôm nay</div>
+          <h2 className="font-serif text-3xl font-black">Bạn có 2 ca sắp tới và 1 checklist cần hoàn tất.</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/58">Homepage này dành giữ riêng cho nurse sau khi đăng nhập bằng phone + password.</p>
+        </div>
+      </section>
 
-    <div className="mb-6 grid gap-4 md:grid-cols-4">
-      {[
-        [CalendarDays, '2', 'Ca hôm nay'],
-        [ClipboardCheck, '86%', 'Checklist xong'],
-        [Wallet, '1.240k', 'Doanh thu ngày'],
-        [Star, '4.98', 'Đánh giá'],
-      ].map(([Icon, value, label]) => (
-        <Card key={String(label)} className="p-5 text-center">
-          <Icon className="mx-auto mb-2 text-lav-dark" size={24} />
-          <div className="font-serif text-3xl font-black text-grad">{String(value)}</div>
-          <div className="mt-1 text-xs font-bold text-text-light">{String(label)}</div>
-        </Card>
-      ))}
-    </div>
-
-    <div className="grid gap-5 lg:grid-cols-[1.35fr_1fr]">
-      <Card>
-        <h3 className="mb-4 font-serif text-xl font-black">Lịch làm hôm nay</h3>
-        {nurseSchedule.map((item) => (
-          <div key={`${item.client}-${item.time}`} className="flex gap-3 border-b border-lav-200 py-4 last:border-b-0">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-lav-100 text-lav-dark">
-              <Clock size={20} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-black">{item.client}</span>
-                <span className="rounded-full bg-lav-100 px-3 py-1 text-[11px] font-black text-lav-dark">{item.status}</span>
-              </div>
-              <div className="mt-1 text-sm text-text-light">{item.service}</div>
-              <div className="mt-1 flex flex-wrap gap-3 text-xs font-bold text-text-light">
-                <span>{item.time}</span>
-                <span>{item.address}</span>
-              </div>
-            </div>
-          </div>
+      <div className="mb-6 grid gap-4 md:grid-cols-4">
+        {[
+          [CalendarDays, '2', 'Ca hôm nay'],
+          [ClipboardCheck, '86%', 'Checklist xong'],
+          [Wallet, '1.240.000đ', 'Số dư ví'],
+          [Star, '4.98', 'Đánh giá'],
+        ].map(([Icon, value, label]) => (
+          <Card
+            key={String(label)}
+            className={`p-5 text-center cursor-pointer transition-transform hover:scale-105 ${String(label) === 'Số dư ví' ? 'border-lav-acc bg-lav-100/50' : ''}`}
+            onClick={() => String(label) === 'Số dư ví' ? navigate('/wallet') : null}
+          >
+            <Icon className="mx-auto mb-2 text-lav-dark" size={24} />
+            <div className="font-serif text-3xl font-black text-grad">{String(value)}</div>
+            <div className="mt-1 text-xs font-bold text-text-light">{String(label)}</div>
+          </Card>
         ))}
-      </Card>
+      </div>
 
-      <Card>
-        <h3 className="font-serif text-xl font-black">Checklist nhanh</h3>
-        <div className="mt-4 space-y-3">
-          {['Rửa tay đúng quy trình', 'Kiểm tra nhiệt độ mẹ và bé', 'Ghi chú tình trạng ca chăm sóc', 'Gửi báo cáo sau ca'].map((item, index) => (
-            <div key={item} className="flex items-center gap-3 rounded-2xl border border-lav-100 bg-[#fff9fb] p-3">
-              <div className={`flex h-7 w-7 items-center justify-center rounded-full ${index < 2 ? 'bg-verified-bg text-verified' : 'bg-lav-100 text-lav-dark'}`}>
-                <CheckCircle2 size={16} />
+      <div className="grid gap-5 lg:grid-cols-[1.35fr_1fr]">
+        <Card>
+          <h3 className="mb-4 font-serif text-xl font-black">Lịch làm hôm nay</h3>
+          {nurseSchedule.map((item) => (
+            <div key={`${item.client}-${item.time}`} className="flex gap-3 border-b border-lav-200 py-4 last:border-b-0">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-lav-100 text-lav-dark">
+                <Clock size={20} />
               </div>
-              <span className="text-sm font-bold text-text-mid">{item}</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-black">{item.client}</span>
+                  <span className="rounded-full bg-lav-100 px-3 py-1 text-[11px] font-black text-lav-dark">{item.status}</span>
+                </div>
+                <div className="mt-1 text-sm text-text-light">{item.service}</div>
+                <div className="mt-1 flex flex-wrap gap-3 text-xs font-bold text-text-light">
+                  <span>{item.time}</span>
+                  <span>{item.address}</span>
+                </div>
+              </div>
             </div>
           ))}
+        </Card>
+
+        <Card>
+          <h3 className="font-serif text-xl font-black">Checklist nhanh</h3>
+          <div className="mt-4 space-y-3">
+            {['Rửa tay đúng quy trình', 'Kiểm tra nhiệt độ mẹ và bé', 'Ghi chú tình trạng ca chăm sóc', 'Gửi báo cáo sau ca'].map((item, index) => (
+              <div key={item} className="flex items-center gap-3 rounded-2xl border border-lav-100 bg-[#fff9fb] p-3">
+                <div className={`flex h-7 w-7 items-center justify-center rounded-full ${index < 2 ? 'bg-verified-bg text-verified' : 'bg-lav-100 text-lav-dark'}`}>
+                  <CheckCircle2 size={16} />
+                </div>
+                <span className="text-sm font-bold text-text-mid">{item}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </>
+  );
+};
+
+const AdminHome = () => {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Topbar title="Admin Dashboard" subtitle="Chào mừng quản trị viên quay trở lại." />
+      <section className="relative mb-6 overflow-hidden rounded-[28px] bg-grad p-10 text-white shadow-xl">
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+        <div className="relative z-10 max-w-2xl">
+          <h2 className="font-serif text-4xl font-black mb-4">Hệ thống đang hoạt động ổn định.</h2>
+          <p className="text-white/80 leading-relaxed mb-6">Bạn có thể theo dõi biến động doanh thu thực tế từ Elasticsearch và quản lý các giao dịch ví điều dưỡng.</p>
+          <Btn variant="outline" className="border-white/50 text-white" onClick={() => navigate('/admin/gmv')}>Xem báo cáo GMV chi tiết</Btn>
         </div>
-      </Card>
-    </div>
-  </>
-);
+      </section>
+    </>
+  );
+};
 
 const Home = () => {
   const { primaryRole } = useAuth();
+  if (primaryRole === 'ADMIN') return <AdminHome />;
   return primaryRole === 'NURSE' ? <NurseHome /> : <MotherHome />;
 };
 
