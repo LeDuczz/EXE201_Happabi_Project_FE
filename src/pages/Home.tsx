@@ -40,7 +40,7 @@ const MotherHome = () => {
           <p className="mt-3 max-w-xl text-sm leading-6 text-white/72">
             Dựa trên vị trí, nhu cầu chăm sóc sau sinh và lịch trống của điều dưỡng.
           </p>
-          <Btn variant="outline" size="sm" className="mt-5 border-white/45 bg-white/15 text-white backdrop-blur" onClick={() => navigate('/search')}>
+          <Btn variant="outline" size="sm" className="mt-5 border-white/45 bg-white/15 text-white backdrop-blur" onClick={() => navigate('/mother/search')}>
             Tìm điều dưỡng ngay
           </Btn>
         </div>
@@ -65,7 +65,7 @@ const MotherHome = () => {
         <Card>
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-serif text-xl font-black">Lịch hẹn sắp tới</h3>
-            <Btn variant="ghost" size="sm" onClick={() => navigate('/bookings')}>Xem tất cả</Btn>
+            <Btn variant="ghost" size="sm" onClick={() => navigate('/mother/bookings')}>Xem tất cả</Btn>
           </div>
           {bookings.map((booking) => (
             <div key={`${booking.nurse}-${booking.time}`} className="flex items-center gap-3 border-b border-lav-200 py-4 last:border-b-0">
@@ -78,7 +78,7 @@ const MotherHome = () => {
               <div className="text-right text-sm font-black text-lav-dark">{booking.price}</div>
             </div>
           ))}
-          <Btn full className="mt-4" onClick={() => navigate('/search')}>Đặt lịch mới</Btn>
+          <Btn full className="mt-4" onClick={() => navigate('/mother/search')}>Đặt lịch mới</Btn>
         </Card>
 
         <Card>
@@ -98,7 +98,7 @@ const MotherHome = () => {
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-black text-lav-dark">{nurse.price}</div>
-                  <Btn size="xs" onClick={() => navigate('/search')}>Đặt</Btn>
+                  <Btn size="xs" onClick={() => navigate('/mother/search')}>Đặt</Btn>
                 </div>
               </div>
             ))}

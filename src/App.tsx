@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import axiosClient from './api/axiosClient';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider, useAuth, type UserRole } from './contexts/AuthContext';
 import LandingPage from './pages/LandingPage';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
@@ -31,17 +31,50 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   return <>{children}</>;
 };
 
+const roleHomePath = (role: UserRole | null) => {
+  if (role === 'NURSE') return '/nurse/onboarding';
+  if (role === 'DOCTOR') return '/doctor/nurses/review';
+  if (role === 'ADMIN') return '/admin/nurses/review';
+  return '/';
+};
+
+const roleDashboardPath = (role: UserRole | null) => {
+  if (role === 'NURSE') return '/nurse/home';
+  if (role === 'DOCTOR') return '/doctor/nurses/review';
+  if (role === 'ADMIN') return '/admin/nurses/review';
+  if (role === 'MOTHER') return '/mother/home';
+  return '/';
+};
+
+const RoleRoute = ({ allowedRoles, children }: { allowedRoles: UserRole[]; children: ReactNode }) => {
+  const { primaryRole, isLoading } = useAuth();
+
+  if (isLoading) return <LoadingScreen />;
+  if (!primaryRole || !allowedRoles.includes(primaryRole)) {
+    return <Navigate to={roleHomePath(primaryRole)} replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const RoleRedirect = ({ paths }: { paths?: Partial<Record<UserRole, string>> }) => {
+  const { primaryRole, isLoading } = useAuth();
+
+  if (isLoading) return <LoadingScreen />;
+
+  const target = primaryRole && paths?.[primaryRole]
+    ? paths[primaryRole]
+    : roleDashboardPath(primaryRole);
+
+  return <Navigate to={target ?? '/'} replace />;
+};
+
 const GuestRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated, isLoading, primaryRole } = useAuth();
 
   if (isLoading) return <LoadingScreen />;
   if (isAuthenticated) {
-    const target = primaryRole === 'NURSE'
-      ? '/nurse/onboarding'
-      : primaryRole === 'DOCTOR' || primaryRole === 'ADMIN'
-        ? '/doctor/nurses/review'
-        : '/';
-    return <Navigate to={target} replace />;
+    return <Navigate to={roleHomePath(primaryRole)} replace />;
   }
 
   return <>{children}</>;
@@ -82,14 +115,35 @@ const AppRoutes = () => (
     <Route path="/social/callback" element={<SocialCallback />} />
 
     <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-      <Route path="/home" element={<NurseActiveRoute><Home /></NurseActiveRoute>} />
-      <Route path="/nurse/onboarding" element={<NurseOnboarding />} />
-      <Route path="/doctor/nurses/review" element={<DoctorNurseReview />} />
-      <Route path="/search" element={<div className="text-xl font-bold text-lav-dark">Trang tìm kiếm đang phát triển</div>} />
-      <Route path="/compare" element={<div className="text-xl font-bold text-lav-dark">Trang so sánh / checklist đang phát triển</div>} />
-      <Route path="/bookings" element={<div className="text-xl font-bold text-lav-dark">Trang lịch hẹn đang phát triển</div>} />
-      <Route path="/chat" element={<ChatPage />} />
-      <Route path="/profile" element={<Profile />} />
+      <Route path="/home" element={<RoleRedirect />} />
+      <Route path="/search" element={<RoleRedirect paths={{ MOTHER: '/mother/search', NURSE: '/nurse/revenue' }} />} />
+      <Route path="/compare" element={<RoleRedirect paths={{ MOTHER: '/mother/compare', NURSE: '/nurse/checklist' }} />} />
+      <Route path="/bookings" element={<RoleRedirect paths={{ MOTHER: '/mother/bookings', NURSE: '/nurse/bookings' }} />} />
+      <Route path="/chat" element={<RoleRedirect paths={{ MOTHER: '/mother/chat', NURSE: '/nurse/chat', DOCTOR: '/doctor/chat', ADMIN: '/admin/chat' }} />} />
+      <Route path="/profile" element={<RoleRedirect paths={{ MOTHER: '/mother/profile', NURSE: '/nurse/profile', DOCTOR: '/doctor/profile', ADMIN: '/admin/profile' }} />} />
+
+      <Route path="/mother/home" element={<RoleRoute allowedRoles={['MOTHER']}><Home /></RoleRoute>} />
+      <Route path="/mother/search" element={<RoleRoute allowedRoles={['MOTHER']}><div className="text-xl font-bold text-lav-dark">Trang tìm kiếm đang phát triển</div></RoleRoute>} />
+      <Route path="/mother/compare" element={<RoleRoute allowedRoles={['MOTHER']}><div className="text-xl font-bold text-lav-dark">Trang so sánh / checklist đang phát triển</div></RoleRoute>} />
+      <Route path="/mother/bookings" element={<RoleRoute allowedRoles={['MOTHER']}><div className="text-xl font-bold text-lav-dark">Trang lịch hẹn đang phát triển</div></RoleRoute>} />
+      <Route path="/mother/chat" element={<RoleRoute allowedRoles={['MOTHER']}><ChatPage /></RoleRoute>} />
+      <Route path="/mother/profile" element={<RoleRoute allowedRoles={['MOTHER']}><Profile /></RoleRoute>} />
+
+      <Route path="/nurse/home" element={<RoleRoute allowedRoles={['NURSE']}><NurseActiveRoute><Home /></NurseActiveRoute></RoleRoute>} />
+      <Route path="/nurse/onboarding" element={<RoleRoute allowedRoles={['NURSE']}><NurseOnboarding /></RoleRoute>} />
+      <Route path="/nurse/bookings" element={<RoleRoute allowedRoles={['NURSE']}><div className="text-xl font-bold text-lav-dark">Trang lịch làm việc đang phát triển</div></RoleRoute>} />
+      <Route path="/nurse/checklist" element={<RoleRoute allowedRoles={['NURSE']}><div className="text-xl font-bold text-lav-dark">Trang AI checklist đang phát triển</div></RoleRoute>} />
+      <Route path="/nurse/revenue" element={<RoleRoute allowedRoles={['NURSE']}><div className="text-xl font-bold text-lav-dark">Trang doanh thu đang phát triển</div></RoleRoute>} />
+      <Route path="/nurse/chat" element={<RoleRoute allowedRoles={['NURSE']}><ChatPage /></RoleRoute>} />
+      <Route path="/nurse/profile" element={<RoleRoute allowedRoles={['NURSE']}><Profile /></RoleRoute>} />
+
+      <Route path="/doctor/nurses/review" element={<RoleRoute allowedRoles={['DOCTOR']}><DoctorNurseReview /></RoleRoute>} />
+      <Route path="/doctor/chat" element={<RoleRoute allowedRoles={['DOCTOR']}><ChatPage /></RoleRoute>} />
+      <Route path="/doctor/profile" element={<RoleRoute allowedRoles={['DOCTOR']}><Profile /></RoleRoute>} />
+
+      <Route path="/admin/nurses/review" element={<RoleRoute allowedRoles={['ADMIN']}><DoctorNurseReview /></RoleRoute>} />
+      <Route path="/admin/chat" element={<RoleRoute allowedRoles={['ADMIN']}><ChatPage /></RoleRoute>} />
+      <Route path="/admin/profile" element={<RoleRoute allowedRoles={['ADMIN']}><Profile /></RoleRoute>} />
     </Route>
 
     <Route path="*" element={<Navigate to="/" replace />} />

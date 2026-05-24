@@ -3,34 +3,47 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const motherMenus = [
-  { id: '/home', icon: <Home size={18} />, label: 'Trang chủ' },
-  { id: '/search', icon: <Search size={18} />, label: 'Tìm điều dưỡng' },
-  { id: '/compare', icon: <Scale size={18} />, label: 'So sánh' },
-  { id: '/bookings', icon: <Calendar size={18} />, label: 'Đơn của tôi' },
-  { id: '/chat', icon: <MessageCircle size={18} />, label: 'Chat & AI hỗ trợ' },
-  { id: '/profile', icon: <User size={18} />, label: 'Hồ sơ' },
+  { id: '/mother/home', icon: <Home size={18} />, label: 'Trang chủ' },
+  { id: '/mother/search', icon: <Search size={18} />, label: 'Tìm điều dưỡng' },
+  { id: '/mother/compare', icon: <Scale size={18} />, label: 'So sánh' },
+  { id: '/mother/bookings', icon: <Calendar size={18} />, label: 'Đơn của tôi' },
+  { id: '/mother/chat', icon: <MessageCircle size={18} />, label: 'Chat & AI hỗ trợ' },
+  { id: '/mother/profile', icon: <User size={18} />, label: 'Hồ sơ' },
 ];
 
 const nurseMenus = [
   { id: '/nurse/onboarding', icon: <ShieldCheck size={18} />, label: 'Onboarding nurse' },
-  { id: '/home', icon: <Home size={18} />, label: 'Homepage nurse' },
-  { id: '/bookings', icon: <Calendar size={18} />, label: 'Lịch làm việc' },
-  { id: '/compare', icon: <ClipboardCheck size={18} />, label: 'AI Checklist' },
-  { id: '/search', icon: <Wallet size={18} />, label: 'Doanh thu' },
-  { id: '/chat', icon: <MessageCircle size={18} />, label: 'Chat & hỗ trợ' },
-  { id: '/profile', icon: <User size={18} />, label: 'Hồ sơ nurse' },
+  { id: '/nurse/home', icon: <Home size={18} />, label: 'Homepage nurse' },
+  { id: '/nurse/bookings', icon: <Calendar size={18} />, label: 'Lịch làm việc' },
+  { id: '/nurse/checklist', icon: <ClipboardCheck size={18} />, label: 'AI Checklist' },
+  { id: '/nurse/revenue', icon: <Wallet size={18} />, label: 'Doanh thu' },
+  { id: '/nurse/chat', icon: <MessageCircle size={18} />, label: 'Chat & hỗ trợ' },
+  { id: '/nurse/profile', icon: <User size={18} />, label: 'Hồ sơ nurse' },
 ];
 
 const doctorMenus = [
   { id: '/doctor/nurses/review', icon: <FileSearch size={18} />, label: 'Duyệt hồ sơ nurse' },
-  { id: '/chat', icon: <MessageCircle size={18} />, label: 'Thông báo' },
+  { id: '/doctor/chat', icon: <MessageCircle size={18} />, label: 'Chat & AI' },
+  { id: '/doctor/profile', icon: <User size={18} />, label: 'Hồ sơ' },
+];
+
+const adminMenus = [
+  { id: '/admin/nurses/review', icon: <FileSearch size={18} />, label: 'Duyệt hồ sơ nurse' },
+  { id: '/admin/chat', icon: <MessageCircle size={18} />, label: 'Chat & AI' },
+  { id: '/admin/profile', icon: <User size={18} />, label: 'Hồ sơ' },
 ];
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, primaryRole } = useAuth();
-  const menus = primaryRole === 'NURSE' ? nurseMenus : primaryRole === 'DOCTOR' || primaryRole === 'ADMIN' ? doctorMenus : motherMenus;
+  const menus = primaryRole === 'NURSE'
+    ? nurseMenus
+    : primaryRole === 'DOCTOR'
+      ? doctorMenus
+      : primaryRole === 'ADMIN'
+        ? adminMenus
+        : motherMenus;
   const roleLabel = primaryRole === 'NURSE'
     ? 'Điều dưỡng'
     : primaryRole === 'DOCTOR'

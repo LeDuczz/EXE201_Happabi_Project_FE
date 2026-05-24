@@ -475,7 +475,7 @@ const NurseOnboardingPage = () => {
               )}
             </div>
             {status === 'ACTIVE' && (
-              <Btn onClick={() => window.location.assign('/home')}>
+              <Btn onClick={() => window.location.assign('/nurse/home')}>
                 <BadgeCheck size={16} /> Vào homepage
               </Btn>
             )}

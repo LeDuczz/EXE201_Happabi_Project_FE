@@ -63,6 +63,22 @@ const initials = (name?: string) => {
   return `${parts[0]?.[0] ?? ''}${parts.at(-1)?.[0] ?? ''}`.toUpperCase() || 'HB';
 };
 
+const dashboardPath = (role: string | null) => {
+  if (role === 'NURSE') return '/nurse/home';
+  if (role === 'DOCTOR') return '/doctor/nurses/review';
+  if (role === 'ADMIN') return '/admin/nurses/review';
+  if (role === 'MOTHER') return '/mother/home';
+  return '/';
+};
+
+const profilePath = (role: string | null) => {
+  if (role === 'NURSE') return '/nurse/profile';
+  if (role === 'DOCTOR') return '/doctor/profile';
+  if (role === 'ADMIN') return '/admin/profile';
+  if (role === 'MOTHER') return '/mother/profile';
+  return '/profile';
+};
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, primaryRole, logout } = useAuth();
@@ -106,7 +122,7 @@ const LandingPage = () => {
     };
   }, [isAuthenticated, primaryRole, user?.id]);
 
-  const goHome = () => navigate('/home');
+  const goHome = () => navigate(dashboardPath(primaryRole));
 
   const handleLogout = async () => {
     await logout();
@@ -146,7 +162,7 @@ const LandingPage = () => {
                 {accountOpen && (
                   <div className="absolute right-0 top-[48px] z-50 w-44 overflow-hidden rounded-2xl border border-lav-200 bg-white py-2 text-sm font-bold text-text-mid shadow-[0_18px_50px_rgba(168,85,247,.16)]">
                     <button className="block w-full px-4 py-2 text-left hover:bg-lav-100" onClick={goHome}>Homepage</button>
-                    <button className="block w-full px-4 py-2 text-left hover:bg-lav-100" onClick={() => navigate('/profile')}>Hồ sơ</button>
+                    <button className="block w-full px-4 py-2 text-left hover:bg-lav-100" onClick={() => navigate(profilePath(primaryRole))}>Hồ sơ</button>
                     <button className="block w-full px-4 py-2 text-left hover:bg-lav-100" onClick={handleLogout}>Đăng xuất</button>
                   </div>
                 )}
@@ -177,7 +193,7 @@ const LandingPage = () => {
             </div>
             <div className="mt-4 flex gap-2">
               {isAuthenticated ? (
-                <Btn full size="sm" onClick={() => navigate('/home')}>Homepage</Btn>
+                <Btn full size="sm" onClick={goHome}>Homepage</Btn>
               ) : (
                 <>
                   <Btn full variant="soft" size="sm" onClick={() => navigate('/register/mother')}>Đăng ký</Btn>
