@@ -9,6 +9,9 @@ import Profile from './pages/Profile';
 import NurseOnboarding from './pages/NurseOnboarding';
 import DoctorNurseReview from './pages/DoctorNurseReview';
 import ChatPage from './pages/ChatPage';
+import NurseBookings from './pages/nurse/Bookings';
+import NurseChecklist from './pages/nurse/Checklist';
+import NurseRevenue from './pages/nurse/Revenue';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import VerifyOtp from './pages/auth/VerifyOtp';
@@ -91,8 +94,15 @@ const NurseActiveRoute = ({ children }: { children: ReactNode }) => {
     }
 
     axiosClient.get('/api/v1/nurses/me/onboarding')
-      .then((response) => setStatus(response.data?.data?.nurseStatus === 'ACTIVE' ? 'active' : 'blocked'))
-      .catch(() => setStatus('blocked'));
+      .then((response) => {
+        const nurseStatus = response.data?.data?.nurseStatus;
+        console.log('Nurse Status Check:', nurseStatus);
+        setStatus(nurseStatus === 'ACTIVE' ? 'active' : 'blocked');
+      })
+      .catch((err) => {
+        console.error('Nurse Status Check Error:', err);
+        setStatus('blocked');
+      });
   }, [primaryRole]);
 
   if (status === 'loading') return <LoadingScreen />;
@@ -131,9 +141,9 @@ const AppRoutes = () => (
 
       <Route path="/nurse/home" element={<RoleRoute allowedRoles={['NURSE']}><NurseActiveRoute><Home /></NurseActiveRoute></RoleRoute>} />
       <Route path="/nurse/onboarding" element={<RoleRoute allowedRoles={['NURSE']}><NurseOnboarding /></RoleRoute>} />
-      <Route path="/nurse/bookings" element={<RoleRoute allowedRoles={['NURSE']}><div className="text-xl font-bold text-lav-dark">Trang lịch làm việc đang phát triển</div></RoleRoute>} />
-      <Route path="/nurse/checklist" element={<RoleRoute allowedRoles={['NURSE']}><div className="text-xl font-bold text-lav-dark">Trang AI checklist đang phát triển</div></RoleRoute>} />
-      <Route path="/nurse/revenue" element={<RoleRoute allowedRoles={['NURSE']}><div className="text-xl font-bold text-lav-dark">Trang doanh thu đang phát triển</div></RoleRoute>} />
+      <Route path="/nurse/bookings" element={<RoleRoute allowedRoles={['NURSE']}><NurseActiveRoute><NurseBookings /></NurseActiveRoute></RoleRoute>} />
+      <Route path="/nurse/checklist" element={<RoleRoute allowedRoles={['NURSE']}><NurseActiveRoute><NurseChecklist /></NurseActiveRoute></RoleRoute>} />
+      <Route path="/nurse/revenue" element={<RoleRoute allowedRoles={['NURSE']}><NurseActiveRoute><NurseRevenue /></NurseActiveRoute></RoleRoute>} />
       <Route path="/nurse/chat" element={<RoleRoute allowedRoles={['NURSE']}><ChatPage /></RoleRoute>} />
       <Route path="/nurse/profile" element={<RoleRoute allowedRoles={['NURSE']}><Profile /></RoleRoute>} />
 
