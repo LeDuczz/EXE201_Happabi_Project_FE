@@ -12,6 +12,10 @@ import ChatPage from './pages/ChatPage';
 import NurseBookings from './pages/nurse/Bookings';
 import NurseChecklist from './pages/nurse/Checklist';
 import NurseRevenue from './pages/nurse/Revenue';
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminUserManagement from './pages/admin/UserManagement';
+import AdminSystemConfig from './pages/admin/SystemConfig';
+import AdminAuditLogs from './pages/admin/AuditLogs';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import VerifyOtp from './pages/auth/VerifyOtp';
@@ -37,14 +41,14 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 const roleHomePath = (role: UserRole | null) => {
   if (role === 'NURSE') return '/nurse/onboarding';
   if (role === 'DOCTOR') return '/doctor/nurses/review';
-  if (role === 'ADMIN') return '/admin/nurses/review';
+  if (role === 'ADMIN') return '/admin/dashboard';
   return '/';
 };
 
 const roleDashboardPath = (role: UserRole | null) => {
   if (role === 'NURSE') return '/nurse/home';
   if (role === 'DOCTOR') return '/doctor/nurses/review';
-  if (role === 'ADMIN') return '/admin/nurses/review';
+  if (role === 'ADMIN') return '/admin/dashboard';
   if (role === 'MOTHER') return '/mother/home';
   return '/';
 };
@@ -116,6 +120,7 @@ const AppRoutes = () => (
 
     <Route path="/auth/mother" element={<GuestRoute><Login portalRole="MOTHER" /></GuestRoute>} />
     <Route path="/auth/nurse" element={<GuestRoute><Login portalRole="NURSE" /></GuestRoute>} />
+    <Route path="/auth/admin" element={<GuestRoute><Login portalRole="ADMIN" /></GuestRoute>} />
     <Route path="/login" element={<Navigate to="/auth/mother" replace />} />
     <Route path="/register/mother" element={<GuestRoute><Register role="MOTHER" /></GuestRoute>} />
     <Route path="/register/nurse" element={<GuestRoute><Register role="NURSE" /></GuestRoute>} />
@@ -151,7 +156,11 @@ const AppRoutes = () => (
       <Route path="/doctor/chat" element={<RoleRoute allowedRoles={['DOCTOR']}><ChatPage /></RoleRoute>} />
       <Route path="/doctor/profile" element={<RoleRoute allowedRoles={['DOCTOR']}><Profile /></RoleRoute>} />
 
+      <Route path="/admin/dashboard" element={<RoleRoute allowedRoles={['ADMIN']}><AdminDashboard /></RoleRoute>} />
       <Route path="/admin/nurses/review" element={<RoleRoute allowedRoles={['ADMIN']}><DoctorNurseReview /></RoleRoute>} />
+      <Route path="/admin/users" element={<RoleRoute allowedRoles={['ADMIN']}><AdminUserManagement /></RoleRoute>} />
+      <Route path="/admin/system-config" element={<RoleRoute allowedRoles={['ADMIN']}><AdminSystemConfig /></RoleRoute>} />
+      <Route path="/admin/audit-logs" element={<RoleRoute allowedRoles={['ADMIN']}><AdminAuditLogs /></RoleRoute>} />
       <Route path="/admin/chat" element={<RoleRoute allowedRoles={['ADMIN']}><ChatPage /></RoleRoute>} />
       <Route path="/admin/profile" element={<RoleRoute allowedRoles={['ADMIN']}><Profile /></RoleRoute>} />
     </Route>

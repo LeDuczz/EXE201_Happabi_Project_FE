@@ -1,4 +1,4 @@
-import { Calendar, ClipboardCheck, FileSearch, Home, LogOut, MessageCircle, Scale, Search, ShieldCheck, User, Wallet } from 'lucide-react';
+import { Calendar, ClipboardCheck, FileSearch, History, Home, LayoutDashboard, LogOut, MessageCircle, Scale, Search, Settings, ShieldCheck, User, Users, Wallet } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -28,8 +28,12 @@ const doctorMenus = [
 ];
 
 const adminMenus = [
-  { id: '/admin/nurses/review', icon: <FileSearch size={18} />, label: 'Duyệt hồ sơ nurse' },
-  { id: '/admin/chat', icon: <MessageCircle size={18} />, label: 'Chat & AI' },
+  { id: '/admin/dashboard', icon: <LayoutDashboard size={18} />, label: 'Tổng quan & GMV' },
+  { id: '/admin/nurses/review', icon: <ShieldCheck size={18} />, label: 'Phê duyệt Nurse' },
+  { id: '/admin/users', icon: <Users size={18} />, label: 'Quản lý người dùng' },
+  { id: '/admin/audit-logs', icon: <History size={18} />, label: 'Audit Logs' },
+  { id: '/admin/system-config', icon: <Settings size={18} />, label: 'Cấu hình hệ thống' },
+  { id: '/admin/chat', icon: <MessageCircle size={18} />, label: 'Hệ thống Chat' },
   { id: '/admin/profile', icon: <User size={18} />, label: 'Hồ sơ' },
 ];
 
@@ -74,11 +78,10 @@ const Sidebar = () => {
             <div
               key={item.id}
               onClick={() => navigate(item.id)}
-              className={`mb-[3px] flex cursor-pointer items-center gap-2.5 rounded-xl border-l-[3px] px-3.5 py-2.5 text-[13.5px] transition-all duration-150 ${
-                isActive
-                  ? 'border-lav-acc bg-[rgba(192,132,252,0.16)] font-bold text-white'
-                  : 'border-transparent bg-transparent font-normal text-white/50 hover:bg-white/5 hover:text-white/70'
-              }`}
+              className={`mb-[3px] flex cursor-pointer items-center gap-2.5 rounded-xl border-l-[3px] px-3.5 py-2.5 text-[13.5px] transition-all duration-150 ${isActive
+                ? 'border-lav-acc bg-[rgba(192,132,252,0.16)] font-bold text-white'
+                : 'border-transparent bg-transparent font-normal text-white/50 hover:bg-white/5 hover:text-white/70'
+                }`}
             >
               <span className="text-base">{item.icon}</span>
               {item.label}
