@@ -9,7 +9,7 @@ import { useAuth, type UserRole } from '../../contexts/AuthContext';
 import { PHONE_POLICY_MESSAGE, getVietnamPhoneError, normalizeVietnamPhone } from '../../utils/phonePolicy';
 
 interface LoginProps {
-  portalRole: Extract<UserRole, 'MOTHER' | 'NURSE'>;
+  portalRole: UserRole;
 }
 
 const getSocialUrl = (provider: 'Google' | 'Facebook') => {
@@ -56,6 +56,7 @@ const Login = ({ portalRole }: LoginProps) => {
   const submitInFlight = useRef(false);
 
   const isMother = portalRole === 'MOTHER';
+  const isAdmin = portalRole === 'ADMIN';
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -83,7 +84,12 @@ const Login = ({ portalRole }: LoginProps) => {
         throw new Error('LOGIN_RESPONSE_INVALID');
       }
       login({ accessToken: payload.accessToken, refreshToken: payload.refreshToken, user: payload.user, activeRole: portalRole });
-      navigate(portalRole === 'NURSE' ? '/nurse/onboarding' : '/', { replace: true });
+
+      let targetPath = '/';
+      if (portalRole === 'NURSE') targetPath = '/nurse/onboarding';
+      else if (portalRole === 'ADMIN') targetPath = '/admin/dashboard';
+
+      navigate(targetPath, { replace: true });
     } catch (err: any) {
       if (err.message === 'LOGIN_RESPONSE_INVALID') {
         setError('BE đã phản hồi login nhưng thiếu token hoặc thông tin account.');
@@ -97,7 +103,7 @@ const Login = ({ portalRole }: LoginProps) => {
   };
 
   const socialLogin = (provider: 'Google' | 'Facebook') => {
-  const url = getSocialUrl(provider);
+    const url = getSocialUrl(provider);
     if (!url) {
       setError('Thiếu cấu hình Cognito social login trong file .env frontend.');
       return;
@@ -134,100 +140,103 @@ const Login = ({ portalRole }: LoginProps) => {
       </div>
 
       <div className="flex items-center justify-center p-4">
-      <Card className="w-full max-w-[460px] rounded-[28px] p-7 shadow-[0_24px_70px_rgba(168,85,247,.13)]">
-        <div className="mb-6 text-center">
-          <Link to="/" className="mb-4 inline-flex items-center gap-2">
-            <img src="/image/logo.png" alt="Happabi" className="h-12 w-12 rounded-2xl object-cover" />
-            <span className="font-serif text-3xl font-black text-grad">Happabi</span>
-          </Link>
-          <h1 className="text-3xl font-black text-dark-200">
-            {isMother ? 'Đăng nhập Mother' : 'Đăng nhập Nurse'}
-          </h1>
-          <p className="mt-2 text-sm text-text-mid">
-            {isMother ? 'Google, Facebook hoặc số điện thoại và mật khẩu' : 'Nurse đăng nhập bằng số điện thoại và mật khẩu'}
-          </p>
-        </div>
-
-        <div className="mb-5 grid grid-cols-2 gap-2 rounded-2xl bg-lav-100 p-1">
-          <button type="button" onClick={() => navigate('/auth/mother')} className={`rounded-xl px-3 py-2 text-sm font-black ${isMother ? 'bg-white text-pink-dark shadow-sm' : 'text-text-mid'}`}>Mother</button>
-          <button type="button" onClick={() => navigate('/auth/nurse')} className={`rounded-xl px-3 py-2 text-sm font-black ${!isMother ? 'bg-white text-lav-dark shadow-sm' : 'text-text-mid'}`}>Nurse</button>
-        </div>
-
-        {isMother && (
-          <div className="mb-5 grid gap-3 sm:grid-cols-2">
-            <button
-              className="flex items-center justify-center gap-2 rounded-xl border border-lav-200 bg-white px-4 py-3 text-sm font-black text-text-dark shadow-sm"
-              onClick={() => socialLogin('Google')}
-              type="button"
-            >
-              <span className="text-lg">G</span> Google
-            </button>
-            <button
-              className="flex items-center justify-center gap-2 rounded-xl border border-lav-200 bg-white px-4 py-3 text-sm font-black text-text-dark shadow-sm"
-              onClick={() => socialLogin('Facebook')}
-              type="button"
-            >
-              <span className="text-lg font-black text-[#1877f2]">f</span> Facebook
-            </button>
-          </div>
-        )}
-
-        {error && (
-          <div className="mb-5 flex items-start gap-2 rounded-xl border border-red-200 bg-danger-bg p-3 text-sm text-danger">
-            <AlertCircle size={18} className="mt-0.5 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <Input
-            label="Số điện thoại"
-            placeholder="0912345678"
-            value={phone}
-            onChange={(event) => setPhone(event.target.value)}
-            icon={<Phone size={18} />}
-            hint={PHONE_POLICY_MESSAGE}
-            required
-          />
-          <Input
-            label="Mật khẩu"
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Nhập mật khẩu"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            icon={<Lock size={18} />}
-            required
-          />
-          <label className="mb-4 flex w-fit cursor-pointer items-center gap-2 text-sm font-bold text-text-mid">
-            <input
-              type="checkbox"
-              checked={showPassword}
-              onChange={(event) => setShowPassword(event.target.checked)}
-              className="h-4 w-4 accent-lav-dark"
-            />
-            Hiển thị mật khẩu
-          </label>
-          <div className="-mt-2 mb-4 text-right">
-            <Link to="/forgot-password" className="text-sm font-black text-lav-dark hover:underline">
-              Quên mật khẩu?
+        <Card className="w-full max-w-[460px] rounded-[28px] p-7 shadow-[0_24px_70px_rgba(168,85,247,.13)]">
+          <div className="mb-6 text-center">
+            <Link to="/" className="mb-4 inline-flex items-center gap-2">
+              <img src="/image/logo.png" alt="Happabi" className="h-12 w-12 rounded-2xl object-cover" />
+              <span className="font-serif text-3xl font-black text-grad">Happabi</span>
             </Link>
+            <h1 className="text-3xl font-black text-dark-200">
+              {isAdmin ? 'Quản trị hệ thống' : isMother ? 'Đăng nhập Mother' : 'Đăng nhập Nurse'}
+            </h1>
+            <p className="mt-2 text-sm text-text-mid">
+              {isAdmin
+                ? 'Sử dụng tài khoản quản trị để truy cập hệ thống'
+                : isMother ? 'Google, Facebook hoặc số điện thoại và mật khẩu' : 'Nurse đăng nhập bằng số điện thoại và mật khẩu'}
+            </p>
           </div>
-          <Btn full type="submit" disabled={isLoading} className="mt-2">
-            {isLoading ? 'Đang đăng nhập...' : (
-              <>
-                <ShieldCheck size={17} /> Đăng nhập
-              </>
-            )}
-          </Btn>
-        </form>
 
-        <p className="mt-6 text-center text-sm font-semibold text-text-mid">
-          Chưa có tài khoản?{' '}
-          <Link to={isMother ? '/register/mother' : '/register/nurse'} className="font-black text-lav-dark hover:underline">
-            Đăng ký ngay
-          </Link>
-        </p>
-      </Card>
+          <div className="mb-5 grid grid-cols-3 gap-2 rounded-2xl bg-lav-100 p-1">
+            <button type="button" onClick={() => navigate('/auth/mother')} className={`rounded-xl px-3 py-2 text-xs font-black ${isMother ? 'bg-white text-pink-dark shadow-sm' : 'text-text-mid'}`}>Mother</button>
+            <button type="button" onClick={() => navigate('/auth/nurse')} className={`rounded-xl px-3 py-2 text-xs font-black ${portalRole === 'NURSE' ? 'bg-white text-lav-dark shadow-sm' : 'text-text-mid'}`}>Nurse</button>
+            <button type="button" onClick={() => navigate('/auth/admin')} className={`rounded-xl px-3 py-2 text-xs font-black ${isAdmin ? 'bg-white text-dark-200 shadow-sm' : 'text-text-mid'}`}>Admin</button>
+          </div>
+
+          {isMother && (
+            <div className="mb-5 grid gap-3 sm:grid-cols-2">
+              <button
+                className="flex items-center justify-center gap-2 rounded-xl border border-lav-200 bg-white px-4 py-3 text-sm font-black text-text-dark shadow-sm"
+                onClick={() => socialLogin('Google')}
+                type="button"
+              >
+                <span className="text-lg">G</span> Google
+              </button>
+              <button
+                className="flex items-center justify-center gap-2 rounded-xl border border-lav-200 bg-white px-4 py-3 text-sm font-black text-text-dark shadow-sm"
+                onClick={() => socialLogin('Facebook')}
+                type="button"
+              >
+                <span className="text-lg font-black text-[#1877f2]">f</span> Facebook
+              </button>
+            </div>
+          )}
+
+          {error && (
+            <div className="mb-5 flex items-start gap-2 rounded-xl border border-red-200 bg-danger-bg p-3 text-sm text-danger">
+              <AlertCircle size={18} className="mt-0.5 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <Input
+              label="Số điện thoại"
+              placeholder="0912345678"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              icon={<Phone size={18} />}
+              hint={PHONE_POLICY_MESSAGE}
+              required
+            />
+            <Input
+              label="Mật khẩu"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Nhập mật khẩu"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              icon={<Lock size={18} />}
+              required
+            />
+            <label className="mb-4 flex w-fit cursor-pointer items-center gap-2 text-sm font-bold text-text-mid">
+              <input
+                type="checkbox"
+                checked={showPassword}
+                onChange={(event) => setShowPassword(event.target.checked)}
+                className="h-4 w-4 accent-lav-dark"
+              />
+              Hiển thị mật khẩu
+            </label>
+            <div className="-mt-2 mb-4 text-right">
+              <Link to="/forgot-password" className="text-sm font-black text-lav-dark hover:underline">
+                Quên mật khẩu?
+              </Link>
+            </div>
+            <Btn full type="submit" disabled={isLoading} className="mt-2">
+              {isLoading ? 'Đang đăng nhập...' : (
+                <>
+                  <ShieldCheck size={17} /> Đăng nhập
+                </>
+              )}
+            </Btn>
+          </form>
+
+          <p className="mt-6 text-center text-sm font-semibold text-text-mid">
+            Chưa có tài khoản?{' '}
+            <Link to={isMother ? '/register/mother' : '/register/nurse'} className="font-black text-lav-dark hover:underline">
+              Đăng ký ngay
+            </Link>
+          </p>
+        </Card>
       </div>
     </div>
   );
