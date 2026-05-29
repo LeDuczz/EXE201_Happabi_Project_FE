@@ -1,4 +1,21 @@
-import { Calendar, ClipboardCheck, FileSearch, History, Home, LayoutDashboard, LogOut, MessageCircle, Scale, Search, Settings, ShieldCheck, User, Users, Wallet } from 'lucide-react';
+import {
+  Calendar,
+  ClipboardCheck,
+  FileSearch,
+  History,
+  Home,
+  LayoutDashboard,
+  LogOut,
+  MessageCircle,
+  Scale,
+  Search,
+  Settings,
+  ShieldCheck,
+  Stethoscope,
+  User,
+  Users,
+  Wallet,
+} from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -29,7 +46,7 @@ const doctorMenus = [
 
 const adminMenus = [
   { id: '/admin/dashboard', icon: <LayoutDashboard size={18} />, label: 'Tổng quan & GMV' },
-  { id: '/admin/nurses/review', icon: <ShieldCheck size={18} />, label: 'Phê duyệt Nurse' },
+  { id: '/admin/doctors', icon: <Stethoscope size={18} />, label: 'Tạo tài khoản Doctor' },
   { id: '/admin/users', icon: <Users size={18} />, label: 'Quản lý người dùng' },
   { id: '/admin/audit-logs', icon: <History size={18} />, label: 'Audit Logs' },
   { id: '/admin/system-config', icon: <Settings size={18} />, label: 'Cấu hình hệ thống' },

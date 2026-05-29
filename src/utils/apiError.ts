@@ -23,6 +23,10 @@ const ERROR_TRANSLATIONS: Array<[RegExp, string]> = [
   [/Message must be at most 8000 characters/i, 'Tin nhắn không được vượt quá 8000 ký tự.'],
   [/Message is required/i, 'Vui lòng nhập nội dung tin nhắn.'],
   [/Title must be at most 160 characters/i, 'Tiêu đề hội thoại không được vượt quá 160 ký tự.'],
+  [/Doctor account already exists/i, 'Tài khoản doctor đã tồn tại.'],
+  [/Failed to create doctor account/i, 'Không tạo được tài khoản doctor. Vui lòng thử lại.'],
+  [/DOCTOR role not found/i, 'Backend chưa cấu hình role DOCTOR.'],
+  [/Email must be valid/i, 'Email không đúng định dạng.'],
   [/Phone number is required/i, 'Vui lòng nhập số điện thoại.'],
   [/Phone number must follow Vietnam E\.164 format/i, 'Số điện thoại không đúng định dạng Việt Nam.'],
   [/Password is required/i, 'Vui lòng nhập mật khẩu.'],
@@ -67,7 +71,7 @@ export const getApiErrorMessage = (err: any, fallback = 'Không thể xử lý y
   const message = validationMessage || data?.message || err?.message;
 
   if (err?.response?.status === 0 || err?.code === 'ERR_NETWORK') {
-    return 'Không kết nối được BE. Kiểm tra backend đang chạy và VITE_API_BASE_URL.';
+    return 'Không kết nối được server. Vui lòng kiểm tra kết nối mạng và thử lại.';
   }
 
   return translateApiMessage(message) || fallback;

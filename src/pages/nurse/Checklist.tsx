@@ -11,7 +11,6 @@ void checklistService;
 const Checklist = () => {
     const [items, setItems] = useState<ChecklistItem[]>([]);
     const [notes, setNotes] = useState('');
-    const [, setIsSubmitting] = useState(false);
 
     const MOCK_ITEMS: ChecklistItem[] = [
         { id: '1', task: 'Rửa tay sát khuẩn đúng quy trình 6 bước', completed: true, category: 'PRE_PROCEDURE' },

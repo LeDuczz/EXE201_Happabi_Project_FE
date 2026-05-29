@@ -268,7 +268,7 @@ const NurseOnboardingPage = () => {
       city: next.city || '',
     });
     setKycForm({
-      cccdNumber: next.kyc?.cccdNumberMasked || '',
+      cccdNumber: next.kyc?.cccdNumber || '',
       cccdName: next.kyc?.cccdName || '',
       cccdDob: next.kyc?.cccdDob || '',
       cccdAddress: next.kyc?.cccdAddress || '',

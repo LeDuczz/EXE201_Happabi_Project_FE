@@ -66,7 +66,7 @@ const initials = (name?: string) => {
 const dashboardPath = (role: string | null) => {
   if (role === 'NURSE') return '/nurse/home';
   if (role === 'DOCTOR') return '/doctor/nurses/review';
-  if (role === 'ADMIN') return '/admin/nurses/review';
+  if (role === 'ADMIN') return '/admin/dashboard';
   if (role === 'MOTHER') return '/mother/home';
   return '/';
 };

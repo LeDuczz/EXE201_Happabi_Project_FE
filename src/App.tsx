@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import Profile from './pages/Profile';
 import NurseOnboarding from './pages/NurseOnboarding';
 import DoctorNurseReview from './pages/DoctorNurseReview';
+import DoctorNurseReviewDetail from './pages/DoctorNurseReviewDetail';
 import ChatPage from './pages/ChatPage';
 import NurseBookings from './pages/nurse/Bookings';
 import NurseChecklist from './pages/nurse/Checklist';
@@ -16,6 +17,7 @@ import AdminDashboard from './pages/admin/Dashboard';
 import AdminUserManagement from './pages/admin/UserManagement';
 import AdminSystemConfig from './pages/admin/SystemConfig';
 import AdminAuditLogs from './pages/admin/AuditLogs';
+import AdminDoctorAccounts from './pages/admin/DoctorAccounts';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import VerifyOtp from './pages/auth/VerifyOtp';
@@ -120,6 +122,7 @@ const AppRoutes = () => (
 
     <Route path="/auth/mother" element={<GuestRoute><Login portalRole="MOTHER" /></GuestRoute>} />
     <Route path="/auth/nurse" element={<GuestRoute><Login portalRole="NURSE" /></GuestRoute>} />
+    <Route path="/auth/doctor" element={<GuestRoute><Login portalRole="DOCTOR" /></GuestRoute>} />
     <Route path="/auth/admin" element={<GuestRoute><Login portalRole="ADMIN" /></GuestRoute>} />
     <Route path="/login" element={<Navigate to="/auth/mother" replace />} />
     <Route path="/register/mother" element={<GuestRoute><Register role="MOTHER" /></GuestRoute>} />
@@ -153,11 +156,12 @@ const AppRoutes = () => (
       <Route path="/nurse/profile" element={<RoleRoute allowedRoles={['NURSE']}><Profile /></RoleRoute>} />
 
       <Route path="/doctor/nurses/review" element={<RoleRoute allowedRoles={['DOCTOR']}><DoctorNurseReview /></RoleRoute>} />
+      <Route path="/doctor/nurses/review/:profileId" element={<RoleRoute allowedRoles={['DOCTOR']}><DoctorNurseReviewDetail /></RoleRoute>} />
       <Route path="/doctor/chat" element={<RoleRoute allowedRoles={['DOCTOR']}><ChatPage /></RoleRoute>} />
       <Route path="/doctor/profile" element={<RoleRoute allowedRoles={['DOCTOR']}><Profile /></RoleRoute>} />
 
       <Route path="/admin/dashboard" element={<RoleRoute allowedRoles={['ADMIN']}><AdminDashboard /></RoleRoute>} />
-      <Route path="/admin/nurses/review" element={<RoleRoute allowedRoles={['ADMIN']}><DoctorNurseReview /></RoleRoute>} />
+      <Route path="/admin/doctors" element={<RoleRoute allowedRoles={['ADMIN']}><AdminDoctorAccounts /></RoleRoute>} />
       <Route path="/admin/users" element={<RoleRoute allowedRoles={['ADMIN']}><AdminUserManagement /></RoleRoute>} />
       <Route path="/admin/system-config" element={<RoleRoute allowedRoles={['ADMIN']}><AdminSystemConfig /></RoleRoute>} />
       <Route path="/admin/audit-logs" element={<RoleRoute allowedRoles={['ADMIN']}><AdminAuditLogs /></RoleRoute>} />

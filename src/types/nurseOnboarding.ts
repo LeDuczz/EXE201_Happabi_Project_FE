@@ -20,7 +20,7 @@ export interface CccdOcrExtraction {
 
 export interface NurseKyc {
   id?: string;
-  cccdNumberMasked?: string;
+  cccdNumber?: string;
   cccdName?: string;
   cccdDob?: string;
   cccdAddress?: string;
@@ -70,6 +70,7 @@ export interface NurseOnboarding {
   profileCompleted?: boolean;
   kycCompleted?: boolean;
   certificationsCompleted?: boolean;
+  certificationCount?: number;
   contractSigned?: boolean;
   kyc?: NurseKyc;
   certifications?: NurseCertification[];
