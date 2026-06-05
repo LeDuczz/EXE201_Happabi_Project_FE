@@ -1,4 +1,8 @@
 const ERROR_TRANSLATIONS: Array<[RegExp, string]> = [
+  [/Selected nurse is not available for booking/i, 'Nurse hiện không sẵn sàng nhận lịch. Vui lòng chọn nurse khác hoặc thử lại sau.'],
+  [/Selected booking slot is currently held by another user/i, 'Khung giờ này đang được người khác giữ tạm. Vui lòng chọn giờ khác.'],
+  [/Selected booking slot was already booked/i, 'Khung giờ này đã có lịch đặt. Vui lòng chọn giờ khác.'],
+  [/Service offering was not found/i, 'Không tìm thấy dịch vụ hoặc dịch vụ đã tạm ngừng.'],
   [/Nurse onboarding is incomplete/i, 'Hồ sơ nurse chưa đủ thông tin. Vui lòng hoàn tất thông tin cá nhân, CCCD và chứng chỉ.'],
   [/Nurse profile is locked for review/i, 'Hồ sơ đang được duyệt nên chưa thể chỉnh sửa.'],
   [/Only pending review profiles can be approved/i, 'Chỉ hồ sơ đang chờ duyệt mới có thể được phê duyệt.'],

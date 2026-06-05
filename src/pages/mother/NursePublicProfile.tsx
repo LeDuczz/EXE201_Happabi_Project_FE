@@ -1,13 +1,26 @@
-import { ArrowLeft, BadgeCheck, BriefcaseMedical, CalendarPlus, CheckCircle2, FileBadge, MapPin, Star } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import {
+  ArrowLeft,
+  BadgeCheck,
+  BriefcaseMedical,
+  CalendarPlus,
+  CheckCircle2,
+  Clock,
+  FileBadge,
+  MapPin,
+  PackageCheck,
+  Star,
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getMotherNurseProfile } from '../../api/motherNurseApi';
+import { getServiceOfferings } from '../../api/serviceOfferingApi';
 import Avatar from '../../components/common/Avatar';
 import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
 import Tag from '../../components/common/Tag';
 import Topbar from '../../components/layout/Topbar';
 import type { NursePublicProfile as NursePublicProfileType } from '../../types/nursePublic';
+import type { ServiceOffering, ServiceOfferingType } from '../../types/serviceOffering';
 import { getApiErrorMessage } from '../../utils/apiError';
 
 const specialtyLabel: Record<string, string> = {
@@ -22,11 +35,25 @@ const availabilityLabel: Record<string, string> = {
   OFFLINE: 'Tạm nghỉ',
 };
 
+const formatCurrency = (value?: number) =>
+  new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
+  }).format(value ?? 0);
+
 const getInitials = (name?: string) => {
   if (!name) return 'HB';
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
   return name.slice(0, 2).toUpperCase();
+};
+
+const durationText = (service: ServiceOffering) => {
+  if (service.serviceType === 'PACKAGE') {
+    return service.durationDays ? `${service.durationDays} ngày` : 'Theo gói';
+  }
+  return service.durationMinutes ? `${service.durationMinutes} phút` : 'Theo buổi';
 };
 
 const InfoMetric = ({ label, value }: { label: string; value: string | number }) => (
@@ -42,6 +69,11 @@ const NursePublicProfile = () => {
   const [profile, setProfile] = useState<NursePublicProfileType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [serviceType, setServiceType] = useState<ServiceOfferingType>('SINGLE');
+  const [services, setServices] = useState<ServiceOffering[]>([]);
+  const [selectedServiceId, setSelectedServiceId] = useState('');
+  const [isLoadingServices, setIsLoadingServices] = useState(false);
+  const [serviceError, setServiceError] = useState('');
 
   useEffect(() => {
     if (!profileId) return;
@@ -65,6 +97,54 @@ const NursePublicProfile = () => {
       ignore = true;
     };
   }, [profileId]);
+
+  useEffect(() => {
+    let ignore = false;
+    setIsLoadingServices(true);
+    setServiceError('');
+
+    getServiceOfferings(serviceType)
+      .then((data) => {
+        if (ignore) return;
+        setServices(data);
+        setSelectedServiceId((current) => {
+          if (current && data.some((service) => service.id === current)) return current;
+          return data[0]?.id ?? '';
+        });
+      })
+      .catch((err) => {
+        if (!ignore) {
+          setServices([]);
+          setSelectedServiceId('');
+          setServiceError(getApiErrorMessage(err));
+        }
+      })
+      .finally(() => {
+        if (!ignore) setIsLoadingServices(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [serviceType]);
+
+  const selectedService = useMemo(
+    () => services.find((service) => service.id === selectedServiceId),
+    [selectedServiceId, services],
+  );
+
+  const continueBooking = () => {
+    if (!profile || !selectedService) return;
+    navigate('/mother/bookings', {
+      state: {
+        nurseProfileId: profile.profileId,
+        nurseName: profile.fullName,
+        serviceOfferingId: selectedService.id,
+        serviceName: selectedService.serviceName,
+        grossAmount: selectedService.grossAmount,
+      },
+    });
+  };
 
   return (
     <>
@@ -117,8 +197,10 @@ const NursePublicProfile = () => {
 
                 <div className="rounded-2xl border border-white/80 bg-white/85 p-4 lg:w-[260px]">
                   <p className="text-[12px] font-bold text-text-light">Bước tiếp theo</p>
-                  <p className="mt-1 text-[14px] font-black text-text-dark">Xem hồ sơ và chuẩn bị đặt lịch chăm sóc.</p>
-                  <Btn full className="mt-4" onClick={() => navigate('/mother/bookings')}>
+                  <p className="mt-1 text-[14px] font-black text-text-dark">
+                    Chọn dịch vụ phù hợp rồi tiếp tục đặt lịch chăm sóc.
+                  </p>
+                  <Btn full className="mt-4" disabled={!selectedService} onClick={continueBooking}>
                     <CalendarPlus size={16} />
                     Đặt lịch
                   </Btn>
@@ -133,6 +215,106 @@ const NursePublicProfile = () => {
             <InfoMetric label="Ca hoàn thành" value={profile.totalCompletedJobs ?? 0} />
             <InfoMetric label="Chứng chỉ" value={profile.certificationCount ?? 0} />
           </div>
+
+          <Card>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <div className="mb-3 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-lav-100 text-lav-dark">
+                    <PackageCheck size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-serif text-[24px] font-black text-text-dark">Chọn dịch vụ</h3>
+                    <p className="mt-1 text-[13px] font-bold text-text-mid">
+                      Chọn dịch vụ lẻ hoặc gói chăm sóc trước khi đặt lịch.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="inline-flex rounded-2xl border border-lav-100 bg-lav-50 p-1">
+                  {(['SINGLE', 'PACKAGE'] as ServiceOfferingType[]).map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setServiceType(type)}
+                      className={`rounded-xl px-4 py-2 text-[13px] font-black transition ${
+                        serviceType === type
+                          ? 'bg-white text-lav-dark shadow-sm'
+                          : 'text-text-mid hover:text-lav-dark'
+                      }`}
+                    >
+                      {type === 'SINGLE' ? 'Dịch vụ lẻ' : 'Gói dịch vụ'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-lav-100 bg-white p-4 lg:w-[300px]">
+                <p className="text-[12px] font-bold text-text-light">Dịch vụ đang chọn</p>
+                <p className="mt-1 text-[16px] font-black text-text-dark">
+                  {selectedService?.serviceName || 'Chưa chọn dịch vụ'}
+                </p>
+                <p className="mt-2 text-[22px] font-black text-grad">
+                  {selectedService ? formatCurrency(selectedService.grossAmount) : formatCurrency(0)}
+                </p>
+                <Btn full className="mt-4" disabled={!selectedService} onClick={continueBooking}>
+                  <CalendarPlus size={16} />
+                  Tiếp tục đặt lịch
+                </Btn>
+              </div>
+            </div>
+
+            {serviceError && (
+              <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-bold text-red-700">
+                {serviceError}
+              </div>
+            )}
+
+            {isLoadingServices ? (
+              <div className="mt-5 rounded-2xl border border-dashed border-lav-200 bg-lav-50 p-6 text-center text-[13px] font-bold text-text-mid">
+                Đang tải bảng dịch vụ...
+              </div>
+            ) : (
+              <div className="mt-5 grid gap-3 lg:grid-cols-3">
+                {services.map((service) => {
+                  const selected = service.id === selectedServiceId;
+                  return (
+                    <button
+                      key={service.id}
+                      type="button"
+                      onClick={() => setSelectedServiceId(service.id)}
+                      className={`min-h-[174px] rounded-2xl border p-4 text-left transition hover:-translate-y-[1px] ${
+                        selected
+                          ? 'border-lav-400 bg-lav-50 shadow-[0_12px_30px_rgba(168,85,247,0.13)]'
+                          : 'border-lav-100 bg-white hover:border-lav-300'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[12px] font-black text-lav-dark">{service.groupName || 'Happabi'}</p>
+                          <h4 className="mt-1 text-[15px] font-black leading-5 text-text-dark">{service.serviceName}</h4>
+                        </div>
+                        {selected && <CheckCircle2 className="shrink-0 text-verified" size={18} />}
+                      </div>
+
+                      <div className="mt-3 flex items-center gap-2 text-[12px] font-bold text-text-mid">
+                        <Clock size={14} />
+                        {durationText(service)}
+                      </div>
+
+                      {(service.fitDescription || service.packageContent) && (
+                        <p className="mt-3 line-clamp-3 text-[12px] font-bold leading-5 text-text-mid">
+                          {service.fitDescription || service.packageContent}
+                        </p>
+                      )}
+
+                      <p className="mt-4 text-[18px] font-black text-grad">{formatCurrency(service.grossAmount)}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
 
           <div className="grid gap-6 xl:grid-cols-[1.3fr_.9fr]">
             <Card>

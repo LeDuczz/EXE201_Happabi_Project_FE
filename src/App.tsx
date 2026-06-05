@@ -17,6 +17,8 @@ import NurseProfile from './pages/nurse/Profile';
 import NurseRevenue from './pages/nurse/Revenue';
 import MotherNursePublicProfile from './pages/mother/NursePublicProfile';
 import MotherNurseSearch from './pages/mother/NurseSearch';
+import MotherNurseCompare from './pages/mother/NurseCompare';
+import MotherBookings from './pages/mother/Bookings';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminUserManagement from './pages/admin/UserManagement';
 import AdminSystemConfig from './pages/admin/SystemConfig';
@@ -179,8 +181,8 @@ const AppRoutes = () => (
       <Route path="/mother/home" element={<RoleRoute allowedRoles={['MOTHER']}><Home /></RoleRoute>} />
       <Route path="/mother/search" element={<RoleRoute allowedRoles={['MOTHER']}><MotherNurseSearch /></RoleRoute>} />
       <Route path="/mother/nurses/:profileId" element={<RoleRoute allowedRoles={['MOTHER']}><MotherNursePublicProfile /></RoleRoute>} />
-      <Route path="/mother/compare" element={<RoleRoute allowedRoles={['MOTHER']}><div className="text-xl font-bold text-lav-dark">Trang so sÃ¡nh / checklist Ä‘ang phÃ¡t triá»ƒn</div></RoleRoute>} />
-      <Route path="/mother/bookings" element={<RoleRoute allowedRoles={['MOTHER']}><div className="text-xl font-bold text-lav-dark">Trang lá»‹ch háº¹n Ä‘ang phÃ¡t triá»ƒn</div></RoleRoute>} />
+      <Route path="/mother/compare" element={<RoleRoute allowedRoles={['MOTHER']}><MotherNurseCompare /></RoleRoute>} />
+      <Route path="/mother/bookings" element={<RoleRoute allowedRoles={['MOTHER']}><MotherBookings /></RoleRoute>} />
       <Route path="/mother/chat" element={<RoleRoute allowedRoles={['MOTHER']}><ChatPage /></RoleRoute>} />
       <Route path="/mother/profile" element={<RoleRoute allowedRoles={['MOTHER']}><Profile /></RoleRoute>} />
 

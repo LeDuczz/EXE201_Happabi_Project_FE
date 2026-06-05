@@ -1,5 +1,28 @@
 import axiosClient from './axiosClient';
 
+export interface CreateBookingDraftPayload {
+    nurseProfileId: string;
+    serviceOfferingId: string;
+    startAt: string;
+    serviceAddress: string;
+    motherNote?: string;
+}
+
+export interface BookingDraft {
+    draftId: string;
+    nurseProfileId: string;
+    nurseName: string;
+    serviceOfferingId: string;
+    serviceName: string;
+    status: 'DRAFT' | 'PENDING_PAYMENT' | 'PENDING_NURSE_ACCEPTANCE' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED';
+    startAt: string;
+    endAt: string;
+    holdExpiresAt: string;
+    grossAmount: number;
+    serviceAddress: string;
+    motherNote?: string;
+}
+
 export interface Booking {
     id: string;
     motherName: string;
@@ -13,6 +36,11 @@ export interface Booking {
 }
 
 const bookingService = {
+    createDraft: async (payload: CreateBookingDraftPayload) => {
+        const response = await axiosClient.post('/api/v1/bookings/drafts', payload);
+        return response.data?.data as BookingDraft;
+    },
+
     getMyBookings: () => axiosClient.get('/api/v1/bookings/me'),
 
     getNurseSchedule: () => axiosClient.get('/api/v1/nurses/me/bookings'),
