@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+﻿import { useEffect, useState, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import axiosClient from './api/axiosClient';
@@ -9,15 +9,20 @@ import Profile from './pages/Profile';
 import NurseOnboarding from './pages/NurseOnboarding';
 import DoctorNurseReview from './pages/DoctorNurseReview';
 import DoctorNurseReviewDetail from './pages/DoctorNurseReviewDetail';
+import DoctorProfile from './pages/doctor/Profile';
 import ChatPage from './pages/ChatPage';
 import NurseBookings from './pages/nurse/Bookings';
 import NurseChecklist from './pages/nurse/Checklist';
+import NurseProfile from './pages/nurse/Profile';
 import NurseRevenue from './pages/nurse/Revenue';
+import MotherNursePublicProfile from './pages/mother/NursePublicProfile';
+import MotherNurseSearch from './pages/mother/NurseSearch';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminUserManagement from './pages/admin/UserManagement';
 import AdminSystemConfig from './pages/admin/SystemConfig';
 import AdminAuditLogs from './pages/admin/AuditLogs';
 import AdminDoctorAccounts from './pages/admin/DoctorAccounts';
+import AdminProfile from './pages/admin/Profile';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import VerifyOtp from './pages/auth/VerifyOtp';
@@ -116,6 +121,37 @@ const NurseActiveRoute = ({ children }: { children: ReactNode }) => {
   return <>{children}</>;
 };
 
+const NurseOnboardingRoute = ({ children }: { children: ReactNode }) => {
+  const { primaryRole } = useAuth();
+  const [status, setStatus] = useState<'loading' | 'active' | 'editable'>('loading');
+
+  useEffect(() => {
+    if (primaryRole !== 'NURSE') {
+      setStatus('editable');
+      return;
+    }
+
+    let ignore = false;
+    axiosClient.get('/api/v1/nurses/me/onboarding')
+      .then((response) => {
+        if (ignore) return;
+        const nurseStatus = response.data?.data?.nurseStatus;
+        setStatus(nurseStatus === 'ACTIVE' ? 'active' : 'editable');
+      })
+      .catch(() => {
+        if (!ignore) setStatus('editable');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [primaryRole]);
+
+  if (status === 'loading') return <LoadingScreen />;
+  if (status === 'active') return <Navigate to="/nurse/home" replace />;
+  return <>{children}</>;
+};
+
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<LandingPage />} />
@@ -141,24 +177,25 @@ const AppRoutes = () => (
       <Route path="/profile" element={<RoleRedirect paths={{ MOTHER: '/mother/profile', NURSE: '/nurse/profile', DOCTOR: '/doctor/profile', ADMIN: '/admin/profile' }} />} />
 
       <Route path="/mother/home" element={<RoleRoute allowedRoles={['MOTHER']}><Home /></RoleRoute>} />
-      <Route path="/mother/search" element={<RoleRoute allowedRoles={['MOTHER']}><div className="text-xl font-bold text-lav-dark">Trang tìm kiếm đang phát triển</div></RoleRoute>} />
-      <Route path="/mother/compare" element={<RoleRoute allowedRoles={['MOTHER']}><div className="text-xl font-bold text-lav-dark">Trang so sánh / checklist đang phát triển</div></RoleRoute>} />
-      <Route path="/mother/bookings" element={<RoleRoute allowedRoles={['MOTHER']}><div className="text-xl font-bold text-lav-dark">Trang lịch hẹn đang phát triển</div></RoleRoute>} />
+      <Route path="/mother/search" element={<RoleRoute allowedRoles={['MOTHER']}><MotherNurseSearch /></RoleRoute>} />
+      <Route path="/mother/nurses/:profileId" element={<RoleRoute allowedRoles={['MOTHER']}><MotherNursePublicProfile /></RoleRoute>} />
+      <Route path="/mother/compare" element={<RoleRoute allowedRoles={['MOTHER']}><div className="text-xl font-bold text-lav-dark">Trang so sÃ¡nh / checklist Ä‘ang phÃ¡t triá»ƒn</div></RoleRoute>} />
+      <Route path="/mother/bookings" element={<RoleRoute allowedRoles={['MOTHER']}><div className="text-xl font-bold text-lav-dark">Trang lá»‹ch háº¹n Ä‘ang phÃ¡t triá»ƒn</div></RoleRoute>} />
       <Route path="/mother/chat" element={<RoleRoute allowedRoles={['MOTHER']}><ChatPage /></RoleRoute>} />
       <Route path="/mother/profile" element={<RoleRoute allowedRoles={['MOTHER']}><Profile /></RoleRoute>} />
 
       <Route path="/nurse/home" element={<RoleRoute allowedRoles={['NURSE']}><NurseActiveRoute><Home /></NurseActiveRoute></RoleRoute>} />
-      <Route path="/nurse/onboarding" element={<RoleRoute allowedRoles={['NURSE']}><NurseOnboarding /></RoleRoute>} />
+      <Route path="/nurse/onboarding" element={<RoleRoute allowedRoles={['NURSE']}><NurseOnboardingRoute><NurseOnboarding /></NurseOnboardingRoute></RoleRoute>} />
       <Route path="/nurse/bookings" element={<RoleRoute allowedRoles={['NURSE']}><NurseActiveRoute><NurseBookings /></NurseActiveRoute></RoleRoute>} />
       <Route path="/nurse/checklist" element={<RoleRoute allowedRoles={['NURSE']}><NurseActiveRoute><NurseChecklist /></NurseActiveRoute></RoleRoute>} />
       <Route path="/nurse/revenue" element={<RoleRoute allowedRoles={['NURSE']}><NurseActiveRoute><NurseRevenue /></NurseActiveRoute></RoleRoute>} />
       <Route path="/nurse/chat" element={<RoleRoute allowedRoles={['NURSE']}><ChatPage /></RoleRoute>} />
-      <Route path="/nurse/profile" element={<RoleRoute allowedRoles={['NURSE']}><Profile /></RoleRoute>} />
+      <Route path="/nurse/profile" element={<RoleRoute allowedRoles={['NURSE']}><NurseProfile /></RoleRoute>} />
 
       <Route path="/doctor/nurses/review" element={<RoleRoute allowedRoles={['DOCTOR']}><DoctorNurseReview /></RoleRoute>} />
       <Route path="/doctor/nurses/review/:profileId" element={<RoleRoute allowedRoles={['DOCTOR']}><DoctorNurseReviewDetail /></RoleRoute>} />
       <Route path="/doctor/chat" element={<RoleRoute allowedRoles={['DOCTOR']}><ChatPage /></RoleRoute>} />
-      <Route path="/doctor/profile" element={<RoleRoute allowedRoles={['DOCTOR']}><Profile /></RoleRoute>} />
+      <Route path="/doctor/profile" element={<RoleRoute allowedRoles={['DOCTOR']}><DoctorProfile /></RoleRoute>} />
 
       <Route path="/admin/dashboard" element={<RoleRoute allowedRoles={['ADMIN']}><AdminDashboard /></RoleRoute>} />
       <Route path="/admin/doctors" element={<RoleRoute allowedRoles={['ADMIN']}><AdminDoctorAccounts /></RoleRoute>} />
@@ -166,7 +203,7 @@ const AppRoutes = () => (
       <Route path="/admin/system-config" element={<RoleRoute allowedRoles={['ADMIN']}><AdminSystemConfig /></RoleRoute>} />
       <Route path="/admin/audit-logs" element={<RoleRoute allowedRoles={['ADMIN']}><AdminAuditLogs /></RoleRoute>} />
       <Route path="/admin/chat" element={<RoleRoute allowedRoles={['ADMIN']}><ChatPage /></RoleRoute>} />
-      <Route path="/admin/profile" element={<RoleRoute allowedRoles={['ADMIN']}><Profile /></RoleRoute>} />
+      <Route path="/admin/profile" element={<RoleRoute allowedRoles={['ADMIN']}><AdminProfile /></RoleRoute>} />
     </Route>
 
     <Route path="*" element={<Navigate to="/" replace />} />

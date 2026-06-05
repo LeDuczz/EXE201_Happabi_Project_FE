@@ -16,7 +16,9 @@ import {
   Users,
   Wallet,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import axiosClient from '../../api/axiosClient';
 import { useAuth } from '../../contexts/AuthContext';
 
 const motherMenus = [
@@ -58,8 +60,34 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, primaryRole } = useAuth();
+  const [nurseStatus, setNurseStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (primaryRole !== 'NURSE') {
+      setNurseStatus(null);
+      return;
+    }
+
+    let ignore = false;
+    axiosClient.get('/api/v1/nurses/me/onboarding')
+      .then((response) => {
+        if (!ignore) setNurseStatus(response.data?.data?.nurseStatus ?? null);
+      })
+      .catch(() => {
+        if (!ignore) setNurseStatus(null);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [primaryRole]);
+
+  const visibleNurseMenus = nurseStatus === 'ACTIVE'
+    ? nurseMenus.filter((item) => item.id !== '/nurse/onboarding')
+    : nurseMenus;
+
   const menus = primaryRole === 'NURSE'
-    ? nurseMenus
+    ? visibleNurseMenus
     : primaryRole === 'DOCTOR'
       ? doctorMenus
       : primaryRole === 'ADMIN'
