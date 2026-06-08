@@ -48,6 +48,17 @@ const translateResponseError = (error: AxiosError) => {
   }
 };
 
+const isAuthenticationFailure = (error: AxiosError) => {
+  const data = error.response?.data as any;
+  const code = typeof data?.error === 'string' ? data.error : '';
+  return !code || [
+    'AUTH_FAILED',
+    'ACCESS_TOKEN_INVALID',
+    'TOKEN_EXPIRED',
+    'UNAUTHORIZED',
+  ].includes(code);
+};
+
 const clearStoredAuth = () => {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
@@ -107,7 +118,8 @@ axiosClient.interceptors.response.use(
       originalRequest &&
       !originalRequest._retry &&
       !isAuthEndpoint &&
-      Boolean(localStorage.getItem(TOKEN_KEY));
+      Boolean(localStorage.getItem(TOKEN_KEY)) &&
+      isAuthenticationFailure(error);
 
     if (shouldRefresh) {
       try {

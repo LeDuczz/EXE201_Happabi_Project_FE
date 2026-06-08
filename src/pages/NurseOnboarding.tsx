@@ -6,7 +6,7 @@ import Card from '../components/common/Card';
 import Input from '../components/common/Input';
 import Topbar from '../components/layout/Topbar';
 import { useAuth } from '../contexts/AuthContext';
-import type { CccdOcrExtraction, NurseOnboarding, NurseSpecialty, NurseStatus } from '../types/nurseOnboarding';
+import type { CccdOcrExtraction, NurseOnboarding, NurseSkillCode, NurseSpecialty, NurseStatus } from '../types/nurseOnboarding';
 import { getApiErrorMessage, translateApiMessage } from '../utils/apiError';
 
 const toIsoDate = (raw?: string) => {
@@ -188,6 +188,29 @@ const emptyOnboarding: NurseOnboarding = {
   certifications: [],
 };
 
+const nurseSkillOptions: Array<{ code: NurseSkillCode; label: string; group: string }> = [
+  { code: 'POSTPARTUM_RECOVERY_MASSAGE', label: 'Massage phục hồi sau sinh', group: 'Chăm sóc mẹ sau sinh' },
+  { code: 'PRENATAL_RELAXATION_MASSAGE', label: 'Massage thư giãn mẹ bầu', group: 'Chăm sóc mẹ sau sinh' },
+  { code: 'FOOT_PAIN_RELIEF_MASSAGE', label: 'Massage giảm đau vai gáy', group: 'Chăm sóc mẹ sau sinh' },
+  { code: 'POSTPARTUM_BACK_SHOULDER_NECK_MASSAGE', label: 'Massage bụng giảm mỡ sau sinh', group: 'Chăm sóc mẹ sau sinh' },
+  { code: 'LACTATION_STIMULATION', label: 'Kích sữa', group: 'Chăm sóc mẹ sau sinh' },
+  { code: 'BLOCKED_MILK_DUCT_SUPPORT', label: 'Thông tắc tia sữa', group: 'Chăm sóc mẹ sau sinh' },
+  { code: 'BREAST_CARE', label: 'Chăm sóc tuyến vú', group: 'Chăm sóc mẹ sau sinh' },
+  { code: 'BREASTFEEDING_POSITION_GUIDANCE', label: 'Hướng dẫn cho bé bú đúng tư thế', group: 'Chăm sóc mẹ sau sinh' },
+  { code: 'POSTPARTUM_HEALTH_MONITORING', label: 'Theo dõi sức khỏe mẹ sau sinh', group: 'Chăm sóc mẹ sau sinh' },
+  { code: 'NEWBORN_BATHING', label: 'Tắm bé sơ sinh', group: 'Chăm sóc bé sơ sinh' },
+  { code: 'NEWBORN_BASIC_CARE', label: 'Vệ sinh rốn cho bé', group: 'Chăm sóc bé sơ sinh' },
+  { code: 'NEWBORN_HEALTH_MONITORING', label: 'Theo dõi sức khỏe bé sơ sinh', group: 'Chăm sóc bé sơ sinh' },
+  { code: 'NEWBORN_SKIN_CARE', label: 'Chăm sóc da cho bé', group: 'Chăm sóc bé sơ sinh' },
+  { code: 'HOME_NEWBORN_CARE_GUIDANCE', label: 'Hướng dẫn chăm sóc bé tại nhà', group: 'Chăm sóc bé sơ sinh' },
+  { code: 'NEWBORN_WARNING_SIGN_RECOGNITION', label: 'Nhận biết dấu hiệu bất thường ở trẻ sơ sinh', group: 'Chăm sóc bé sơ sinh' },
+  { code: 'PARENT_COMMUNICATION', label: 'Giao tiếp với phụ huynh', group: 'Kỹ năng mềm' },
+  { code: 'MOTHER_BABY_CONSULTING', label: 'Tư vấn chăm sóc mẹ & bé', group: 'Kỹ năng mềm' },
+  { code: 'SITUATION_HANDLING', label: 'Xử lý tình huống', group: 'Kỹ năng mềm' },
+  { code: 'CUSTOMER_CARE', label: 'Chăm sóc khách hàng', group: 'Kỹ năng mềm' },
+  { code: 'SCHEDULE_MANAGEMENT', label: 'Quản lý lịch hẹn', group: 'Kỹ năng mềm' },
+];
+
 const wizardSteps = [
   { title: 'Thông tin cá nhân', description: 'Nghề nghiệp và khu vực phục vụ' },
   { title: 'CCCD/KYC', description: 'OCR local hoặc nhập tay' },
@@ -222,6 +245,7 @@ const NurseOnboardingPage = () => {
     serviceArea: '',
     address: '',
     city: '',
+    skills: [] as NurseSkillCode[],
   });
 
   const [kycForm, setKycForm] = useState({
@@ -266,6 +290,7 @@ const NurseOnboardingPage = () => {
       serviceArea: next.serviceArea || '',
       address: next.address || '',
       city: next.city || '',
+      skills: (next.skills || []).map((skill) => skill.skill),
     });
     setKycForm({
       cccdNumber: next.kyc?.cccdNumber || '',
@@ -311,6 +336,7 @@ const NurseOnboardingPage = () => {
       const response = await axiosClient.patch('/api/v1/nurses/me/onboarding/profile', {
         ...profileForm,
         experienceYears: profileForm.experienceYears === '' ? null : Number(profileForm.experienceYears),
+        skills: profileForm.skills,
       });
       hydrateForms(response.data?.data);
       setSuccess('Đã lưu thông tin cá nhân.');
@@ -569,6 +595,54 @@ const NurseOnboardingPage = () => {
               <Input label="Thành phố" value={profileForm.city} disabled={!editable} onChange={(e) => setProfileForm((cur) => ({ ...cur, city: e.target.value }))} />
             </div>
             <Input label="Địa chỉ" value={profileForm.address} disabled={!editable} onChange={(e) => setProfileForm((cur) => ({ ...cur, address: e.target.value }))} />
+            <div className="mb-4 rounded-2xl border border-lav-100 bg-[#fff9fb] p-4">
+              <div className="mb-3">
+                <div className="text-[13px] font-black text-text-dark">Kỹ năng có thể nhận dịch vụ</div>
+                <div className="mt-1 text-xs font-bold text-text-light">
+                  Nurse tự khai báo, doctor sẽ xác minh khi duyệt hồ sơ. Booking chỉ dùng kỹ năng đã xác minh.
+                </div>
+              </div>
+              <div className="grid gap-4 lg:grid-cols-3">
+                {['Chăm sóc mẹ sau sinh', 'Chăm sóc bé sơ sinh', 'Kỹ năng mềm'].map((group) => (
+                  <div key={group}>
+                    <p className="mb-2 text-xs font-black uppercase tracking-wide text-lav-dark">{group}</p>
+                    <div className="space-y-2">
+                      {nurseSkillOptions.filter((option) => option.group === group).map((option) => {
+                        const checked = profileForm.skills.includes(option.code);
+                        const verified = data.skills?.some((skill) => skill.skill === option.code && skill.verified);
+                        return (
+                          <label
+                            key={option.code}
+                            className={`flex cursor-pointer items-start gap-2 rounded-xl border px-3 py-2 text-xs font-bold ${
+                              checked ? 'border-lav-300 bg-white text-text-dark' : 'border-lav-100 bg-white/60 text-text-mid'
+                            } ${!editable ? 'cursor-not-allowed opacity-75' : ''}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              disabled={!editable}
+                              onChange={(event) => {
+                                setProfileForm((current) => ({
+                                  ...current,
+                                  skills: event.target.checked
+                                    ? [...current.skills, option.code]
+                                    : current.skills.filter((skill) => skill !== option.code),
+                                }));
+                              }}
+                              className="mt-0.5 h-4 w-4 accent-lav-dark"
+                            />
+                            <span>
+                              <span>{option.label}</span>
+                              {verified && <span className="ml-2 text-green-700">Đã xác minh</span>}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
             <div className="mb-4">
               <div className="mb-1.5 text-[12.5px] font-bold tracking-[0.3px] text-text-mid">Giới thiệu ngắn</div>
               <textarea

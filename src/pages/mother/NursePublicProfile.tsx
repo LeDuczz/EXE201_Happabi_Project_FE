@@ -13,7 +13,6 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getMotherNurseProfile } from '../../api/motherNurseApi';
-import { getServiceOfferings } from '../../api/serviceOfferingApi';
 import Avatar from '../../components/common/Avatar';
 import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
@@ -70,10 +69,7 @@ const NursePublicProfile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [serviceType, setServiceType] = useState<ServiceOfferingType>('SINGLE');
-  const [services, setServices] = useState<ServiceOffering[]>([]);
   const [selectedServiceId, setSelectedServiceId] = useState('');
-  const [isLoadingServices, setIsLoadingServices] = useState(false);
-  const [serviceError, setServiceError] = useState('');
 
   useEffect(() => {
     if (!profileId) return;
@@ -98,35 +94,17 @@ const NursePublicProfile = () => {
     };
   }, [profileId]);
 
+  const services = useMemo(
+    () => (profile?.eligibleServiceOfferings || []).filter((service) => service.serviceType === serviceType),
+    [profile?.eligibleServiceOfferings, serviceType],
+  );
+
   useEffect(() => {
-    let ignore = false;
-    setIsLoadingServices(true);
-    setServiceError('');
-
-    getServiceOfferings(serviceType)
-      .then((data) => {
-        if (ignore) return;
-        setServices(data);
-        setSelectedServiceId((current) => {
-          if (current && data.some((service) => service.id === current)) return current;
-          return data[0]?.id ?? '';
-        });
-      })
-      .catch((err) => {
-        if (!ignore) {
-          setServices([]);
-          setSelectedServiceId('');
-          setServiceError(getApiErrorMessage(err));
-        }
-      })
-      .finally(() => {
-        if (!ignore) setIsLoadingServices(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, [serviceType]);
+    setSelectedServiceId((current) => {
+      if (current && services.some((service) => service.id === current)) return current;
+      return services[0]?.id ?? '';
+    });
+  }, [services]);
 
   const selectedService = useMemo(
     () => services.find((service) => service.id === selectedServiceId),
@@ -198,7 +176,7 @@ const NursePublicProfile = () => {
                 <div className="rounded-2xl border border-white/80 bg-white/85 p-4 lg:w-[260px]">
                   <p className="text-[12px] font-bold text-text-light">Bước tiếp theo</p>
                   <p className="mt-1 text-[14px] font-black text-text-dark">
-                    Chọn dịch vụ phù hợp rồi tiếp tục đặt lịch chăm sóc.
+                    Chọn dịch vụ nurse đủ kỹ năng rồi tiếp tục đặt lịch chăm sóc.
                   </p>
                   <Btn full className="mt-4" disabled={!selectedService} onClick={continueBooking}>
                     <CalendarPlus size={16} />
@@ -226,7 +204,7 @@ const NursePublicProfile = () => {
                   <div>
                     <h3 className="font-serif text-[24px] font-black text-text-dark">Chọn dịch vụ</h3>
                     <p className="mt-1 text-[13px] font-bold text-text-mid">
-                      Chọn dịch vụ lẻ hoặc gói chăm sóc trước khi đặt lịch.
+                      Chỉ hiển thị dịch vụ/gói phù hợp với kỹ năng đã xác minh của nurse.
                     </p>
                   </div>
                 </div>
@@ -264,17 +242,7 @@ const NursePublicProfile = () => {
               </div>
             </div>
 
-            {serviceError && (
-              <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-bold text-red-700">
-                {serviceError}
-              </div>
-            )}
-
-            {isLoadingServices ? (
-              <div className="mt-5 rounded-2xl border border-dashed border-lav-200 bg-lav-50 p-6 text-center text-[13px] font-bold text-text-mid">
-                Đang tải bảng dịch vụ...
-              </div>
-            ) : (
+            {services.length ? (
               <div className="mt-5 grid gap-3 lg:grid-cols-3">
                 {services.map((service) => {
                   const selected = service.id === selectedServiceId;
@@ -313,6 +281,10 @@ const NursePublicProfile = () => {
                   );
                 })}
               </div>
+            ) : (
+              <div className="mt-5 rounded-2xl border border-dashed border-lav-200 bg-lav-50 p-6 text-center text-[13px] font-bold text-text-mid">
+                Nurse này chưa có kỹ năng đã xác minh phù hợp với nhóm dịch vụ này.
+              </div>
             )}
           </Card>
 
@@ -327,6 +299,19 @@ const NursePublicProfile = () => {
               <p className="text-[14px] font-bold leading-7 text-text-mid">
                 {profile.bio || 'Nurse chưa cập nhật phần giới thiệu.'}
               </p>
+
+              {!!profile.skills?.length && (
+                <div className="mt-5">
+                  <p className="mb-3 text-[13px] font-black text-text-dark">Kỹ năng đã xác minh</p>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.skills.map((skill) => (
+                      <span key={skill.skill} className="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-[12px] font-black text-green-700">
+                        {skill.label || skill.skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 <div className="rounded-2xl border border-lav-100 bg-white p-4">

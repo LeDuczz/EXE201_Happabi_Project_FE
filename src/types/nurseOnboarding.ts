@@ -8,6 +8,36 @@ export type NurseStatus =
 
 export type NurseSpecialty = 'NURSE' | 'MIDWIFE' | 'CAREGIVER';
 
+export type NurseSkillCode =
+  | 'POSTPARTUM_RECOVERY_MASSAGE'
+  | 'PRENATAL_RELAXATION_MASSAGE'
+  | 'FOOT_PAIN_RELIEF_MASSAGE'
+  | 'POSTPARTUM_BACK_SHOULDER_NECK_MASSAGE'
+  | 'LACTATION_STIMULATION'
+  | 'BLOCKED_MILK_DUCT_SUPPORT'
+  | 'BREAST_CARE'
+  | 'BREASTFEEDING_POSITION_GUIDANCE'
+  | 'POSTPARTUM_HEALTH_MONITORING'
+  | 'NEWBORN_BATHING'
+  | 'NEWBORN_BASIC_CARE'
+  | 'NEWBORN_HEALTH_MONITORING'
+  | 'NEWBORN_SKIN_CARE'
+  | 'HOME_NEWBORN_CARE_GUIDANCE'
+  | 'NEWBORN_WARNING_SIGN_RECOGNITION'
+  | 'PARENT_COMMUNICATION'
+  | 'MOTHER_BABY_CONSULTING'
+  | 'SITUATION_HANDLING'
+  | 'CUSTOMER_CARE'
+  | 'SCHEDULE_MANAGEMENT';
+
+export interface NurseSkill {
+  skill: NurseSkillCode;
+  label?: string;
+  groupName?: string;
+  verified?: boolean;
+  verifiedAt?: string;
+}
+
 export interface CccdOcrExtraction {
   cccdNumber?: string;
   cccdName?: string;
@@ -74,5 +104,6 @@ export interface NurseOnboarding {
   contractSigned?: boolean;
   kyc?: NurseKyc;
   certifications?: NurseCertification[];
+  skills?: NurseSkill[];
   latestContract?: NurseContract;
 }

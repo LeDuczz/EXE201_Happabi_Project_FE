@@ -1,187 +1,201 @@
-import { useMemo, useState } from 'react';
-import { CalendarDays, Check, Clock, MapPin, Phone, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { CalendarDays, Clock, Loader2, MapPin, PlayCircle, RefreshCw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../../components/common/Card';
 import Btn from '../../components/common/Btn';
 import Avatar from '../../components/common/Avatar';
 import Topbar from '../../components/layout/Topbar';
-import type { Booking } from '../../api/bookingService';
+import workSessionApi from '../../api/workSessionApi';
+import type { WorkSession, WorkSessionStatus } from '../../types/workSession';
+import { getApiErrorMessage } from '../../utils/apiError';
 
-const mockBookings: Booking[] = [
-  {
-    id: 'B001',
-    motherName: 'Chị Ngọc Hà',
-    service: 'Chăm sóc hậu sản',
-    dateTime: '2026-05-28 08:00',
-    status: 'PENDING',
-    price: 350000,
-    address: 'Quận 7, TP.HCM',
-    motherAvatar: 'NH',
-  },
-  {
-    id: 'B002',
-    motherName: 'Chị Thu An',
-    service: 'Tắm bé và chăm rốn',
-    dateTime: '2026-05-28 14:00',
-    status: 'ACCEPTED',
-    price: 250000,
-    address: 'Quận 3, TP.HCM',
-    motherAvatar: 'TA',
-  },
+const tabs: Array<{ label: string; value: 'ALL' | WorkSessionStatus }> = [
+  { label: 'Tất cả', value: 'ALL' },
+  { label: 'Sắp làm', value: 'SCHEDULED' },
+  { label: 'Đang làm', value: 'IN_PROGRESS' },
+  { label: 'Chờ mẹ xác nhận', value: 'PENDING_MOTHER_CONFIRMATION' },
+  { label: 'Hoàn thành', value: 'COMPLETED' },
+  { label: 'Có báo cáo', value: 'REPORTED' },
 ];
 
-const tabs = ['Tất cả', 'Chưa xác nhận', 'Đã xác nhận', 'Hôm nay', 'Hoàn thành'];
+const statusLabel: Record<WorkSessionStatus, string> = {
+  SCHEDULED: 'Sắp làm',
+  IN_PROGRESS: 'Đang làm',
+  PENDING_MOTHER_CONFIRMATION: 'Chờ xác nhận',
+  COMPLETED: 'Hoàn thành',
+  AUTO_CONFIRMED: 'Tự xác nhận',
+  REPORTED: 'Có báo cáo',
+  CANCELLED: 'Đã hủy',
+};
 
-const Bookings = () => {
-  const [bookings, setBookings] = useState<Booking[]>(mockBookings);
-  const [activeTab, setActiveTab] = useState('Tất cả');
-  const [isActionLoading, setIsActionLoading] = useState<string | null>(null);
+const statusClass: Record<WorkSessionStatus, string> = {
+  SCHEDULED: 'bg-blue-50 text-blue-700 border-blue-100',
+  IN_PROGRESS: 'bg-amber-50 text-amber-700 border-amber-100',
+  PENDING_MOTHER_CONFIRMATION: 'bg-violet-50 text-violet-700 border-violet-100',
+  COMPLETED: 'bg-green-50 text-green-700 border-green-100',
+  AUTO_CONFIRMED: 'bg-green-50 text-green-700 border-green-100',
+  REPORTED: 'bg-red-50 text-red-700 border-red-100',
+  CANCELLED: 'bg-slate-50 text-slate-500 border-slate-100',
+};
 
-  const filteredBookings = useMemo(() => {
-    if (activeTab === 'Chưa xác nhận') {
-      return bookings.filter((booking) => booking.status === 'PENDING');
-    }
-    if (activeTab === 'Đã xác nhận') {
-      return bookings.filter((booking) => booking.status === 'ACCEPTED');
-    }
-    if (activeTab === 'Hoàn thành') {
-      return bookings.filter((booking) => booking.status === 'COMPLETED');
-    }
-    return bookings;
-  }, [activeTab, bookings]);
+const formatDateTime = (value: string) =>
+  new Intl.DateTimeFormat('vi-VN', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(value));
 
-  const handleAccept = (id: string) => {
-    setIsActionLoading(id);
-    window.setTimeout(() => {
-      setBookings((current) => current.map((booking) => (
-        booking.id === id ? { ...booking, status: 'ACCEPTED' } : booking
-      )));
-      setIsActionLoading(null);
-    }, 250);
+const completionRate = (session: WorkSession) => {
+  if (!session.checklistItems.length) return 0;
+  const done = session.checklistItems.filter((item) => item.status === 'COMPLETED').length;
+  return Math.round((done / session.checklistItems.length) * 100);
+};
+
+const NurseBookings = () => {
+  const navigate = useNavigate();
+  const [sessions, setSessions] = useState<WorkSession[]>([]);
+  const [activeTab, setActiveTab] = useState<'ALL' | WorkSessionStatus>('ALL');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const loadSessions = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      setSessions(await workSessionApi.getNurseSessions());
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleReject = (id: string) => {
-    setIsActionLoading(id);
-    window.setTimeout(() => {
-      setBookings((current) => current.map((booking) => (
-        booking.id === id ? { ...booking, status: 'REJECTED' } : booking
-      )));
-      setIsActionLoading(null);
-    }, 250);
-  };
+  useEffect(() => {
+    void loadSessions();
+  }, []);
 
-  const formatVND = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-  };
+  const filteredSessions = useMemo(() => {
+    if (activeTab === 'ALL') return sessions;
+    return sessions.filter((session) => session.status === activeTab);
+  }, [activeTab, sessions]);
 
   return (
     <div className="pb-10">
       <Topbar
-        title="Lịch làm việc"
-        subtitle="Dữ liệu mẫu để kiểm thử UI. Khi backend booking sẵn sàng, trang này sẽ nối API thật."
+        title="Lịch ca làm"
+        subtitle="Theo dõi ca đã đặt, check-in đúng giờ và hoàn thành checklist có ảnh xác thực."
       />
 
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => setActiveTab(tab)}
-            className={`whitespace-nowrap rounded-full px-5 py-2 text-xs font-black tracking-wide transition ${activeTab === tab ? 'bg-lav-acc text-white' : 'bg-lav-100 text-lav-dark hover:bg-lav-200'}`}
-          >
-            {tab}
-          </button>
-        ))}
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.value}
+              type="button"
+              onClick={() => setActiveTab(tab.value)}
+              className={`whitespace-nowrap rounded-full px-5 py-2 text-xs font-black transition ${
+                activeTab === tab.value
+                  ? 'bg-lav-acc text-white shadow-[0_8px_22px_rgba(192,132,252,.25)]'
+                  : 'bg-white text-lav-dark ring-1 ring-lav-200 hover:bg-lav-50'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <Btn variant="soft" size="sm" onClick={loadSessions} disabled={isLoading}>
+          <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
+          Làm mới
+        </Btn>
       </div>
 
-      <div className="grid gap-5">
-        {filteredBookings.map((booking) => (
-          <Card key={booking.id} className="border-none bg-dark-100 p-0 text-white shadow-lg transition-transform hover:scale-[1.01]">
-            <div className="flex flex-col md:flex-row">
-              <div className="flex-1 p-6">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar initials={booking.motherAvatar} size={48} />
-                    <div>
-                      <div className="text-lg font-black">{booking.motherName}</div>
-                      <div className="text-xs font-bold text-lav-acc">{booking.service}</div>
-                    </div>
-                  </div>
-                  <StatusBadge status={booking.status} />
-                </div>
+      {error && (
+        <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-bold text-red-700">
+          {error}
+        </div>
+      )}
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-white/60">
-                    <Clock size={16} className="text-lav-acc" /> {booking.dateTime}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm font-semibold text-white/60">
-                    <MapPin size={16} className="text-lav-acc" /> {booking.address}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex w-full flex-col border-white/5 bg-white/5 p-6 md:w-[280px] md:border-l">
-                <div className="mb-6 flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-[2px] text-white/30">Thu nhập dự kiến</span>
-                  <span className="font-serif text-2xl font-black text-white">{formatVND(booking.price)}</span>
-                </div>
-
-                <div className="mt-auto space-y-2">
-                  {booking.status === 'PENDING' ? (
-                    <div className="flex gap-2">
-                      <Btn
-                        className="flex-1 bg-green-600 hover:bg-green-700"
-                        size="sm"
-                        onClick={() => handleAccept(booking.id)}
-                        disabled={isActionLoading === booking.id}
-                      >
-                        <Check size={16} /> Chấp nhận
-                      </Btn>
-                      <button
-                        type="button"
-                        className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/5 transition hover:bg-red-500/10 hover:text-red-500"
-                        onClick={() => handleReject(booking.id)}
-                        disabled={isActionLoading === booking.id}
-                      >
-                        <X size={18} />
-                      </button>
-                    </div>
-                  ) : (
-                    <Btn full variant="outline" className="border-white/10 text-white/80 hover:bg-white/5" size="sm">
-                      <Phone size={16} /> Liên hệ ngay
-                    </Btn>
-                  )}
-                </div>
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {filteredBookings.length === 0 && (
-        <Card className="flex flex-col items-center justify-center border-none bg-dark-100 py-20 text-center text-white">
-          <CalendarDays size={64} className="mb-4 text-lav-acc opacity-20" />
-          <h3 className="font-serif text-2xl font-black">Chưa có lịch làm việc</h3>
-          <p className="mt-2 text-sm font-bold text-white/40">Dữ liệu mẫu chưa có đơn phù hợp với bộ lọc hiện tại.</p>
+      {isLoading ? (
+        <Card className="flex h-[360px] items-center justify-center">
+          <Loader2 className="animate-spin text-lav-dark" size={34} />
         </Card>
+      ) : filteredSessions.length === 0 ? (
+        <Card className="flex flex-col items-center justify-center py-20 text-center">
+          <CalendarDays size={58} className="mb-4 text-lav-dark opacity-25" />
+          <h3 className="font-serif text-2xl font-black text-text-dark">Chưa có ca phù hợp</h3>
+          <p className="mt-2 max-w-[520px] text-sm font-bold text-text-mid">
+            Khi booking đã được thanh toán và xác nhận, ca làm sẽ xuất hiện tại đây.
+          </p>
+        </Card>
+      ) : (
+        <div className="grid gap-5">
+          {filteredSessions.map((session) => {
+            const progress = completionRate(session);
+            return (
+              <Card key={session.id} className="overflow-hidden p-0">
+                <div className="grid grid-cols-[1fr_280px]">
+                  <div className="p-6">
+                    <div className="mb-5 flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar initials={session.motherName?.slice(0, 2) || 'M'} size={48} />
+                        <div>
+                          <div className="text-lg font-black text-text-dark">{session.motherName}</div>
+                          <div className="text-[13px] font-bold text-lav-dark">{session.serviceName}</div>
+                        </div>
+                      </div>
+
+                      <span className={`rounded-full border px-3 py-1 text-[11px] font-black ${statusClass[session.status]}`}>
+                        {statusLabel[session.status]}
+                      </span>
+                    </div>
+
+                    <div className="grid gap-4 text-[13px] font-bold text-text-mid md:grid-cols-2">
+                      <div className="flex items-center gap-2">
+                        <Clock size={16} className="text-lav-dark" />
+                        {formatDateTime(session.scheduledStartAt)}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin size={16} className="text-lav-dark" />
+                        Booking #{session.bookingId.slice(0, 8)}
+                      </div>
+                    </div>
+
+                    {session.lateMinutes > 0 && (
+                      <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] font-bold text-amber-800">
+                        Ca này đã check-in trễ {session.lateMinutes} phút.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="border-l border-lav-100 bg-lav-50 p-6">
+                    <div className="mb-4">
+                      <div className="mb-2 flex items-center justify-between text-[12px] font-black text-text-mid">
+                        <span>Tiến độ checklist</span>
+                        <span>{progress}%</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-white">
+                        <div className="h-full rounded-full bg-grad" style={{ width: `${progress}%` }} />
+                      </div>
+                    </div>
+
+                    <div className="mb-5 text-[12px] font-bold leading-5 text-text-mid">
+                      {session.checklistItems.filter((item) => item.status === 'COMPLETED').length}/
+                      {session.checklistItems.length} mục đã hoàn thành
+                    </div>
+
+                    <Btn full onClick={() => navigate(`/nurse/work-sessions/${session.id}`)}>
+                      <PlayCircle size={16} />
+                      Vào ca
+                    </Btn>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
       )}
     </div>
   );
 };
 
-const StatusBadge = ({ status }: { status: Booking['status'] }) => {
-  const className = status === 'PENDING'
-    ? 'bg-amber-500/10 text-amber-500'
-    : status === 'ACCEPTED'
-      ? 'bg-green-500/10 text-green-500'
-      : status === 'REJECTED'
-        ? 'bg-red-500/10 text-red-400'
-        : 'bg-white/10 text-white/40';
-
-  return (
-    <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider ${className}`}>
-      {status}
-    </span>
-  );
-};
-
-export default Bookings;
+export default NurseBookings;

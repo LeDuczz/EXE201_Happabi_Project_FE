@@ -1,5 +1,14 @@
 import type { AvailabilityStatus } from './nurseProfile';
 import type { NurseSpecialty } from './nurseOnboarding';
+import type { ServiceOffering } from './serviceOffering';
+
+export interface NurseSkill {
+  skill: string;
+  label?: string;
+  groupName?: string;
+  verified?: boolean;
+  verifiedAt?: string;
+}
 
 export interface NursePublicCertification {
   id: string;
@@ -27,6 +36,8 @@ export interface NursePublicProfile {
   featured?: boolean;
   certificationCount?: number;
   certifications?: NursePublicCertification[];
+  skills?: NurseSkill[];
+  eligibleServiceOfferings?: ServiceOffering[];
 }
 
 export interface NurseComparisonCandidate {
