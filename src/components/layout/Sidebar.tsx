@@ -25,6 +25,7 @@ const motherMenus = [
   { id: '/mother/home', icon: <Home size={18} />, label: 'Trang chủ' },
   { id: '/mother/search', icon: <Search size={18} />, label: 'Tìm điều dưỡng' },
   { id: '/mother/compare', icon: <Scale size={18} />, label: 'So sánh' },
+  { id: '/mother/bookings/new', icon: <Calendar size={18} />, label: 'Đặt lịch' },
   { id: '/mother/bookings', icon: <Calendar size={18} />, label: 'Đơn của tôi' },
   { id: '/mother/chat', icon: <MessageCircle size={18} />, label: 'Chat & AI hỗ trợ' },
   { id: '/mother/profile', icon: <User size={18} />, label: 'Hồ sơ' },
@@ -93,6 +94,7 @@ const Sidebar = () => {
       : primaryRole === 'ADMIN'
         ? adminMenus
         : motherMenus;
+
   const roleLabel = primaryRole === 'NURSE'
     ? 'Điều dưỡng'
     : primaryRole === 'DOCTOR'
@@ -111,7 +113,7 @@ const Sidebar = () => {
       <div className="border-b border-white/5 px-5 pb-[18px] pt-[22px]">
         <div className="mb-1.5 flex cursor-pointer items-center gap-[9px]" onClick={() => navigate('/')}>
           <img src="/image/logo.png" alt="Happabi" className="h-[34px] w-[34px] rounded-[10px] object-cover" />
-          <span className="font-serif text-[21px] font-black text-grad">Happabi</span>
+          <span className="text-[21px] font-black text-grad">Happabi</span>
         </div>
         <div className="pl-0.5 text-[10.5px] uppercase tracking-[1.2px] text-white/30">{roleLabel}</div>
       </div>
@@ -126,7 +128,7 @@ const Sidebar = () => {
               className={`mb-[3px] flex cursor-pointer items-center gap-2.5 rounded-xl border-l-[3px] px-3.5 py-2.5 text-[13.5px] transition-all duration-150 ${isActive
                 ? 'border-lav-acc bg-[rgba(192,132,252,0.16)] font-bold text-white'
                 : 'border-transparent bg-transparent font-normal text-white/50 hover:bg-white/5 hover:text-white/70'
-                }`}
+              }`}
             >
               <span className="text-base">{item.icon}</span>
               {item.label}

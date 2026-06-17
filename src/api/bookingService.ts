@@ -6,10 +6,13 @@ export interface CreateBookingDraftPayload {
     startAt: string;
     serviceAddress: string;
     motherNote?: string;
+    paymentOption?: 'DEPOSIT_30_PERCENT' | 'FULL_APP_PAYMENT';
 }
 
 export interface BookingDraft {
     draftId: string;
+    bookingId?: string;
+    slotId?: string;
     nurseProfileId: string;
     nurseName: string;
     serviceOfferingId: string;
@@ -17,8 +20,12 @@ export interface BookingDraft {
     status: 'DRAFT' | 'PENDING_PAYMENT' | 'PENDING_NURSE_ACCEPTANCE' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED';
     startAt: string;
     endAt: string;
-    holdExpiresAt: string;
+    paymentExpiresAt: string;
     grossAmount: number;
+    depositAmount?: number;
+    remainingCashAmount?: number;
+    appPaymentAmount?: number;
+    paymentOption?: 'DEPOSIT_30_PERCENT' | 'FULL_APP_PAYMENT';
     serviceAddress: string;
     motherNote?: string;
 }

@@ -1,4 +1,4 @@
-export type ServiceOfferingType = 'SINGLE' | 'PACKAGE';
+export type ServiceOfferingType = 'SINGLE';
 
 export interface ServiceOffering {
   id: string;

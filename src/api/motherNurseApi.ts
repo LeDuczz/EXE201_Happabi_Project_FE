@@ -37,6 +37,8 @@ export const getMotherNurseProfile = async (profileId: string) => {
 };
 
 export const compareMotherNursesWithAi = async (payload: NurseAiComparisonRequest) => {
-  const response = await axiosClient.post('/api/v1/mothers/nurses/ai-comparison', payload);
+  const response = await axiosClient.post('/api/v1/mothers/nurses/ai-comparison', payload, {
+    timeout: 60000,
+  });
   return response.data?.data as NurseAiComparisonResponse;
 };

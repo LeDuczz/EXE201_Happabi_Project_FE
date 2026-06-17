@@ -37,7 +37,7 @@ const Btn: React.FC<BtnProps> = ({
   return (
     <button 
       className={`
-        border-none rounded-xl font-serif font-bold transition-all duration-200 
+        border-none rounded-xl font-bold transition-all duration-200 
         inline-flex items-center gap-1.5 justify-center
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:-translate-y-[1px]'}
         ${full ? 'w-full' : 'w-auto'}

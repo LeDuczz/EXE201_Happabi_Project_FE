@@ -19,7 +19,7 @@ import Card from '../../components/common/Card';
 import Tag from '../../components/common/Tag';
 import Topbar from '../../components/layout/Topbar';
 import type { NursePublicProfile as NursePublicProfileType } from '../../types/nursePublic';
-import type { ServiceOffering, ServiceOfferingType } from '../../types/serviceOffering';
+import type { ServiceOffering } from '../../types/serviceOffering';
 import { getApiErrorMessage } from '../../utils/apiError';
 
 const specialtyLabel: Record<string, string> = {
@@ -49,9 +49,6 @@ const getInitials = (name?: string) => {
 };
 
 const durationText = (service: ServiceOffering) => {
-  if (service.serviceType === 'PACKAGE') {
-    return service.durationDays ? `${service.durationDays} ngày` : 'Theo gói';
-  }
   return service.durationMinutes ? `${service.durationMinutes} phút` : 'Theo buổi';
 };
 
@@ -68,7 +65,7 @@ const NursePublicProfile = () => {
   const [profile, setProfile] = useState<NursePublicProfileType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [serviceType, setServiceType] = useState<ServiceOfferingType>('SINGLE');
+  const [serviceType, setServiceType] = useState<'SINGLE'>('SINGLE');
   const [selectedServiceId, setSelectedServiceId] = useState('');
 
   useEffect(() => {
@@ -95,8 +92,8 @@ const NursePublicProfile = () => {
   }, [profileId]);
 
   const services = useMemo(
-    () => (profile?.eligibleServiceOfferings || []).filter((service) => service.serviceType === serviceType),
-    [profile?.eligibleServiceOfferings, serviceType],
+    () => (profile?.eligibleServiceOfferings || []).filter((service) => service.serviceType === 'SINGLE'),
+    [profile?.eligibleServiceOfferings],
   );
 
   useEffect(() => {
@@ -113,13 +110,14 @@ const NursePublicProfile = () => {
 
   const continueBooking = () => {
     if (!profile || !selectedService) return;
-    navigate('/mother/bookings', {
+    navigate('/mother/bookings/new', {
       state: {
         nurseProfileId: profile.profileId,
         nurseName: profile.fullName,
         serviceOfferingId: selectedService.id,
         serviceName: selectedService.serviceName,
         grossAmount: selectedService.grossAmount,
+        durationMinutes: selectedService.durationMinutes,
       },
     });
   };
@@ -204,13 +202,13 @@ const NursePublicProfile = () => {
                   <div>
                     <h3 className="font-serif text-[24px] font-black text-text-dark">Chọn dịch vụ</h3>
                     <p className="mt-1 text-[13px] font-bold text-text-mid">
-                      Chỉ hiển thị dịch vụ/gói phù hợp với kỹ năng đã xác minh của nurse.
+                      Chỉ hiển thị dịch vụ lẻ phù hợp với kỹ năng đã xác minh của nurse.
                     </p>
                   </div>
                 </div>
 
                 <div className="inline-flex rounded-2xl border border-lav-100 bg-lav-50 p-1">
-                  {(['SINGLE', 'PACKAGE'] as ServiceOfferingType[]).map((type) => (
+                  {(['SINGLE'] as const).map((type) => (
                     <button
                       key={type}
                       type="button"
