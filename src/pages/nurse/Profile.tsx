@@ -14,7 +14,6 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getMyNurseProfile, updateMyNurseProfileDisplay, uploadMyAvatar } from '../../api/nurseProfileApi';
-import { setAvailabilityPreference } from '../../api/nurseAvailabilityApi';
 import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
 import Topbar from '../../components/layout/Topbar';
