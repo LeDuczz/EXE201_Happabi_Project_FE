@@ -17,9 +17,10 @@ import { getMyNurseProfile, updateMyNurseProfileDisplay, uploadMyAvatar } from '
 import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
 import Topbar from '../../components/layout/Topbar';
+import AvailabilityWindowsPanel from '../../components/nurse/AvailabilityWindowsPanel';
 import { useAuth } from '../../contexts/AuthContext';
 import type { NurseCertification } from '../../types/nurseOnboarding';
-import type { AvailabilityStatus, NurseProfile as NurseProfileType } from '../../types/nurseProfile';
+import type { NurseProfile as NurseProfileType } from '../../types/nurseProfile';
 import { getApiErrorMessage } from '../../utils/apiError';
 
 const emptyProfile: NurseProfileType = {
@@ -34,7 +35,6 @@ const emptyProfile: NurseProfileType = {
 interface DisplayForm {
   bio: string;
   serviceArea: string;
-  availabilityStatus: AvailabilityStatus;
 }
 
 const nurseStatusLabel: Record<string, string> = {
@@ -208,12 +208,10 @@ const NurseProfile = () => {
   const [displayForm, setDisplayForm] = useState<DisplayForm>({
     bio: '',
     serviceArea: '',
-    availabilityStatus: 'OFFLINE',
   });
   const [isEditingDisplay, setIsEditingDisplay] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingDisplay, setIsSavingDisplay] = useState(false);
-  const [isSavingAvailability, setIsSavingAvailability] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -222,7 +220,6 @@ const NurseProfile = () => {
     setDisplayForm({
       bio: data.bio || '',
       serviceArea: data.serviceArea || '',
-      availabilityStatus: data.availabilityStatus || 'OFFLINE',
     });
   };
 
@@ -302,26 +299,6 @@ const NurseProfile = () => {
       setError(getApiErrorMessage(err));
     } finally {
       setIsSavingDisplay(false);
-    }
-  };
-
-  const saveAvailabilityStatus = async () => {
-    setError('');
-    setSuccess('');
-    setIsSavingAvailability(true);
-
-    try {
-      const data = await updateMyNurseProfileDisplay({
-        availabilityStatus: displayForm.availabilityStatus,
-      });
-      const nextProfile = { ...emptyProfile, ...data, certifications: data?.certifications ?? [] };
-      setProfile(nextProfile);
-      syncDisplayForm(nextProfile);
-      setSuccess('Trạng thái nhận lịch đã được cập nhật.');
-    } catch (err) {
-      setError(getApiErrorMessage(err));
-    } finally {
-      setIsSavingAvailability(false);
     }
   };
 
@@ -405,44 +382,12 @@ const NurseProfile = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3 lg:min-w-[280px]">
-                  <div className="rounded-2xl border border-white/80 bg-white/85 p-4 shadow-sm">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-[12px] font-bold text-text-light">Trạng thái nhận lịch</p>
-                        <p className="mt-1 text-[13px] font-black text-text-dark">
-                          {availabilityLabel[profile.availabilityStatus || ''] || 'Chưa cập nhật lịch'}
-                        </p>
-                      </div>
-                      <StatusPill
-                        label={availabilityLabel[profile.availabilityStatus || ''] || 'Chưa cập nhật'}
-                        tone={statusTone(profile.availabilityStatus)}
-                      />
-                    </div>
-
-                    <div className="mt-3 flex gap-2">
-                      <select
-                        value={displayForm.availabilityStatus}
-                        onChange={(event) => setDisplayForm((current) => ({
-                          ...current,
-                          availabilityStatus: event.target.value as AvailabilityStatus,
-                        }))}
-                        className="min-w-0 flex-1 rounded-xl border border-lav-200 bg-white px-3 py-2 text-[13px] font-bold text-text-dark outline-none transition focus:border-lav-acc focus:ring-4 focus:ring-lav-100"
-                      >
-                        <option value="AVAILABLE">Sẵn sàng nhận lịch</option>
-                        <option value="BUSY">Đang bận</option>
-                        <option value="OFFLINE">Tạm nghỉ</option>
-                      </select>
-                      <Btn
-                        type="button"
-                        size="sm"
-                        onClick={saveAvailabilityStatus}
-                        disabled={isSavingAvailability || displayForm.availabilityStatus === profile.availabilityStatus}
-                      >
-                        {isSavingAvailability ? 'Lưu...' : 'Lưu'}
-                      </Btn>
-                    </div>
-                  </div>
+                <div className="flex flex-col gap-3 lg:min-w-[420px] xl:min-w-[520px]">
+                  <AvailabilityWindowsPanel
+                    onAvailabilityStatusChanged={(availabilityStatus) =>
+                      setProfile((current) => ({ ...current, availabilityStatus }))
+                    }
+                  />
 
                   <div className="flex flex-col items-start gap-3 rounded-2xl border border-white/80 bg-white/80 p-4">
                   <p className="text-[12px] font-bold text-text-light">Hoàn tất hồ sơ</p>

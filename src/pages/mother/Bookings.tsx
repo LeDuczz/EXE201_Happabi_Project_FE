@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
   CalendarDays,
   CheckCircle2,
   Clock,
+  CreditCard,
+  ExternalLink,
   Image as ImageIcon,
   Loader2,
   MessageSquareText,
@@ -14,6 +16,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import bookingService, { type BookingSummary } from '../../api/bookingService';
 import nurseReviewApi from '../../api/nurseReviewApi';
 import workSessionApi from '../../api/workSessionApi';
 import Btn from '../../components/common/Btn';
@@ -21,6 +24,7 @@ import Card from '../../components/common/Card';
 import Topbar from '../../components/layout/Topbar';
 import { getApiErrorMessage } from '../../utils/apiError';
 import type { NurseReview, NurseReviewTag } from '../../types/nurseReview';
+import type { AppNotification } from '../../types/notification';
 import type { WorkSession, WorkSessionStatus } from '../../types/workSession';
 
 type SessionBucket = 'UPCOMING' | 'ACTION_NEEDED' | 'HISTORY';
@@ -67,6 +71,9 @@ const formatDateTime = (value?: string) => {
   }).format(new Date(value));
 };
 
+const formatCurrency = (value?: number) =>
+  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value ?? 0);
+
 const formatTimeRange = (session: WorkSession) =>
   `${formatDateTime(session.scheduledStartAt)} - ${new Date(session.scheduledEndAt).toLocaleTimeString('vi-VN', {
     hour: '2-digit',
@@ -89,32 +96,65 @@ const statusClass = (status: WorkSessionStatus) => {
 const MotherBookings = () => {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<WorkSession[]>([]);
+  const [pendingPayments, setPendingPayments] = useState<BookingSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeBucket, setActiveBucket] = useState<SessionBucket>('UPCOMING');
   const [reviewsBySession, setReviewsBySession] = useState<Record<string, NurseReview | null>>({});
   const [reportReason, setReportReason] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
+  const [paymentActionId, setPaymentActionId] = useState<string | null>(null);
   const [reviewActionId, setReviewActionId] = useState<string | null>(null);
   const [error, setError] = useState('');
 
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     setIsLoading(true);
     setError('');
     try {
-      const data = await workSessionApi.getMotherSessions();
+      const [data, pending] = await Promise.all([
+        workSessionApi.getMotherSessions(),
+        bookingService.getPendingPayments(),
+      ]);
       setSessions(data);
+      setPendingPayments(pending);
       setSelectedId((current) => current ?? data[0]?.id ?? null);
     } catch (err) {
       setError(getApiErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  const payPendingBooking = async (booking: BookingSummary) => {
+    const bookingId = booking.bookingId;
+    if (!bookingId) return;
+    setPaymentActionId(bookingId);
+    setError('');
+    try {
+      const payment = await bookingService.createPaymentLink(bookingId);
+      window.location.href = payment.checkoutUrl;
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setPaymentActionId(null);
+    }
   };
 
   useEffect(() => {
     void loadSessions();
-  }, []);
+  }, [loadSessions]);
+
+  useEffect(() => {
+    const handleRealtimeNotification = (event: Event) => {
+      const notification = (event as CustomEvent<AppNotification>).detail;
+      if (notification?.resourceType === 'WORK_SESSION') {
+        void loadSessions();
+      }
+    };
+
+    window.addEventListener('happabi:notification-received', handleRealtimeNotification);
+    return () => window.removeEventListener('happabi:notification-received', handleRealtimeNotification);
+  }, [loadSessions]);
 
   const sessionsByBucket = useMemo(
     () =>
@@ -200,6 +240,44 @@ const MotherBookings = () => {
       {error && (
         <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-bold text-red-700">
           {error}
+        </div>
+      )}
+
+      {pendingPayments.length > 0 && (
+        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <div className="mb-3 flex items-center gap-2 text-[14px] font-black text-amber-800">
+            <CreditCard size={17} />
+            ??n ch? thanh to?n
+          </div>
+          <div className="grid gap-3">
+            {pendingPayments.map((booking) => {
+              const bookingId = booking.bookingId;
+              return (
+                <div
+                  key={bookingId}
+                  className="flex flex-col gap-3 rounded-xl border border-amber-100 bg-white p-4 md:flex-row md:items-center md:justify-between"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate text-[14px] font-black text-text-dark">{booking.serviceName}</div>
+                    <div className="mt-1 text-[12px] font-bold text-text-mid">
+                      {booking.nurseName} ? {formatDateTime(booking.startAt)}
+                    </div>
+                    <div className="mt-1 text-[12px] font-bold text-amber-700">
+                      Thanh to?n {formatCurrency(booking.appPaymentAmount)} tr??c {new Date(booking.paymentExpiresAt).toLocaleTimeString('vi-VN')}
+                    </div>
+                  </div>
+                  <Btn
+                    size="sm"
+                    disabled={paymentActionId === bookingId}
+                    onClick={() => payPendingBooking(booking)}
+                  >
+                    {paymentActionId === bookingId ? <Loader2 className="animate-spin" size={15} /> : <ExternalLink size={15} />}
+                    Thanh to?n
+                  </Btn>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

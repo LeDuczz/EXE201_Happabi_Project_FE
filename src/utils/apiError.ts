@@ -1,4 +1,9 @@
 const ERROR_TRANSLATIONS: Array<[RegExp, string]> = [
+  [/End time must be after start time/i, 'Thời gian kết thúc phải sau thời gian bắt đầu.'],
+  [/Availability window must not end in the past/i, 'Khung nhận lịch không được kết thúc trong quá khứ.'],
+  [/Availability window overlaps an active window/i, 'Khung nhận lịch bị trùng với khung đang hiệu lực.'],
+  [/Check-in is not open yet/i, 'Chưa đến thời gian check-in.'],
+  [/Check-in opens at (.+)/i, 'Chưa đến thời gian check-in. Vui lòng quay lại đúng khung giờ được phép.'],
   [/This work session has already been reviewed/i, 'Ca này đã được đánh giá trước đó.'],
   [/Only completed work sessions can be reviewed/i, 'Chỉ có thể đánh giá sau khi ca làm đã hoàn thành.'],
   [/Rating is required/i, 'Vui lòng chọn số sao đánh giá.'],

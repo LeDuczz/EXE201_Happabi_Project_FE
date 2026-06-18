@@ -34,6 +34,8 @@ export interface NursePublicProfile {
   responseRate?: number;
   backgroundChecked?: boolean;
   featured?: boolean;
+  availabilityWindowStartAt?: string;
+  availabilityWindowEndAt?: string;
   certificationCount?: number;
   certifications?: NursePublicCertification[];
   skills?: NurseSkill[];
