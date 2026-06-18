@@ -42,7 +42,7 @@ const MessageList = ({ messages, isLoading, isSending, onSendSuggestion }: Messa
             <Bot size={19} />
           </div>
           <div className="rounded-[22px] border border-lav-100 bg-white px-5 py-4 shadow-sm">
-            <div className="flex items-center gap-2 text-sm font-black text-lav-dark">
+            <div className="flex items-center gap-2 text-sm font-semibold text-lav-dark">
               <Loader2 size={16} className="animate-spin" />
               AI đang trả lời...
             </div>

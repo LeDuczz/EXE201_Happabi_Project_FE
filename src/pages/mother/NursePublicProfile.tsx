@@ -54,7 +54,7 @@ const durationText = (service: ServiceOffering) => {
 
 const InfoMetric = ({ label, value }: { label: string; value: string | number }) => (
   <div className="rounded-2xl border border-lav-100 bg-white p-4 text-center">
-    <p className="font-serif text-[26px] font-black text-grad">{value}</p>
+    <p className="text-heading text-[26px] font-semibold text-grad">{value}</p>
     <p className="mt-1 text-[12px] font-bold text-text-light">{label}</p>
   </div>
 );
@@ -129,7 +129,7 @@ const NursePublicProfile = () => {
       <button
         type="button"
         onClick={() => navigate('/mother/search')}
-        className="mb-5 inline-flex items-center gap-2 text-[13px] font-black text-lav-dark"
+        className="mb-5 inline-flex items-center gap-2 text-[13px] font-semibold text-lav-dark"
       >
         <ArrowLeft size={16} />
         Quay lại danh sách
@@ -154,7 +154,7 @@ const NursePublicProfile = () => {
                   <Avatar initials={getInitials(profile.fullName)} src={profile.avatarUrl} size={112} />
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="font-serif text-[34px] font-black leading-tight text-text-dark">
+                      <h2 className="text-heading text-[34px] font-semibold leading-tight text-text-dark">
                         {profile.fullName || 'Nurse Happabi'}
                       </h2>
                       {profile.featured && <Tag variant="pink">Nổi bật</Tag>}
@@ -173,7 +173,7 @@ const NursePublicProfile = () => {
 
                 <div className="rounded-2xl border border-white/80 bg-white/85 p-4 lg:w-[260px]">
                   <p className="text-[12px] font-bold text-text-light">Bước tiếp theo</p>
-                  <p className="mt-1 text-[14px] font-black text-text-dark">
+                  <p className="mt-1 text-[14px] font-semibold text-text-dark">
                     Chọn dịch vụ nurse đủ kỹ năng rồi tiếp tục đặt lịch chăm sóc.
                   </p>
                   <Btn full className="mt-4" disabled={!selectedService} onClick={continueBooking}>
@@ -200,7 +200,7 @@ const NursePublicProfile = () => {
                     <PackageCheck size={20} />
                   </div>
                   <div>
-                    <h3 className="font-serif text-[24px] font-black text-text-dark">Chọn dịch vụ</h3>
+                    <h3 className="text-heading text-[24px] font-semibold text-text-dark">Chọn dịch vụ</h3>
                     <p className="mt-1 text-[13px] font-bold text-text-mid">
                       Chỉ hiển thị dịch vụ lẻ phù hợp với kỹ năng đã xác minh của nurse.
                     </p>
@@ -213,7 +213,7 @@ const NursePublicProfile = () => {
                       key={type}
                       type="button"
                       onClick={() => setServiceType(type)}
-                      className={`rounded-xl px-4 py-2 text-[13px] font-black transition ${
+                      className={`rounded-xl px-4 py-2 text-[13px] font-semibold transition ${
                         serviceType === type
                           ? 'bg-white text-lav-dark shadow-sm'
                           : 'text-text-mid hover:text-lav-dark'
@@ -227,10 +227,10 @@ const NursePublicProfile = () => {
 
               <div className="rounded-2xl border border-lav-100 bg-white p-4 lg:w-[300px]">
                 <p className="text-[12px] font-bold text-text-light">Dịch vụ đang chọn</p>
-                <p className="mt-1 text-[16px] font-black text-text-dark">
+                <p className="mt-1 text-[16px] font-semibold text-text-dark">
                   {selectedService?.serviceName || 'Chưa chọn dịch vụ'}
                 </p>
-                <p className="mt-2 text-[22px] font-black text-grad">
+                <p className="mt-2 text-[22px] font-semibold text-grad">
                   {selectedService ? formatCurrency(selectedService.grossAmount) : formatCurrency(0)}
                 </p>
                 <Btn full className="mt-4" disabled={!selectedService} onClick={continueBooking}>
@@ -257,8 +257,8 @@ const NursePublicProfile = () => {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="text-[12px] font-black text-lav-dark">{service.groupName || 'Happabi'}</p>
-                          <h4 className="mt-1 text-[15px] font-black leading-5 text-text-dark">{service.serviceName}</h4>
+                          <p className="text-[12px] font-semibold text-lav-dark">{service.groupName || 'Happabi'}</p>
+                          <h4 className="mt-1 text-[15px] font-semibold leading-5 text-text-dark">{service.serviceName}</h4>
                         </div>
                         {selected && <CheckCircle2 className="shrink-0 text-verified" size={18} />}
                       </div>
@@ -274,7 +274,7 @@ const NursePublicProfile = () => {
                         </p>
                       )}
 
-                      <p className="mt-4 text-[18px] font-black text-grad">{formatCurrency(service.grossAmount)}</p>
+                      <p className="mt-4 text-[18px] font-semibold text-grad">{formatCurrency(service.grossAmount)}</p>
                     </button>
                   );
                 })}
@@ -292,7 +292,7 @@ const NursePublicProfile = () => {
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-lav-100 text-lav-dark">
                   <BriefcaseMedical size={20} />
                 </div>
-                <h3 className="font-serif text-[24px] font-black text-text-dark">Giới thiệu</h3>
+                <h3 className="text-heading text-[24px] font-semibold text-text-dark">Giới thiệu</h3>
               </div>
               <p className="text-[14px] font-bold leading-7 text-text-mid">
                 {profile.bio || 'Nurse chưa cập nhật phần giới thiệu.'}
@@ -300,10 +300,10 @@ const NursePublicProfile = () => {
 
               {!!profile.skills?.length && (
                 <div className="mt-5">
-                  <p className="mb-3 text-[13px] font-black text-text-dark">Kỹ năng đã xác minh</p>
+                  <p className="mb-3 text-[13px] font-semibold text-text-dark">Kỹ năng đã xác minh</p>
                   <div className="flex flex-wrap gap-2">
                     {profile.skills.map((skill) => (
-                      <span key={skill.skill} className="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-[12px] font-black text-green-700">
+                      <span key={skill.skill} className="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-[12px] font-semibold text-green-700">
                         {skill.label || skill.skill}
                       </span>
                     ))}
@@ -317,14 +317,14 @@ const NursePublicProfile = () => {
                     <MapPin size={14} />
                     Khu vực phục vụ
                   </div>
-                  <p className="text-[14px] font-black text-text-dark">{profile.serviceArea || 'Chưa cập nhật'}</p>
+                  <p className="text-[14px] font-semibold text-text-dark">{profile.serviceArea || 'Chưa cập nhật'}</p>
                 </div>
                 <div className="rounded-2xl border border-lav-100 bg-white p-4">
                   <div className="mb-1 flex items-center gap-2 text-[12px] font-bold text-text-light">
                     <BadgeCheck size={14} />
                     Thành phố
                   </div>
-                  <p className="text-[14px] font-black text-text-dark">{profile.city || 'Chưa cập nhật'}</p>
+                  <p className="text-[14px] font-semibold text-text-dark">{profile.city || 'Chưa cập nhật'}</p>
                 </div>
               </div>
             </Card>
@@ -334,7 +334,7 @@ const NursePublicProfile = () => {
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-pink-100 text-pink-dark">
                   <FileBadge size={20} />
                 </div>
-                <h3 className="font-serif text-[24px] font-black text-text-dark">Chứng chỉ đã xác minh</h3>
+                <h3 className="text-heading text-[24px] font-semibold text-text-dark">Chứng chỉ đã xác minh</h3>
               </div>
 
               {profile.certifications?.length ? (
@@ -344,7 +344,7 @@ const NursePublicProfile = () => {
                       <div className="flex items-start gap-3">
                         <CheckCircle2 className="mt-0.5 text-verified" size={18} />
                         <div>
-                          <p className="text-[14px] font-black text-text-dark">{certification.certName}</p>
+                          <p className="text-[14px] font-semibold text-text-dark">{certification.certName}</p>
                           <p className="mt-1 text-[12px] font-bold text-text-mid">{certification.issuedBy}</p>
                           <p className="mt-1 text-[11px] font-bold text-text-light">
                             {certification.issuedDate || 'Chưa có ngày cấp'} - {certification.expiryDate || 'Không thời hạn'}

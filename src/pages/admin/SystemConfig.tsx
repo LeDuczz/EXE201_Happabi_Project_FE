@@ -94,7 +94,7 @@ const ConfigCard = ({ config, onSave, isSaving }: { config: ConfigItem, onSave: 
         <Card className="p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center">
                 <div className="flex-1">
-                    <div className="text-lg font-black text-text-dark">{config.configKey}</div>
+                    <div className="text-lg font-semibold text-text-dark">{config.configKey}</div>
                     <div className="mt-1 text-sm font-semibold text-text-light">{config.description || 'Không có mô tả.'}</div>
                     <div className="mt-2 text-[10px] uppercase tracking-wider text-text-mid opacity-50">Cập nhật lần cuối: {new Date(config.updatedAt).toLocaleString('vi-VN')}</div>
                 </div>

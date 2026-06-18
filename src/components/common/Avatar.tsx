@@ -13,7 +13,7 @@ const Avatar = ({ initials = 'HB', src, size = 40 }: AvatarProps) => {
       {src ? (
         <img src={src} alt="Avatar" className="h-full w-full object-cover" />
       ) : (
-        <div className="flex h-full w-full items-center justify-center text-[12px] font-black">
+        <div className="flex h-full w-full items-center justify-center text-[12px] font-semibold">
           {initials.slice(0, 2).toUpperCase()}
         </div>
       )}

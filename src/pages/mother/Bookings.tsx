@@ -216,8 +216,8 @@ const MotherBookings = () => {
                   : 'border-lav-100 bg-lav-50 text-text-mid hover:bg-white'
               }`}
             >
-              <div className="text-[12px] font-black">{bucket.label}</div>
-              <div className="mt-0.5 text-[18px] font-black text-text-dark">{sessionsByBucket[bucket.key].length}</div>
+              <div className="text-[12px] font-semibold">{bucket.label}</div>
+              <div className="mt-0.5 text-[18px] font-semibold text-text-dark">{sessionsByBucket[bucket.key].length}</div>
             </button>
           ))}
         </div>
@@ -237,7 +237,7 @@ const MotherBookings = () => {
       <div className="grid gap-5 xl:grid-cols-[minmax(340px,0.8fr)_minmax(0,1.2fr)]">
         <Card className="p-0">
           <div className="border-b border-lav-100 px-5 py-4">
-            <h2 className="text-[17px] font-black text-text-dark">Danh sách đơn</h2>
+            <h2 className="text-[17px] font-semibold text-text-dark">Danh sách đơn</h2>
           </div>
 
           {isLoading ? (
@@ -268,10 +268,10 @@ const MotherBookings = () => {
                   >
                     <div className="mb-2 flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="truncate text-[14px] font-black text-text-dark">{session.serviceName}</div>
+                        <div className="truncate text-[14px] font-semibold text-text-dark">{session.serviceName}</div>
                         <div className="mt-1 truncate text-[12px] font-bold text-text-mid">{session.nurseName}</div>
                       </div>
-                      <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-black ${statusClass(session.status)}`}>
+                      <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${statusClass(session.status)}`}>
                         {statusLabel[session.status]}
                       </span>
                     </div>
@@ -290,20 +290,20 @@ const MotherBookings = () => {
           {!selectedSession ? (
             <div className="flex h-full min-h-[420px] flex-col items-center justify-center text-center">
               <CalendarDays className="mb-4 text-lav-dark opacity-25" size={54} />
-              <h3 className="text-[20px] font-black text-text-dark">Chưa chọn đơn</h3>
+              <h3 className="text-[20px] font-semibold text-text-dark">Chưa chọn đơn</h3>
               <p className="mt-2 text-[14px] font-bold text-text-mid">Chọn một đơn bên trái để xem chi tiết.</p>
             </div>
           ) : (
             <div>
               <div className="mb-5 flex flex-col gap-3 border-b border-lav-100 pb-5 md:flex-row md:items-start md:justify-between">
                 <div>
-                  <div className="text-[12px] font-black uppercase tracking-[0.08em] text-text-light">Chi tiết đơn</div>
-                  <h2 className="mt-1 text-[24px] font-black leading-tight text-text-dark">{selectedSession.serviceName}</h2>
+                  <div className="text-[12px] font-semibold uppercase tracking-[0.08em] text-text-light">Chi tiết đơn</div>
+                  <h2 className="mt-1 text-[24px] font-semibold leading-tight text-text-dark">{selectedSession.serviceName}</h2>
                   <p className="mt-1 text-[13px] font-bold text-text-mid">
                     Nurse: {selectedSession.nurseName} · {formatTimeRange(selectedSession)}
                   </p>
                 </div>
-                <span className={`w-fit rounded-full border px-3 py-1 text-[12px] font-black ${statusClass(selectedSession.status)}`}>
+                <span className={`w-fit rounded-full border px-3 py-1 text-[12px] font-semibold ${statusClass(selectedSession.status)}`}>
                   {statusLabel[selectedSession.status]}
                 </span>
               </div>
@@ -317,7 +317,7 @@ const MotherBookings = () => {
 
               {selectedSession.status === 'PENDING_MOTHER_CONFIRMATION' && (
                 <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                  <div className="mb-3 flex items-center gap-2 text-[13px] font-black text-amber-800">
+                  <div className="mb-3 flex items-center gap-2 text-[13px] font-semibold text-amber-800">
                     <AlertCircle size={16} />
                     Ca này đang chờ mẹ xác nhận.
                   </div>
@@ -351,7 +351,7 @@ const MotherBookings = () => {
               )}
 
               <section className="mb-5">
-                <h3 className="mb-3 text-[15px] font-black text-text-dark">Checklist</h3>
+                <h3 className="mb-3 text-[15px] font-semibold text-text-dark">Checklist</h3>
                 {selectedSession.checklistItems.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-lav-200 bg-lav-50 p-4 text-[13px] font-bold text-text-mid">
                     Chưa có checklist cho ca này.
@@ -362,14 +362,14 @@ const MotherBookings = () => {
                       <div key={item.id} className="rounded-xl border border-lav-100 bg-white p-4">
                         <div className="flex items-start gap-3">
                           <div
-                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-black ${
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold ${
                               item.status === 'COMPLETED' ? 'bg-emerald-500 text-white' : 'bg-lav-100 text-lav-dark'
                             }`}
                           >
                             {item.status === 'COMPLETED' ? <CheckCircle2 size={16} /> : item.sortOrder}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="text-[13px] font-black text-text-dark">{item.title}</div>
+                            <div className="text-[13px] font-semibold text-text-dark">{item.title}</div>
                             {item.note && <div className="mt-1 text-[12px] font-bold text-text-mid">{item.note}</div>}
                             {item.evidences.length > 0 && <EvidenceGrid evidences={item.evidences} />}
                           </div>
@@ -398,8 +398,8 @@ const MotherBookings = () => {
 
 const Metric = ({ label, value }: { label: string; value: string }) => (
   <div className="rounded-xl border border-lav-100 bg-lav-50 p-3">
-    <div className="text-[11px] font-black uppercase text-text-light">{label}</div>
-    <div className="mt-1 text-[13px] font-black text-text-dark">{value}</div>
+    <div className="text-[11px] font-semibold uppercase text-text-light">{label}</div>
+    <div className="mt-1 text-[13px] font-semibold text-text-dark">{value}</div>
   </div>
 );
 
@@ -447,7 +447,7 @@ const ReviewPanel = ({
   if (review) {
     return (
       <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-        <div className="mb-2 flex items-center gap-2 text-[13px] font-black text-emerald-700">
+        <div className="mb-2 flex items-center gap-2 text-[13px] font-semibold text-emerald-700">
           <CheckCircle2 size={16} />
           Bạn đã gửi đánh giá cho ca này.
         </div>
@@ -464,7 +464,7 @@ const ReviewPanel = ({
           <MessageSquareText size={18} />
         </div>
         <div>
-          <div className="text-[14px] font-black text-text-dark">Đánh giá nurse sau ca làm</div>
+          <div className="text-[14px] font-semibold text-text-dark">Đánh giá nurse sau ca làm</div>
           <p className="mt-1 text-[12px] font-bold text-text-mid">Không bắt buộc, nhưng giúp hệ thống xếp hạng chính xác hơn.</p>
         </div>
       </div>
@@ -477,7 +477,7 @@ const ReviewPanel = ({
             key={tag.value}
             type="button"
             onClick={() => toggleTag(tag.value)}
-            className={`rounded-full border px-3 py-1.5 text-[12px] font-black transition ${
+            className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
               selectedTags.includes(tag.value)
                 ? 'border-pink-300 bg-white text-pink-dark'
                 : 'border-pink-100 bg-pink-50 text-text-mid hover:bg-white'
@@ -528,7 +528,7 @@ const RatingStars = ({
         <Star size={21} className={star <= value ? 'fill-[#f59e0b]' : 'fill-transparent'} />
       </button>
     ))}
-    <span className="ml-2 text-[13px] font-black text-text-dark">{value}/5</span>
+    <span className="ml-2 text-[13px] font-semibold text-text-dark">{value}/5</span>
   </div>
 );
 

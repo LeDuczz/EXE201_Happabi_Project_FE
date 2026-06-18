@@ -38,7 +38,7 @@ const ConversationList = ({
       <div className="border-b border-lav-200 p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="font-serif text-xl font-black text-text-dark">Hội thoại</div>
+            <div className="text-heading text-xl font-semibold text-text-dark">Hội thoại</div>
             <div className="mt-1 text-xs font-bold text-text-light">{conversations.length} cuộc trò chuyện</div>
           </div>
           <Btn
@@ -85,7 +85,7 @@ const ConversationList = ({
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-lav-100 text-lav-dark">
               <MessageCircle size={22} />
             </div>
-            <div className="font-black text-text-dark">Chưa có hội thoại</div>
+            <div className="font-semibold text-text-dark">Chưa có hội thoại</div>
             <p className="mt-1 text-sm font-semibold leading-5 text-text-light">
               Gửi câu hỏi đầu tiên, hệ thống sẽ tự tạo hội thoại cho bạn.
             </p>
@@ -105,7 +105,7 @@ const ConversationList = ({
                       : 'border-transparent bg-white hover:border-lav-200 hover:bg-[#fff9fb]'
                   }`}
                 >
-                  <div className="line-clamp-2 text-sm font-black text-text-dark">
+                  <div className="line-clamp-2 text-sm font-semibold text-text-dark">
                     {item.title || 'Cuộc trò chuyện mới'}
                   </div>
                   <div className="mt-2 flex items-center gap-1.5 text-[11px] font-bold text-text-light">

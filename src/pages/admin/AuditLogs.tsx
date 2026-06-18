@@ -116,14 +116,14 @@ const AuditLogs = () => {
 
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-black uppercase tracking-wider text-lav-dark bg-lav-100 px-2 py-0.5 rounded-md">
+                                            <span className="text-[10px] font-semibold uppercase tracking-wider text-lav-dark bg-lav-100 px-2 py-0.5 rounded-md">
                                                 {log.action}
                                             </span>
-                                            <span className="text-[10px] font-black uppercase tracking-wider text-text-mid opacity-50">
+                                            <span className="text-[10px] font-semibold uppercase tracking-wider text-text-mid opacity-50">
                                                 Target: {log.targetResourceType} ({log.targetResourceId?.slice(0, 8)})
                                             </span>
                                         </div>
-                                        <div className="mt-1 font-black text-text-dark flex items-center gap-2">
+                                        <div className="mt-1 font-semibold text-text-dark flex items-center gap-2">
                                             <UserIcon size={14} className="text-text-light" /> {log.actorId || 'System'}
                                             <span className="text-xs font-bold text-text-light">({log.actorRole || 'N/A'})</span>
                                         </div>
@@ -137,7 +137,7 @@ const AuditLogs = () => {
                                             <div className="mt-1 text-[10px] font-semibold text-text-light uppercase tracking-widest">{log.ipAddress}</div>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <div className={`rounded-full px-3 py-1 text-[10px] font-black ${log.status === 'SUCCESS' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                                            <div className={`rounded-full px-3 py-1 text-[10px] font-semibold ${log.status === 'SUCCESS' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                                                 {log.status}
                                             </div>
                                             <ExternalLink size={16} className="text-text-light opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -171,7 +171,7 @@ const AuditLogs = () => {
                         <div className="flex items-center justify-between border-b border-lav-100 bg-lav-50/50 p-4">
                             <div className="flex items-center gap-2">
                                 <Info className="text-lav-dark" size={20} />
-                                <h3 className="font-black text-text-dark uppercase tracking-tight">Chi tiết Audit Event</h3>
+                                <h3 className="font-semibold text-text-dark uppercase tracking-tight">Chi tiết Audit Event</h3>
                             </div>
                             <button
                                 onClick={() => setSelectedLog(null)}
@@ -183,34 +183,34 @@ const AuditLogs = () => {
                         <div className="overflow-y-auto p-6">
                             <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div className="space-y-1">
-                                    <div className="text-[10px] font-black text-text-light uppercase tracking-widest">Hành động</div>
-                                    <div className="font-black text-lav-dark">{selectedLog.action}</div>
+                                    <div className="text-[10px] font-semibold text-text-light uppercase tracking-widest">Hành động</div>
+                                    <div className="font-semibold text-lav-dark">{selectedLog.action}</div>
                                 </div>
                                 <div className="space-y-1">
-                                    <div className="text-[10px] font-black text-text-light uppercase tracking-widest">Trạng thái</div>
-                                    <div className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-black ${selectedLog.status === 'SUCCESS' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                    <div className="text-[10px] font-semibold text-text-light uppercase tracking-widest">Trạng thái</div>
+                                    <div className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${selectedLog.status === 'SUCCESS' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                         {selectedLog.status}
                                     </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <div className="text-[10px] font-black text-text-light uppercase tracking-widest">Người thực hiện</div>
+                                    <div className="text-[10px] font-semibold text-text-light uppercase tracking-widest">Người thực hiện</div>
                                     <div className="font-bold text-text-dark">{selectedLog.actorId} ({selectedLog.actorRole})</div>
                                 </div>
                                 <div className="space-y-1">
-                                    <div className="text-[10px] font-black text-text-light uppercase tracking-widest">IP Address</div>
+                                    <div className="text-[10px] font-semibold text-text-light uppercase tracking-widest">IP Address</div>
                                     <div className="font-bold text-text-dark">{selectedLog.ipAddress}</div>
                                 </div>
                             </div>
 
                             {selectedLog.reason && (
                                 <div className="mb-6 rounded-xl bg-red-50 p-4 ring-1 ring-red-100">
-                                    <div className="text-[10px] font-black text-red-600 uppercase tracking-widest mb-1">Lý do thất bại</div>
+                                    <div className="text-[10px] font-semibold text-red-600 uppercase tracking-widest mb-1">Lý do thất bại</div>
                                     <div className="text-sm font-bold text-red-700">{selectedLog.reason}</div>
                                 </div>
                             )}
 
                             <div className="space-y-2">
-                                <div className="text-[10px] font-black text-text-light uppercase tracking-widest">Metadata (JSON)</div>
+                                <div className="text-[10px] font-semibold text-text-light uppercase tracking-widest">Metadata (JSON)</div>
                                 <div className="rounded-2xl bg-text-dark p-4 font-mono text-xs text-white overflow-x-auto shadow-inner">
                                     <pre>{JSON.stringify(selectedLog.metadata, null, 2)}</pre>
                                 </div>

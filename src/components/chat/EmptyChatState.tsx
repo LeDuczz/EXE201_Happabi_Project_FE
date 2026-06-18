@@ -11,7 +11,7 @@ const EmptyChatState = ({ isSending, onSendSuggestion }: EmptyChatStateProps) =>
     <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-[24px] bg-grad text-white shadow-lg">
       <Bot size={30} />
     </div>
-    <h2 className="font-serif text-3xl font-black text-text-dark">Bạn muốn hỏi gì hôm nay?</h2>
+    <h2 className="text-heading text-3xl font-semibold text-text-dark">Bạn muốn hỏi gì hôm nay?</h2>
     <p className="mt-2 max-w-lg text-sm font-semibold leading-6 text-text-light">
       AI có thể hỗ trợ trả lời kiến thức chăm sóc mẹ và bé, gợi ý bước tiếp theo, hoặc tra cứu từ kho kiến thức đã duyệt.
     </p>

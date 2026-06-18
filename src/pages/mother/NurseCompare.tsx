@@ -161,7 +161,7 @@ const NurseCompare = () => {
           <Card className="p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <div className="text-[16px] font-black text-text-dark">Hồ sơ đang so sánh</div>
+                <div className="text-[16px] font-semibold text-text-dark">Hồ sơ đang so sánh</div>
                 <p className="mt-1 text-[13px] font-semibold text-text-mid">
                   Dữ liệu bên dưới lấy từ hồ sơ public đã được backend xác thực trạng thái ACTIVE.
                 </p>
@@ -185,7 +185,7 @@ const NurseCompare = () => {
           <Card className="p-5">
             <div className="grid gap-4 lg:grid-cols-2">
               <label className="block">
-                <span className="text-[13px] font-black text-text-dark">Nhu cầu chăm sóc</span>
+                <span className="text-[13px] font-semibold text-text-dark">Nhu cầu chăm sóc</span>
                 <textarea
                   value={careNeed}
                   onChange={(event) => setCareNeed(event.target.value)}
@@ -196,7 +196,7 @@ const NurseCompare = () => {
                 />
               </label>
               <label className="block">
-                <span className="text-[13px] font-black text-text-dark">Ưu tiên của mẹ</span>
+                <span className="text-[13px] font-semibold text-text-dark">Ưu tiên của mẹ</span>
                 <textarea
                   value={preference}
                   onChange={(event) => setPreference(event.target.value)}
@@ -227,7 +227,7 @@ const NurseCompare = () => {
         <Card className="flex min-h-[340px] items-center justify-center text-center">
           <div>
             <Stethoscope className="mx-auto text-lav-dark" size={34} />
-            <p className="mt-3 text-[16px] font-black text-text-dark">Chưa đủ 2 hồ sơ để so sánh</p>
+            <p className="mt-3 text-[16px] font-semibold text-text-dark">Chưa đủ 2 hồ sơ để so sánh</p>
             <p className="mt-1 text-[13px] font-semibold text-text-mid">
               Mẹ hãy quay lại trang tìm điều dưỡng và chọn 2 hồ sơ phù hợp.
             </p>
@@ -265,7 +265,7 @@ const SelectedNurseCard = ({ nurse, candidate, suggested, onRemove }: SelectedNu
       <Avatar initials={getInitials(nurse.fullName)} src={nurse.avatarUrl} size={54} />
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="truncate text-[16px] font-black text-text-dark">{nurse.fullName || 'Điều dưỡng Happabi'}</h3>
+          <h3 className="truncate text-[16px] font-semibold text-text-dark">{nurse.fullName || 'Điều dưỡng Happabi'}</h3>
           {suggested && <Tag variant="grad">Gợi ý phù hợp</Tag>}
         </div>
         <p className="mt-1 text-[13px] font-bold text-text-mid">
@@ -286,12 +286,12 @@ const SelectedNurseCard = ({ nurse, candidate, suggested, onRemove }: SelectedNu
     </div>
 
     <div className="mt-4 rounded-2xl bg-lav-100/55 p-3">
-      <div className="text-[12px] font-black text-text-dark">Điểm mạnh</div>
+      <div className="text-[12px] font-semibold text-text-dark">Điểm mạnh</div>
       <ListText items={candidate?.strengths} fallback="Sẽ hiển thị sau khi phân tích AI." />
     </div>
 
     <div className="mt-3 rounded-2xl bg-slate-50 p-3">
-      <div className="text-[12px] font-black text-text-dark">Cần hỏi thêm</div>
+      <div className="text-[12px] font-semibold text-text-dark">Cần hỏi thêm</div>
       <ListText items={candidate?.watchPoints} fallback="Sẽ hiển thị sau khi phân tích AI." />
     </div>
   </div>
@@ -299,7 +299,7 @@ const SelectedNurseCard = ({ nurse, candidate, suggested, onRemove }: SelectedNu
 
 const Metric = ({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) => (
   <div className="rounded-2xl bg-white p-3 text-center shadow-sm">
-    <div className="flex items-center justify-center gap-1 text-[13px] font-black text-text-dark">
+    <div className="flex items-center justify-center gap-1 text-[13px] font-semibold text-text-dark">
       {icon}
       {value}
     </div>
@@ -329,7 +329,7 @@ const AiResultPanel = ({ comparison }: { comparison: NurseAiComparisonResponse }
           <Sparkles size={18} />
         </span>
         <div>
-          <div className="text-[16px] font-black text-text-dark">
+          <div className="text-[16px] font-semibold text-text-dark">
             {comparison.aiGenerated ? 'AI gợi ý cho mẹ' : 'Gợi ý dựa trên dữ liệu hồ sơ'}
           </div>
           <div className="text-[12px] font-bold text-text-light">

@@ -151,8 +151,8 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
   return (
     <div className="mb-7 flex items-start justify-between">
       <div>
-        <h1 className="font-serif text-[26px] font-black leading-[1.2] text-text-dark">{title}</h1>
-        {subtitle && <p className="mt-1 text-[13.5px] text-text-light">{subtitle}</p>}
+        <h1 className="text-heading text-2xl font-semibold leading-tight text-text-dark">{title}</h1>
+        {subtitle && <p className="mt-1 text-caption text-text-light">{subtitle}</p>}
       </div>
 
       <div className="flex items-center gap-2.5">
@@ -165,7 +165,7 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
           >
             <Bell size={18} />
             {unreadCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-pink-dark px-1 text-[10px] font-black leading-none text-white">
+              <span className="absolute -right-1 -top-1 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-pink-dark px-1 text-[10px] font-semibold leading-none text-white">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -175,7 +175,7 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
             <div className="absolute right-0 top-[46px] z-50 w-[360px] overflow-hidden rounded-2xl border border-lav-200 bg-white shadow-[0_22px_60px_rgba(66,38,95,0.18)]">
               <div className="flex items-center justify-between border-b border-lav-100 px-4 py-3">
                 <div>
-                  <div className="text-[14px] font-black text-text-dark">Thông báo</div>
+                  <div className="text-[14px] font-semibold text-text-dark">Thông báo</div>
                   <div className="mt-0.5 text-[11px] font-bold text-text-light">
                     {unreadCount > 0 ? `${unreadCount} thông báo chưa đọc` : 'Không có thông báo mới'}
                   </div>
@@ -183,7 +183,7 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
                 <button
                   type="button"
                   onClick={() => void loadNotifications()}
-                  className="rounded-lg px-2 py-1 text-[11px] font-black text-lav-dark hover:bg-lav-50"
+                  className="rounded-lg px-2 py-1 text-[11px] font-semibold text-lav-dark hover:bg-lav-50"
                 >
                   Làm mới
                 </button>
@@ -203,7 +203,7 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
                     <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-lav-50 text-lav-dark">
                       <Bell size={18} />
                     </div>
-                    <div className="text-[13px] font-black text-text-dark">Chưa có thông báo</div>
+                    <div className="text-[13px] font-semibold text-text-dark">Chưa có thông báo</div>
                     <div className="mt-1 text-[12px] font-bold text-text-light">Các cập nhật ca làm sẽ hiển thị tại đây.</div>
                   </div>
                 ) : (
@@ -222,7 +222,7 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
                         }`}
                       />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[13px] font-black text-text-dark">{notification.title}</span>
+                        <span className="block truncate text-[13px] font-semibold text-text-dark">{notification.title}</span>
                         <span className="mt-1 block line-clamp-2 text-[12px] font-semibold leading-5 text-text-mid">
                           {notification.message}
                         </span>

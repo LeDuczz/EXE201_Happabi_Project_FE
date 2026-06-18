@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
 import { CalendarDays, Clock, Loader2, MapPin, PlayCircle, RefreshCw } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../../components/common/Card';
 import Btn from '../../components/common/Btn';
 import Avatar from '../../components/common/Avatar';
 import Topbar from '../../components/layout/Topbar';
-import workSessionApi from '../../api/workSessionApi';
+import { useNurseWorkSessions } from '../../hooks/useNurseWorkSessions';
 import type { WorkSession, WorkSessionStatus } from '../../types/workSession';
-import { getApiErrorMessage } from '../../utils/apiError';
 
 const tabs: Array<{ label: string; value: 'ALL' | WorkSessionStatus }> = [
   { label: 'Tất cả', value: 'ALL' },
@@ -52,26 +51,8 @@ const completionRate = (session: WorkSession) => {
 
 const NurseBookings = () => {
   const navigate = useNavigate();
-  const [sessions, setSessions] = useState<WorkSession[]>([]);
+  const { sessions, isLoading, error, reload } = useNurseWorkSessions();
   const [activeTab, setActiveTab] = useState<'ALL' | WorkSessionStatus>('ALL');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const loadSessions = async () => {
-    setIsLoading(true);
-    setError('');
-    try {
-      setSessions(await workSessionApi.getNurseSessions());
-    } catch (err) {
-      setError(getApiErrorMessage(err));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void loadSessions();
-  }, []);
 
   const filteredSessions = useMemo(() => {
     if (activeTab === 'ALL') return sessions;
@@ -92,7 +73,7 @@ const NurseBookings = () => {
               key={tab.value}
               type="button"
               onClick={() => setActiveTab(tab.value)}
-              className={`whitespace-nowrap rounded-full px-5 py-2 text-xs font-black transition ${
+              className={`whitespace-nowrap rounded-full px-5 py-2 text-xs font-semibold transition ${
                 activeTab === tab.value
                   ? 'bg-lav-acc text-white shadow-[0_8px_22px_rgba(192,132,252,.25)]'
                   : 'bg-white text-lav-dark ring-1 ring-lav-200 hover:bg-lav-50'
@@ -103,7 +84,7 @@ const NurseBookings = () => {
           ))}
         </div>
 
-        <Btn variant="soft" size="sm" onClick={loadSessions} disabled={isLoading}>
+        <Btn variant="soft" size="sm" onClick={reload} disabled={isLoading}>
           <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
           Làm mới
         </Btn>
@@ -122,7 +103,7 @@ const NurseBookings = () => {
       ) : filteredSessions.length === 0 ? (
         <Card className="flex flex-col items-center justify-center py-20 text-center">
           <CalendarDays size={58} className="mb-4 text-lav-dark opacity-25" />
-          <h3 className="font-serif text-2xl font-black text-text-dark">Chưa có ca phù hợp</h3>
+          <h3 className="text-heading text-2xl font-semibold text-text-dark">Chưa có ca phù hợp</h3>
           <p className="mt-2 max-w-[520px] text-sm font-bold text-text-mid">
             Khi booking đã được thanh toán và xác nhận, ca làm sẽ xuất hiện tại đây.
           </p>
@@ -139,12 +120,12 @@ const NurseBookings = () => {
                       <div className="flex items-center gap-3">
                         <Avatar initials={session.motherName?.slice(0, 2) || 'M'} size={48} />
                         <div>
-                          <div className="text-lg font-black text-text-dark">{session.motherName}</div>
+                          <div className="text-lg font-semibold text-text-dark">{session.motherName}</div>
                           <div className="text-[13px] font-bold text-lav-dark">{session.serviceName}</div>
                         </div>
                       </div>
 
-                      <span className={`rounded-full border px-3 py-1 text-[11px] font-black ${statusClass[session.status]}`}>
+                      <span className={`rounded-full border px-3 py-1 text-[11px] font-semibold ${statusClass[session.status]}`}>
                         {statusLabel[session.status]}
                       </span>
                     </div>
@@ -169,7 +150,7 @@ const NurseBookings = () => {
 
                   <div className="border-l border-lav-100 bg-lav-50 p-6">
                     <div className="mb-4">
-                      <div className="mb-2 flex items-center justify-between text-[12px] font-black text-text-mid">
+                      <div className="mb-2 flex items-center justify-between text-[12px] font-semibold text-text-mid">
                         <span>Tiến độ checklist</span>
                         <span>{progress}%</span>
                       </div>

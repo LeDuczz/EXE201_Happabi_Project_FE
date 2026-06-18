@@ -75,16 +75,16 @@ const Register = ({ role }: RegisterProps) => {
         <div className="mb-6 text-center">
           <Link to="/" className="mb-4 inline-flex items-center gap-2">
             <img src="/image/logo.png" alt="Happabi" className="h-12 w-12 rounded-2xl object-cover" />
-            <span className="font-serif text-3xl font-black text-grad">Happabi</span>
+            <span className="text-heading text-3xl font-semibold text-grad">Happabi</span>
           </Link>
-          <h1 className="text-3xl font-black text-dark-200">
+          <h1 className="text-3xl font-semibold text-dark-200">
             {isMother ? 'Đăng ký Mother' : 'Đăng ký Nurse'}
           </h1>
         </div>
 
         <div className="mb-5 grid grid-cols-2 gap-2 rounded-2xl bg-lav-100 p-1">
-          <button type="button" onClick={() => navigate('/register/mother')} className={`rounded-xl px-3 py-2 text-sm font-black ${isMother ? 'bg-white text-pink-dark shadow-sm' : 'text-text-mid'}`}>Mother</button>
-          <button type="button" onClick={() => navigate('/register/nurse')} className={`rounded-xl px-3 py-2 text-sm font-black ${!isMother ? 'bg-white text-lav-dark shadow-sm' : 'text-text-mid'}`}>Nurse</button>
+          <button type="button" onClick={() => navigate('/register/mother')} className={`rounded-xl px-3 py-2 text-sm font-semibold ${isMother ? 'bg-white text-pink-dark shadow-sm' : 'text-text-mid'}`}>Mother</button>
+          <button type="button" onClick={() => navigate('/register/nurse')} className={`rounded-xl px-3 py-2 text-sm font-semibold ${!isMother ? 'bg-white text-lav-dark shadow-sm' : 'text-text-mid'}`}>Nurse</button>
         </div>
 
         {error && (
@@ -142,7 +142,7 @@ const Register = ({ role }: RegisterProps) => {
 
         <p className="mt-6 text-center text-sm font-semibold text-text-mid">
           Đã có tài khoản?{' '}
-          <Link to={isMother ? '/auth/mother' : '/auth/nurse'} className="font-black text-lav-dark hover:underline">
+          <Link to={isMother ? '/auth/mother' : '/auth/nurse'} className="font-semibold text-lav-dark hover:underline">
             Đăng nhập
           </Link>
         </p>
@@ -153,11 +153,11 @@ const Register = ({ role }: RegisterProps) => {
         <img src="/image/5.webp" alt="Happabi" className="absolute inset-0 h-full w-full object-cover opacity-90" />
         <div className="absolute inset-0 bg-gradient-to-br from-[#fff0f8]/88 via-white/62 to-[#f7f0ff]/78" />
         <div className="relative z-10 flex h-full flex-col justify-between p-10">
-          <button className="flex w-fit items-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 py-2 text-sm font-black text-text-mid backdrop-blur" onClick={() => navigate('/')}>
+          <button className="flex w-fit items-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 py-2 text-sm font-semibold text-text-mid backdrop-blur" onClick={() => navigate('/')}>
             <ArrowLeft size={16} /> Landing
           </button>
           <div className="max-w-xl">
-            <h2 className="font-serif text-6xl font-black leading-none text-dark-200">
+            <h2 className="text-heading text-4xl font-semibold leading-tight text-dark-200 md:text-5xl">
               {isMother ? 'Tạo tài khoản cho mẹ.' : 'Bắt đầu hồ sơ nurse.'}
             </h2>
           </div>

@@ -99,7 +99,7 @@ const CreateBooking = () => {
       {!hasSelectedService ? (
         <Card className="mx-auto max-w-[680px] text-center">
           <CalendarClock className="mx-auto text-lav-dark" size={38} />
-          <h2 className="mt-3 text-[22px] font-black text-text-dark">Chưa chọn nurse và dịch vụ</h2>
+          <h2 className="mt-3 text-[22px] font-semibold text-text-dark">Chưa chọn nurse và dịch vụ</h2>
           <p className="mx-auto mt-2 max-w-[520px] text-[14px] font-bold leading-6 text-text-mid">
             Hãy chọn một nurse từ danh sách, sau đó chọn dịch vụ lẻ để bắt đầu đặt lịch.
           </p>
@@ -114,7 +114,7 @@ const CreateBooking = () => {
             <button
               type="button"
               onClick={() => navigate('/mother/search')}
-              className="mb-5 inline-flex items-center gap-2 text-[13px] font-black text-lav-dark"
+              className="mb-5 inline-flex items-center gap-2 text-[13px] font-semibold text-lav-dark"
             >
               <ArrowLeft size={16} />
               Chọn nurse khác
@@ -128,7 +128,7 @@ const CreateBooking = () => {
 
             <div className="grid gap-4 md:grid-cols-2">
               <label className="block">
-                <span className="mb-2 flex items-center gap-2 text-[13px] font-black text-text-dark">
+                <span className="mb-2 flex items-center gap-2 text-[13px] font-semibold text-text-dark">
                   <Clock size={15} />
                   Thời gian bắt đầu
                 </span>
@@ -144,18 +144,18 @@ const CreateBooking = () => {
               </label>
 
               <div className="rounded-xl border border-lav-100 bg-lav-50 px-4 py-3">
-                <span className="mb-2 flex items-center gap-2 text-[13px] font-black text-text-dark">
+                <span className="mb-2 flex items-center gap-2 text-[13px] font-semibold text-text-dark">
                   <Clock size={15} />
                   Thời gian kết thúc
                 </span>
-                <p className="text-[14px] font-black text-text-dark">
+                <p className="text-[14px] font-semibold text-text-dark">
                   {expectedEndAt ? new Date(expectedEndAt).toLocaleString('vi-VN') : 'Chưa chọn'}
                 </p>
                 <p className="mt-1 text-[12px] font-bold text-text-light">{durationMinutes} phút</p>
               </div>
 
               <div className="md:col-span-2">
-                <span className="mb-2 flex items-center gap-2 text-[13px] font-black text-text-dark">
+                <span className="mb-2 flex items-center gap-2 text-[13px] font-semibold text-text-dark">
                   <CreditCard size={15} />
                   Phương thức thanh toán
                 </span>
@@ -170,7 +170,7 @@ const CreateBooking = () => {
                         : 'border-lav-100 bg-white hover:border-lav-300'
                     }`}
                   >
-                    <p className="text-[13px] font-black text-text-dark">Cọc 30%</p>
+                    <p className="text-[13px] font-semibold text-text-dark">Cọc 30%</p>
                     <p className="mt-1 text-[12px] font-bold text-text-mid">
                       Thanh toán app {formatCurrency(depositAmount)}, còn lại {formatCurrency(remainingCashAmount)} tiền mặt.
                     </p>
@@ -185,7 +185,7 @@ const CreateBooking = () => {
                         : 'border-lav-100 bg-white hover:border-lav-300'
                     }`}
                   >
-                    <p className="text-[13px] font-black text-text-dark">Thanh toán full qua app</p>
+                    <p className="text-[13px] font-semibold text-text-dark">Thanh toán full qua app</p>
                     <p className="mt-1 text-[12px] font-bold text-text-mid">
                       Thanh toán app {formatCurrency(grossAmount)}, không cần thanh toán tiền mặt.
                     </p>
@@ -194,7 +194,7 @@ const CreateBooking = () => {
               </div>
 
               <label className="block md:col-span-2">
-                <span className="mb-2 flex items-center gap-2 text-[13px] font-black text-text-dark">
+                <span className="mb-2 flex items-center gap-2 text-[13px] font-semibold text-text-dark">
                   <MapPin size={15} />
                   Địa chỉ chăm sóc
                 </span>
@@ -208,7 +208,7 @@ const CreateBooking = () => {
               </label>
 
               <label className="block md:col-span-2">
-                <span className="mb-2 text-[13px] font-black text-text-dark">Ghi chú cho nurse</span>
+                <span className="mb-2 text-[13px] font-semibold text-text-dark">Ghi chú cho nurse</span>
                 <textarea
                   value={motherNote}
                   onChange={(event) => setMotherNote(event.target.value)}
@@ -237,13 +237,13 @@ const CreateBooking = () => {
 
           <Card className="h-fit">
             <p className="text-[12px] font-bold text-text-light">Nurse</p>
-            <p className="mt-1 text-[17px] font-black text-text-dark">{selected.nurseName || 'Nurse Happabi'}</p>
+            <p className="mt-1 text-[17px] font-semibold text-text-dark">{selected.nurseName || 'Nurse Happabi'}</p>
             <p className="mt-4 text-[12px] font-bold text-text-light">Dịch vụ</p>
-            <p className="mt-1 text-[17px] font-black text-text-dark">{selected.serviceName}</p>
+            <p className="mt-1 text-[17px] font-semibold text-text-dark">{selected.serviceName}</p>
             <p className="mt-4 text-[12px] font-bold text-text-light">Tổng tiền</p>
-            <p className="mt-1 text-[30px] font-black text-grad">{formatCurrency(grossAmount)}</p>
+            <p className="mt-1 text-[30px] font-semibold text-grad">{formatCurrency(grossAmount)}</p>
             <p className="mt-4 text-[12px] font-bold text-text-light">Thời lượng</p>
-            <p className="mt-1 text-[15px] font-black text-text-dark">{durationMinutes} phút</p>
+            <p className="mt-1 text-[15px] font-semibold text-text-dark">{durationMinutes} phút</p>
             <p className="mt-4 text-[12px] font-bold text-text-light">Dự kiến</p>
             <p className="mt-1 text-[13px] font-bold text-text-mid">
               {new Date(startAt).toLocaleString('vi-VN')} - {expectedEndAt ? new Date(expectedEndAt).toLocaleTimeString('vi-VN') : ''}
@@ -251,7 +251,7 @@ const CreateBooking = () => {
             {draft && (
               <div className="mt-5 rounded-xl border border-lav-100 bg-lav-50 p-4">
                 <p className="text-[12px] font-bold text-text-light">Cần thanh toán qua app</p>
-                <p className="mt-1 text-[22px] font-black text-grad">{formatCurrency(draft.appPaymentAmount)}</p>
+                <p className="mt-1 text-[22px] font-semibold text-grad">{formatCurrency(draft.appPaymentAmount)}</p>
                 {!!draft.remainingCashAmount && (
                   <p className="mt-2 text-[12px] font-bold text-text-mid">
                     Còn lại {formatCurrency(draft.remainingCashAmount)} thanh toán tiền mặt sau ca.

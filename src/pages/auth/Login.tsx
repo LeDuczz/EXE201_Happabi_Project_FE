@@ -157,17 +157,17 @@ const Login = ({ portalRole }: LoginProps) => {
         <img src="/image/1.webp" alt="Happabi" className="absolute inset-0 h-full w-full object-cover opacity-90" />
         <div className="absolute inset-0 bg-gradient-to-br from-white/72 via-[#f7f0ff]/60 to-[#fff0f8]/82" />
         <div className="relative z-10 flex h-full flex-col justify-between p-10">
-          <button className="flex w-fit items-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 py-2 text-sm font-black text-text-mid backdrop-blur" onClick={() => navigate('/')}>
+          <button className="flex w-fit items-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 py-2 text-sm font-semibold text-text-mid backdrop-blur" onClick={() => navigate('/')}>
             <ArrowLeft size={16} /> Landing
           </button>
           <div className="max-w-xl">
             <img src="/image/logo.png" alt="Happabi" className="mb-5 h-16 w-16 rounded-3xl object-cover shadow-lg" />
-            <h1 className="font-serif text-6xl font-black leading-none text-dark-200">{config.heroTitle}</h1>
-            <p className="mt-5 text-lg leading-8 text-text-mid">{config.heroText}</p>
+            <h1 className="text-heading text-4xl font-semibold leading-tight text-dark-200 md:text-5xl">{config.heroTitle}</h1>
+            <p className="mt-5 text-body-lg text-text-mid">{config.heroText}</p>
           </div>
           <div className="grid max-w-xl grid-cols-3 gap-3">
             {['Hồ sơ xác thực', 'Phân quyền rõ ràng', 'Theo dõi minh bạch'].map((item) => (
-              <div key={item} className="rounded-2xl border border-white/70 bg-white/78 p-4 text-sm font-black text-text-mid backdrop-blur">{item}</div>
+              <div key={item} className="rounded-2xl border border-white/70 bg-white/78 p-4 text-sm font-semibold text-text-mid backdrop-blur">{item}</div>
             ))}
           </div>
         </div>
@@ -178,9 +178,9 @@ const Login = ({ portalRole }: LoginProps) => {
           <div className="mb-6 text-center">
             <Link to="/" className="mb-4 inline-flex items-center gap-2">
               <img src="/image/logo.png" alt="Happabi" className="h-12 w-12 rounded-2xl object-cover" />
-              <span className="font-serif text-3xl font-black text-grad">Happabi</span>
+              <span className="text-heading text-3xl font-semibold text-grad">Happabi</span>
             </Link>
-            <h1 className="text-3xl font-black text-dark-200">{config.title}</h1>
+            <h1 className="text-3xl font-semibold text-dark-200">{config.title}</h1>
             <p className="mt-2 text-sm text-text-mid">{config.subtitle}</p>
           </div>
 
@@ -192,7 +192,7 @@ const Login = ({ portalRole }: LoginProps) => {
                   key={role}
                   type="button"
                   onClick={() => navigate(path)}
-                  className={`rounded-xl px-2 py-2 text-xs font-black ${active ? 'bg-white text-lav-dark shadow-sm' : 'text-text-mid'}`}
+                  className={`rounded-xl px-2 py-2 text-xs font-semibold ${active ? 'bg-white text-lav-dark shadow-sm' : 'text-text-mid'}`}
                 >
                   {portalConfig[role].label}
                 </button>
@@ -203,18 +203,18 @@ const Login = ({ portalRole }: LoginProps) => {
           {portalRole === 'MOTHER' && (
             <div className="mb-5 grid gap-3 sm:grid-cols-2">
               <button
-                className="flex items-center justify-center gap-2 rounded-xl border border-lav-200 bg-white px-4 py-3 text-sm font-black text-text-dark shadow-sm"
+                className="flex items-center justify-center gap-2 rounded-xl border border-lav-200 bg-white px-4 py-3 text-sm font-semibold text-text-dark shadow-sm"
                 onClick={() => socialLogin('Google')}
                 type="button"
               >
                 <span className="text-lg">G</span> Google
               </button>
               <button
-                className="flex items-center justify-center gap-2 rounded-xl border border-lav-200 bg-white px-4 py-3 text-sm font-black text-text-dark shadow-sm"
+                className="flex items-center justify-center gap-2 rounded-xl border border-lav-200 bg-white px-4 py-3 text-sm font-semibold text-text-dark shadow-sm"
                 onClick={() => socialLogin('Facebook')}
                 type="button"
               >
-                <span className="text-lg font-black text-[#1877f2]">f</span> Facebook
+                <span className="text-lg font-semibold text-[#1877f2]">f</span> Facebook
               </button>
             </div>
           )}
@@ -255,7 +255,7 @@ const Login = ({ portalRole }: LoginProps) => {
               Hiển thị mật khẩu
             </label>
             <div className="-mt-2 mb-4 text-right">
-              <Link to="/forgot-password" className="text-sm font-black text-lav-dark hover:underline">
+              <Link to="/forgot-password" className="text-sm font-semibold text-lav-dark hover:underline">
                 Quên mật khẩu?
               </Link>
             </div>
@@ -271,7 +271,7 @@ const Login = ({ portalRole }: LoginProps) => {
           {(portalRole === 'MOTHER' || portalRole === 'NURSE') && (
             <p className="mt-6 text-center text-sm font-semibold text-text-mid">
               Chưa có tài khoản?{' '}
-              <Link to={portalRole === 'MOTHER' ? '/register/mother' : '/register/nurse'} className="font-black text-lav-dark hover:underline">
+              <Link to={portalRole === 'MOTHER' ? '/register/mother' : '/register/nurse'} className="font-semibold text-lav-dark hover:underline">
                 Đăng ký ngay
               </Link>
             </p>

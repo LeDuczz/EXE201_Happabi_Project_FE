@@ -26,7 +26,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, isLoading = false }
                     key={i}
                     onClick={() => onPageChange(i)}
                     disabled={isLoading}
-                    className={`flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-black transition-all ${currentPage === i
+                    className={`flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-semibold transition-all ${currentPage === i
                             ? 'bg-lav-dark text-white shadow-lg shadow-lav-dark/20'
                             : 'bg-white text-text-mid hover:bg-lav-50 hover:text-lav-dark border border-lav-100'
                         }`}

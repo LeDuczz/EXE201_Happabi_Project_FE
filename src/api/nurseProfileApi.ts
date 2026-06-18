@@ -1,10 +1,9 @@
 import axiosClient from './axiosClient';
-import type { AvailabilityStatus, NurseProfile } from '../types/nurseProfile';
+import type { NurseProfile } from '../types/nurseProfile';
 
 export interface UpdateNurseProfileDisplayPayload {
   bio?: string | null;
   serviceArea?: string | null;
-  availabilityStatus?: AvailabilityStatus | null;
 }
 
 export const getMyNurseProfile = async () => {

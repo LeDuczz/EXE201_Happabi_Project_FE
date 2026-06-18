@@ -122,7 +122,7 @@ const SocialCallback = () => {
       <div className="flex min-h-screen items-center justify-center bg-[#fff9fb] p-4">
         <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-lg">
           <AlertCircle size={44} className="mx-auto mb-4 text-danger" />
-          <h1 className="mb-2 text-xl font-black text-dark-200">Đăng nhập social thất bại</h1>
+          <h1 className="mb-2 text-xl font-semibold text-dark-200">Đăng nhập social thất bại</h1>
           <p className="mb-6 text-sm text-text-mid">{error}</p>
           <Btn onClick={() => navigate('/auth/mother')}>Quay lại đăng nhập</Btn>
         </div>
@@ -134,7 +134,7 @@ const SocialCallback = () => {
     <div className="flex min-h-screen items-center justify-center bg-grad text-white">
       <div className="text-center">
         <Loader2 size={46} className="mx-auto mb-4 animate-spin" />
-        <h1 className="text-xl font-black">Đang đồng bộ tài khoản...</h1>
+        <h1 className="text-xl font-semibold">Đang đồng bộ tài khoản...</h1>
         <p className="mt-2 text-sm opacity-80">Vui lòng chờ trong giây lát.</p>
         {isSlow && (
           <p className="mx-auto mt-4 max-w-md text-sm text-white/75">

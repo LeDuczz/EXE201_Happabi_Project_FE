@@ -115,11 +115,11 @@ const AdminUserManagement = () => {
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="border-b border-lav-100 bg-lav-50/50">
-                                        <th className="px-6 py-4 text-xs font-black uppercase tracking-wider text-text-mid">Thành viên</th>
-                                        <th className="px-6 py-4 text-xs font-black uppercase tracking-wider text-text-mid">Liên hệ</th>
-                                        <th className="px-6 py-4 text-xs font-black uppercase tracking-wider text-text-mid">Vai trò</th>
-                                        <th className="px-6 py-4 text-xs font-black uppercase tracking-wider text-text-mid">Trạng thái</th>
-                                        <th className="px-6 py-4 text-xs font-black uppercase tracking-wider text-text-mid">Tiện ích</th>
+                                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-text-mid">Thành viên</th>
+                                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-text-mid">Liên hệ</th>
+                                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-text-mid">Vai trò</th>
+                                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-text-mid">Trạng thái</th>
+                                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-text-mid">Tiện ích</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-lav-100">
@@ -131,7 +131,7 @@ const AdminUserManagement = () => {
                                                         <User size={20} />
                                                     </div>
                                                     <div>
-                                                        <div className="font-black text-text-dark">{user.fullName || 'Người dùng mới'}</div>
+                                                        <div className="font-semibold text-text-dark">{user.fullName || 'Người dùng mới'}</div>
                                                         <div className="text-[10px] font-bold uppercase tracking-wider text-text-mid opacity-60">ID: {user.id.slice(0, 8)}...</div>
                                                     </div>
                                                 </div>
@@ -143,14 +143,14 @@ const AdminUserManagement = () => {
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-wrap gap-1">
                                                     {user.roles?.map((role, idx) => (
-                                                        <span key={idx} className="inline-flex items-center gap-1 rounded-md bg-lav-50 px-2 py-0.5 text-[10px] font-black text-lav-dark ring-1 ring-inset ring-lav-200">
+                                                        <span key={idx} className="inline-flex items-center gap-1 rounded-md bg-lav-50 px-2 py-0.5 text-[10px] font-semibold text-lav-dark ring-1 ring-inset ring-lav-200">
                                                             <Shield size={10} /> {role}
                                                         </span>
                                                     ))}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-black ring-1 ring-inset ${user.isActive ? 'bg-green-50 text-green-700 ring-green-600/20' : 'bg-red-50 text-red-700 ring-red-600/20'}`}>
+                                                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${user.isActive ? 'bg-green-50 text-green-700 ring-green-600/20' : 'bg-red-50 text-red-700 ring-red-600/20'}`}>
                                                     {user.isActive ? <CheckCircle size={10} /> : <Ban size={10} />}
                                                     {user.isActive ? 'ĐANG HOẠT ĐỘNG' : 'ĐÃ KHÓA'}
                                                 </span>
