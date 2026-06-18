@@ -1,4 +1,4 @@
-import { BriefcaseMedical, Check, Filter, MapPin, Scale, Search, Star, X } from 'lucide-react';
+import { BriefcaseMedical, CalendarDays, Check, Filter, MapPin, Scale, Search, Star, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { searchMotherNurses } from '../../api/motherNurseApi';
@@ -24,6 +24,14 @@ const availabilityLabel: Record<string, string> = {
   OFFLINE: 'Tạm nghỉ',
 };
 
+const emptyPage: PageResponse<NursePublicProfile> = {
+  content: [],
+  number: 0,
+  size: 12,
+  totalElements: 0,
+  totalPages: 0,
+};
+
 const getInitials = (name?: string) => {
   if (!name) return 'HB';
   const parts = name.trim().split(/\s+/);
@@ -31,12 +39,15 @@ const getInitials = (name?: string) => {
   return name.slice(0, 2).toUpperCase();
 };
 
-const emptyPage: PageResponse<NursePublicProfile> = {
-  content: [],
-  number: 0,
-  size: 12,
-  totalElements: 0,
-  totalPages: 0,
+const formatDateTime = (value?: string) => {
+  if (!value) return '';
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value));
 };
 
 interface NurseCardProps {
@@ -48,6 +59,9 @@ interface NurseCardProps {
 
 const NurseCard = ({ nurse, selectedForCompare, compareDisabled, onToggleCompare }: NurseCardProps) => {
   const navigate = useNavigate();
+  const windowLabel = nurse.availabilityWindowStartAt && nurse.availabilityWindowEndAt
+    ? `${formatDateTime(nurse.availabilityWindowStartAt)} - ${formatDateTime(nurse.availabilityWindowEndAt)}`
+    : 'Chưa có khung nhận lịch phù hợp';
 
   return (
     <Card className={`flex h-full flex-col p-5 ${selectedForCompare ? 'border-lav-acc ring-4 ring-lav-100' : ''}`}>
@@ -71,6 +85,14 @@ const NurseCard = ({ nurse, selectedForCompare, compareDisabled, onToggleCompare
             {nurse.backgroundChecked && <Tag variant="purple">Đã kiểm tra</Tag>}
           </div>
         </div>
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-green-100 bg-green-50 px-3 py-2">
+        <div className="flex items-center gap-2 text-[12px] font-black text-green-700">
+          <CalendarDays size={14} />
+          Khung nhận lịch
+        </div>
+        <p className="mt-1 text-[12px] font-bold leading-5 text-green-800">{windowLabel}</p>
       </div>
 
       <p className="mt-4 line-clamp-3 min-h-[60px] text-[13px] font-semibold leading-5 text-text-mid">
@@ -122,7 +144,8 @@ const NurseSearch = () => {
   const [keyword, setKeyword] = useState('');
   const [city, setCity] = useState('');
   const [specialty, setSpecialty] = useState<NurseSpecialty | ''>('');
-  const [availableOnly, setAvailableOnly] = useState(false);
+  const [availableDate, setAvailableDate] = useState('');
+  const [availableOnly, setAvailableOnly] = useState(true);
   const [page, setPage] = useState(emptyPage);
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -134,10 +157,11 @@ const NurseSearch = () => {
     keyword,
     city,
     specialty,
+    availableDate,
     availableOnly,
     page: currentPage,
     size: 12,
-  }), [availableOnly, city, currentPage, keyword, specialty]);
+  }), [availableDate, availableOnly, city, currentPage, keyword, specialty]);
 
   const selectedCompareIds = useMemo(
     () => new Set(selectedCompare.map((nurse) => nurse.profileId)),
@@ -174,9 +198,7 @@ const NurseSearch = () => {
       if (current.some((item) => item.profileId === nurse.profileId)) {
         return current.filter((item) => item.profileId !== nurse.profileId);
       }
-      if (current.length >= 2) {
-        return current;
-      }
+      if (current.length >= 2) return current;
       return [...current, nurse];
     });
   };
@@ -189,10 +211,13 @@ const NurseSearch = () => {
 
   return (
     <>
-      <Topbar title="Tìm điều dưỡng" subtitle="Xem hồ sơ điều dưỡng đã được duyệt và chọn 2 hồ sơ để so sánh bằng AI." />
+      <Topbar
+        title="Tìm điều dưỡng"
+        subtitle="Mặc định hiển thị nurse đang sẵn sàng hiện tại. Chọn ngày để xem nurse có khung nhận lịch trong ngày đó."
+      />
 
       <Card className="mb-6">
-        <div className="grid gap-3 lg:grid-cols-[1.2fr_.8fr_.7fr_auto_auto]">
+        <div className="grid gap-3 lg:grid-cols-[1.15fr_.7fr_.7fr_.75fr_auto_auto]">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-light" size={17} />
             <input
@@ -227,6 +252,16 @@ const NurseSearch = () => {
             <option value="MIDWIFE">Hộ sinh</option>
             <option value="CAREGIVER">Chăm sóc sau sinh</option>
           </select>
+          <input
+            type="date"
+            value={availableDate}
+            onChange={(event) => {
+              setAvailableDate(event.target.value);
+              resetAndSetPage(0);
+            }}
+            className="h-11 rounded-2xl border border-lav-200 bg-white px-4 text-[14px] font-bold outline-none focus:border-lav-acc focus:ring-4 focus:ring-lav-100"
+            aria-label="Ngày muốn đặt lịch"
+          />
           <label className="flex h-11 items-center gap-2 rounded-2xl border border-lav-200 bg-white px-4 text-[13px] font-semibold text-text-mid">
             <input
               type="checkbox"
@@ -258,10 +293,7 @@ const NurseSearch = () => {
               </div>
               <div className="flex flex-wrap gap-2">
                 {selectedCompare.map((nurse) => (
-                  <div
-                    key={nurse.profileId}
-                    className="flex items-center gap-2 rounded-2xl border border-lav-200 bg-white px-3 py-2"
-                  >
+                  <div key={nurse.profileId} className="flex items-center gap-2 rounded-2xl border border-lav-200 bg-white px-3 py-2">
                     <Avatar initials={getInitials(nurse.fullName)} src={nurse.avatarUrl} size={26} />
                     <span className="max-w-[160px] truncate text-[12px] font-semibold text-text-dark">
                       {nurse.fullName || 'Điều dưỡng Happabi'}
@@ -321,7 +353,9 @@ const NurseSearch = () => {
           <div>
             <BriefcaseMedical className="mx-auto text-lav-dark" size={34} />
             <p className="mt-3 text-[15px] font-semibold text-text-dark">Chưa có điều dưỡng phù hợp</p>
-            <p className="mt-1 text-[13px] font-semibold text-text-mid">Thử bỏ bớt bộ lọc hoặc tìm theo khu vực khác.</p>
+            <p className="mt-1 text-[13px] font-semibold text-text-mid">
+              Thử chọn ngày khác hoặc bỏ bớt bộ lọc.
+            </p>
           </div>
         </Card>
       )}

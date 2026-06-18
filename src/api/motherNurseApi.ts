@@ -11,6 +11,7 @@ export interface SearchMotherNursesParams {
   keyword?: string;
   city?: string;
   specialty?: NurseSpecialty | '';
+  availableDate?: string;
   availableOnly?: boolean;
   page?: number;
   size?: number;
@@ -22,6 +23,7 @@ export const searchMotherNurses = async (params: SearchMotherNursesParams) => {
       keyword: params.keyword || undefined,
       city: params.city || undefined,
       specialty: params.specialty || undefined,
+      availableDate: params.availableDate || undefined,
       availableOnly: params.availableOnly || undefined,
       page: params.page ?? 0,
       size: params.size ?? 12,

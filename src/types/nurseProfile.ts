@@ -1,6 +1,7 @@
 import type { NurseCertification, NurseSpecialty, NurseStatus } from './nurseOnboarding';
 
 export type AvailabilityStatus = 'AVAILABLE' | 'BUSY' | 'OFFLINE';
+export type NurseAvailabilityWindowStatus = 'ACTIVE' | 'CANCELLED' | 'EXPIRED';
 export type EkycStatus = 'PENDING' | 'PASSED' | 'REVIEW_NEEDED' | 'FAILED';
 export type NurseContractStatus = 'PENDING' | 'SIGNED' | 'CANCELLED';
 
@@ -39,4 +40,12 @@ export interface NurseProfile {
   certificationCount?: number;
   certifications?: NurseCertification[];
   canEditProfessionalInfo?: boolean;
+}
+
+export interface NurseAvailabilityWindow {
+  id: string;
+  startAt: string;
+  endAt: string;
+  status: NurseAvailabilityWindowStatus;
+  nurseAvailabilityStatus?: AvailabilityStatus;
 }

@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
-import { ArrowLeft, CalendarClock, Clock, CreditCard, MapPin, Search, ShieldCheck } from 'lucide-react';
+﻿import { useMemo, useState } from 'react';
+import { ArrowLeft, CalendarClock, Clock, CreditCard, ExternalLink, MapPin, Search, ShieldCheck } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import bookingService, { type BookingDraft } from '../../api/bookingService';
+import bookingService, { type BookingSummary, type BookingPaymentLink } from '../../api/bookingService';
 import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
 import Topbar from '../../components/layout/Topbar';
@@ -47,9 +47,11 @@ const CreateBooking = () => {
   const [paymentOption, setPaymentOption] = useState<'DEPOSIT_30_PERCENT' | 'FULL_APP_PAYMENT'>('DEPOSIT_30_PERCENT');
   const [serviceAddress, setServiceAddress] = useState('');
   const [motherNote, setMotherNote] = useState('');
-  const [draft, setDraft] = useState<BookingDraft | null>(null);
+  const [booking, setBooking] = useState<BookingSummary | null>(null);
+  const [paymentLink, setPaymentLink] = useState<BookingPaymentLink | null>(null);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreatingPayment, setIsCreatingPayment] = useState(false);
 
   const hasSelectedService = Boolean(selected.nurseProfileId && selected.serviceOfferingId);
   const durationMinutes = selected.durationMinutes ?? 60;
@@ -70,7 +72,7 @@ const CreateBooking = () => {
     setIsSubmitting(true);
     setError('');
     try {
-      const response = await bookingService.createDraft({
+      const response = await bookingService.createBooking({
         nurseProfileId: selected.nurseProfileId,
         serviceOfferingId: selected.serviceOfferingId,
         startAt: new Date(startAt).toISOString(),
@@ -78,11 +80,27 @@ const CreateBooking = () => {
         motherNote: motherNote.trim() || undefined,
         paymentOption,
       });
-      setDraft(response);
+      setBooking(response);
     } catch (err) {
       setError(getApiErrorMessage(err));
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const payBooking = async () => {
+    const bookingId = booking?.bookingId;
+    if (!bookingId) return;
+    setIsCreatingPayment(true);
+    setError('');
+    try {
+      const response = await bookingService.createPaymentLink(bookingId);
+      setPaymentLink(response);
+      window.location.href = response.checkoutUrl;
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setIsCreatingPayment(false);
     }
   };
 
@@ -120,9 +138,9 @@ const CreateBooking = () => {
               Chọn nurse khác
             </button>
 
-            {draft && (
+            {booking && (
               <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] font-bold text-emerald-700">
-                Booking đã được tạo. Vui lòng hoàn tất thanh toán trước {new Date(draft.paymentExpiresAt).toLocaleTimeString('vi-VN')}.
+                Booking đã được tạo. Vui lòng thanh toán trước {new Date(booking.paymentExpiresAt).toLocaleTimeString('vi-VN')}.
               </div>
             )}
 
@@ -138,7 +156,7 @@ const CreateBooking = () => {
                   min={minimumStartAt()}
                   step={3600}
                   onChange={(event) => setStartAt(event.target.value)}
-                  disabled={Boolean(draft)}
+                  disabled={Boolean(booking)}
                   className="w-full rounded-xl border border-lav-200 bg-white px-4 py-3 text-[14px] font-bold text-text-dark outline-none transition focus:border-lav-400"
                 />
               </label>
@@ -162,7 +180,7 @@ const CreateBooking = () => {
                 <div className="grid gap-3 md:grid-cols-2">
                   <button
                     type="button"
-                    disabled={Boolean(draft)}
+                    disabled={Boolean(booking)}
                     onClick={() => setPaymentOption('DEPOSIT_30_PERCENT')}
                     className={`rounded-xl border p-4 text-left transition ${
                       paymentOption === 'DEPOSIT_30_PERCENT'
@@ -177,7 +195,7 @@ const CreateBooking = () => {
                   </button>
                   <button
                     type="button"
-                    disabled={Boolean(draft)}
+                    disabled={Boolean(booking)}
                     onClick={() => setPaymentOption('FULL_APP_PAYMENT')}
                     className={`rounded-xl border p-4 text-left transition ${
                       paymentOption === 'FULL_APP_PAYMENT'
@@ -201,7 +219,7 @@ const CreateBooking = () => {
                 <input
                   value={serviceAddress}
                   onChange={(event) => setServiceAddress(event.target.value)}
-                  disabled={Boolean(draft)}
+                  disabled={Boolean(booking)}
                   placeholder="Ví dụ: 12 Nguyễn Huệ, Quận 1, TP.HCM"
                   className="w-full rounded-xl border border-lav-200 bg-white px-4 py-3 text-[14px] font-bold text-text-dark outline-none transition focus:border-lav-400"
                 />
@@ -212,7 +230,7 @@ const CreateBooking = () => {
                 <textarea
                   value={motherNote}
                   onChange={(event) => setMotherNote(event.target.value)}
-                  disabled={Boolean(draft)}
+                  disabled={Boolean(booking)}
                   rows={4}
                   placeholder="Nhu cầu chăm sóc, tình trạng mẹ/bé, giờ vào nhà..."
                   className="w-full resize-none rounded-xl border border-lav-200 bg-white px-4 py-3 text-[14px] font-bold text-text-dark outline-none transition focus:border-lav-400"
@@ -220,17 +238,23 @@ const CreateBooking = () => {
               </label>
             </div>
 
-            <div className="mt-6 flex justify-end">
-              {!draft ? (
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              {!booking ? (
                 <Btn disabled={!canCreateBooking || isSubmitting} onClick={createBooking}>
                   <ShieldCheck size={16} />
                   {isSubmitting ? 'Đang tạo booking...' : 'Tạo booking'}
                 </Btn>
               ) : (
-                <Btn onClick={() => navigate('/mother/bookings')}>
-                  <CalendarClock size={16} />
-                  Xem đơn của tôi
-                </Btn>
+                <>
+                  <Btn variant="outline" onClick={() => navigate('/mother/bookings')}>
+                    <CalendarClock size={16} />
+                    Xem đơn của tôi
+                  </Btn>
+                  <Btn disabled={isCreatingPayment} onClick={payBooking}>
+                    <ExternalLink size={16} />
+                    {isCreatingPayment ? 'Đang tạo link...' : 'Thanh toán qua PayOS'}
+                  </Btn>
+                </>
               )}
             </div>
           </Card>
@@ -248,13 +272,18 @@ const CreateBooking = () => {
             <p className="mt-1 text-[13px] font-bold text-text-mid">
               {new Date(startAt).toLocaleString('vi-VN')} - {expectedEndAt ? new Date(expectedEndAt).toLocaleTimeString('vi-VN') : ''}
             </p>
-            {draft && (
+            {booking && (
               <div className="mt-5 rounded-xl border border-lav-100 bg-lav-50 p-4">
                 <p className="text-[12px] font-bold text-text-light">Cần thanh toán qua app</p>
-                <p className="mt-1 text-[22px] font-semibold text-grad">{formatCurrency(draft.appPaymentAmount)}</p>
-                {!!draft.remainingCashAmount && (
+                <p className="mt-1 text-[22px] font-semibold text-grad">{formatCurrency(booking.appPaymentAmount)}</p>
+                {!!booking.remainingCashAmount && (
                   <p className="mt-2 text-[12px] font-bold text-text-mid">
-                    Còn lại {formatCurrency(draft.remainingCashAmount)} thanh toán tiền mặt sau ca.
+                    Còn lại {formatCurrency(booking.remainingCashAmount)} thanh toán tiền mặt sau ca.
+                  </p>
+                )}
+                {paymentLink && (
+                  <p className="mt-3 text-[12px] font-bold text-text-mid">
+                    Mã giao dịch: {paymentLink.transactionId}
                   </p>
                 )}
               </div>
@@ -267,3 +296,4 @@ const CreateBooking = () => {
 };
 
 export default CreateBooking;
+

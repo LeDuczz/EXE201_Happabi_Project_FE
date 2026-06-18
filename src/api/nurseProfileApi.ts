@@ -1,5 +1,5 @@
 import axiosClient from './axiosClient';
-import type { NurseProfile } from '../types/nurseProfile';
+import type { NurseAvailabilityWindow, NurseProfile } from '../types/nurseProfile';
 
 export interface UpdateNurseProfileDisplayPayload {
   bio?: string | null;
@@ -25,4 +25,24 @@ export const uploadMyAvatar = async (file: File) => {
 export const updateMyNurseProfileDisplay = async (payload: UpdateNurseProfileDisplayPayload) => {
   const response = await axiosClient.patch('/api/v1/users/me/nurse-profile/display', payload);
   return response.data?.data as NurseProfile;
+};
+
+export interface CreateNurseAvailabilityWindowPayload {
+  startAt: string;
+  endAt: string;
+}
+
+export const getMyAvailabilityWindows = async () => {
+  const response = await axiosClient.get('/api/v1/nurses/me/availability-windows');
+  return response.data?.data as NurseAvailabilityWindow[];
+};
+
+export const createMyAvailabilityWindow = async (payload: CreateNurseAvailabilityWindowPayload) => {
+  const response = await axiosClient.post('/api/v1/nurses/me/availability-windows', payload);
+  return response.data?.data as NurseAvailabilityWindow;
+};
+
+export const cancelMyAvailabilityWindow = async (windowId: string) => {
+  const response = await axiosClient.delete(`/api/v1/nurses/me/availability-windows/${windowId}`);
+  return response.data?.data as NurseAvailabilityWindow;
 };

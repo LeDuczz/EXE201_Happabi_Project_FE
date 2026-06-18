@@ -1,6 +1,6 @@
-import axiosClient from './axiosClient';
+﻿import axiosClient from './axiosClient';
 
-export interface CreateBookingDraftPayload {
+export interface CreateBookingPayload {
     nurseProfileId: string;
     serviceOfferingId: string;
     startAt: string;
@@ -9,15 +9,14 @@ export interface CreateBookingDraftPayload {
     paymentOption?: 'DEPOSIT_30_PERCENT' | 'FULL_APP_PAYMENT';
 }
 
-export interface BookingDraft {
-    draftId: string;
-    bookingId?: string;
+export interface BookingSummary {
+    bookingId: string;
     slotId?: string;
     nurseProfileId: string;
     nurseName: string;
     serviceOfferingId: string;
     serviceName: string;
-    status: 'DRAFT' | 'PENDING_PAYMENT' | 'PENDING_NURSE_ACCEPTANCE' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED';
+    status: 'PENDING_PAYMENT' | 'PENDING_NURSE_ACCEPTANCE' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED';
     startAt: string;
     endAt: string;
     paymentExpiresAt: string;
@@ -28,6 +27,14 @@ export interface BookingDraft {
     paymentOption?: 'DEPOSIT_30_PERCENT' | 'FULL_APP_PAYMENT';
     serviceAddress: string;
     motherNote?: string;
+}
+
+export interface BookingPaymentLink {
+    bookingId: string;
+    transactionId: number;
+    amount: number;
+    checkoutUrl: string;
+    paymentExpiresAt: string;
 }
 
 export interface Booking {
@@ -43,9 +50,19 @@ export interface Booking {
 }
 
 const bookingService = {
-    createDraft: async (payload: CreateBookingDraftPayload) => {
-        const response = await axiosClient.post('/api/v1/bookings/drafts', payload);
-        return response.data?.data as BookingDraft;
+    createBooking: async (payload: CreateBookingPayload) => {
+        const response = await axiosClient.post('/api/v1/bookings', payload);
+        return response.data?.data as BookingSummary;
+    },
+
+    createPaymentLink: async (bookingId: string) => {
+        const response = await axiosClient.post(`/api/v1/payments/bookings/${bookingId}/payos-link`);
+        return response.data?.data as BookingPaymentLink;
+    },
+
+    getPendingPayments: async () => {
+        const response = await axiosClient.get('/api/v1/bookings/me/pending-payments');
+        return response.data?.data as BookingSummary[];
     },
 
     getMyBookings: () => axiosClient.get('/api/v1/bookings/me'),
@@ -63,3 +80,4 @@ const bookingService = {
 };
 
 export default bookingService;
+

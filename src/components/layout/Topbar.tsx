@@ -40,8 +40,10 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
   const [error, setError] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [latestToast, setLatestToast] = useState<AppNotification | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
+  const toastTimerRef = useRef<number | null>(null);
 
   const loadNotifications = async () => {
     setIsLoading(true);
@@ -63,6 +65,18 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
   }, [user?.id]);
 
   useEffect(() => {
+    if (!user) return;
+
+    const intervalId = window.setInterval(() => {
+      if (!socketRef.current?.connected) {
+        void loadNotifications();
+      }
+    }, 10000);
+
+    return () => window.clearInterval(intervalId);
+  }, [user?.id]);
+
+  useEffect(() => {
     const token = localStorage.getItem('happabi_access_token');
     if (!user || !token) return;
 
@@ -75,6 +89,18 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
       reconnectionDelay: 1000,
     });
     socketRef.current = socket;
+
+    socket.on('connect', () => {
+      console.info('[NotificationSocket] connected');
+    });
+
+    socket.on('connect_error', (err) => {
+      console.warn('[NotificationSocket] connect_error', err.message);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.info('[NotificationSocket] disconnected', reason);
+    });
 
     socket.on('notification', (payload: RealtimeNotificationPayload) => {
       const nextNotification = localizeNotification({
@@ -92,6 +118,17 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
         nextNotification,
         ...current.filter((item) => item.id !== nextNotification.id),
       ].slice(0, 30));
+      window.dispatchEvent(new CustomEvent<AppNotification>('happabi:notification-received', {
+        detail: nextNotification,
+      }));
+      setLatestToast(nextNotification);
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+      toastTimerRef.current = window.setTimeout(() => {
+        setLatestToast(null);
+        toastTimerRef.current = null;
+      }, 5000);
     });
 
     const handleTokenRefreshed = (event: Event) => {
@@ -107,12 +144,25 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
     return () => {
       window.removeEventListener('happabi:token-refreshed', handleTokenRefreshed);
       socket.off('notification');
+      socket.off('connect');
+      socket.off('connect_error');
+      socket.off('disconnect');
       socket.disconnect();
       if (socketRef.current === socket) {
         socketRef.current = null;
       }
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = null;
+      }
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setLatestToast(null);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -131,6 +181,12 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
     if (nextOpen) {
       void loadNotifications();
     }
+  };
+
+  const handleOpenLatestToast = () => {
+    setLatestToast(null);
+    setIsOpen(true);
+    void loadNotifications();
   };
 
   const handleMarkAsRead = async (notification: AppNotification) => {
@@ -241,6 +297,31 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
                 )}
               </div>
             </div>
+          )}
+
+          {latestToast && !isOpen && (
+            <button
+              type="button"
+              onClick={handleOpenLatestToast}
+              className="absolute right-0 top-[46px] z-50 w-[320px] rounded-2xl border border-lav-200 bg-white p-3 text-left shadow-[0_18px_50px_rgba(66,38,95,0.18)] transition-all hover:-translate-y-0.5 hover:border-lav-300"
+            >
+              <span className="mb-2 flex items-center gap-2">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-lav-100 text-lav-dark">
+                  <Bell size={16} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[13px] font-black text-text-dark">
+                    {latestToast.title}
+                  </span>
+                  <span className="block text-[11px] font-bold text-text-light">
+                    {formatRelativeTime(latestToast.createdAt)}
+                  </span>
+                </span>
+              </span>
+              <span className="line-clamp-2 text-[12px] font-semibold leading-5 text-text-mid">
+                {latestToast.message}
+              </span>
+            </button>
           )}
         </div>
 
