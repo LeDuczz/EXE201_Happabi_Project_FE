@@ -5,13 +5,8 @@ import axiosClient from '../../api/axiosClient';
 import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
 import Input from '../../components/common/Input';
-
-const normalizeVietnamPhone = (value: string) => {
-  const compact = value.replace(/\s+/g, '');
-  if (compact.startsWith('0')) return `+84${compact.slice(1)}`;
-  if (compact.startsWith('84')) return `+${compact}`;
-  return compact;
-};
+import { PASSWORD_POLICY_MESSAGE, getPasswordPolicyError } from '../../utils/passwordPolicy';
+import { PHONE_POLICY_MESSAGE, getVietnamPhoneError, normalizeVietnamPhone } from '../../utils/phonePolicy';
 
 const getApiErrorMessage = (err: any) => {
   const data = err.response?.data;
@@ -36,6 +31,13 @@ const ForgotPassword = () => {
     event.preventDefault();
     setError('');
     setMessage('');
+
+    const phoneError = getVietnamPhoneError(phone);
+    if (phoneError) {
+      setError(phoneError);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -55,6 +57,19 @@ const ForgotPassword = () => {
     event.preventDefault();
     setError('');
     setMessage('');
+
+    const passwordError = getPasswordPolicyError(newPassword);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
+    const phoneError = getVietnamPhoneError(phone);
+    if (phoneError) {
+      setError(phoneError);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -79,9 +94,9 @@ const ForgotPassword = () => {
           <div className="mb-6 text-center">
             <Link to="/" className="mb-4 inline-flex items-center gap-2">
               <img src="/image/logo.png" alt="Happabi" className="h-12 w-12 rounded-2xl object-cover" />
-              <span className="font-serif text-3xl font-black text-grad">Happabi</span>
+              <span className="text-heading text-3xl font-semibold text-grad">Happabi</span>
             </Link>
-            <h1 className="text-3xl font-black text-dark-200">Quên mật khẩu</h1>
+            <h1 className="text-3xl font-semibold text-dark-200">Quên mật khẩu</h1>
             <p className="mt-2 text-sm text-text-mid">
               {step === 'request' ? 'Nhập số điện thoại để nhận mã OTP.' : 'Nhập OTP và mật khẩu mới.'}
             </p>
@@ -104,10 +119,11 @@ const ForgotPassword = () => {
             <form onSubmit={requestOtp}>
               <Input
                 label="Số điện thoại"
-                placeholder="+84901234567"
+                placeholder="0912345678"
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
                 icon={<Phone size={18} />}
+                hint={PHONE_POLICY_MESSAGE}
                 required
               />
               <Btn full type="submit" disabled={isLoading}>
@@ -118,10 +134,11 @@ const ForgotPassword = () => {
             <form onSubmit={resetPassword}>
               <Input
                 label="Số điện thoại"
-                placeholder="+84901234567"
+                placeholder="0912345678"
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
                 icon={<Phone size={18} />}
+                hint={PHONE_POLICY_MESSAGE}
                 required
               />
               <Input
@@ -139,6 +156,7 @@ const ForgotPassword = () => {
                 value={newPassword}
                 onChange={(event) => setNewPassword(event.target.value)}
                 icon={<Lock size={18} />}
+                hint={PASSWORD_POLICY_MESSAGE}
                 required
               />
               <label className="mb-4 flex w-fit cursor-pointer items-center gap-2 text-sm font-bold text-text-mid">
@@ -158,7 +176,7 @@ const ForgotPassword = () => {
 
           <button
             type="button"
-            className="mt-5 w-full text-center text-sm font-black text-lav-dark"
+            className="mt-5 w-full text-center text-sm font-semibold text-lav-dark"
             onClick={() => navigate('/auth/mother')}
           >
             Quay lại đăng nhập
@@ -170,11 +188,11 @@ const ForgotPassword = () => {
         <img src="/image/2.webp" alt="Happabi" className="absolute inset-0 h-full w-full object-cover opacity-90" />
         <div className="absolute inset-0 bg-gradient-to-br from-[#fff0f8]/88 via-white/68 to-[#f7f0ff]/82" />
         <div className="relative z-10 flex h-full flex-col justify-between p-10">
-          <button className="flex w-fit items-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 py-2 text-sm font-black text-text-mid backdrop-blur" onClick={() => navigate('/')}>
+          <button className="flex w-fit items-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 py-2 text-sm font-semibold text-text-mid backdrop-blur" onClick={() => navigate('/')}>
             <ArrowLeft size={16} /> Landing
           </button>
           <div className="max-w-xl">
-            <h2 className="font-serif text-6xl font-black leading-none text-dark-200">Lấy lại quyền truy cập Happabi.</h2>
+            <h2 className="text-heading text-4xl font-semibold leading-tight text-dark-200 md:text-5xl">Lấy lại quyền truy cập Happabi.</h2>
             <p className="mt-5 text-lg leading-8 text-text-mid">
               BE sẽ gửi OTP qua SMS để xác nhận trước khi đặt mật khẩu mới.
             </p>

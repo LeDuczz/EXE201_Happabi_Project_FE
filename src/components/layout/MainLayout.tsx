@@ -7,7 +7,7 @@ const MainLayout: React.FC = () => {
     <div className="flex min-h-screen min-w-[1280px] bg-[#f7f0ff]">
       <Sidebar />
       <main className="ml-[232px] h-screen w-[calc(100vw-232px)] min-w-[1048px] overflow-auto p-8">
-        <div className="mx-auto w-[1120px]">
+        <div className="mx-auto w-full max-w-[1120px]">
           <Outlet />
         </div>
       </main>

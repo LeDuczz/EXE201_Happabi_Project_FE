@@ -17,12 +17,12 @@ const Tag: React.FC<TagProps> = ({ children, variant = 'purple', size = 'sm' }) 
   };
 
   const sizes = {
-    xs: 'text-[10px] px-2 py-[3px]',
-    sm: 'text-[11px] px-3 py-1'
+    xs: 'px-2 py-[3px]',
+    sm: 'px-3 py-1'
   };
 
   return (
-    <span className={`inline-flex items-center gap-[3px] font-bold rounded-full whitespace-nowrap tracking-[0.2px] ${variants[variant]} ${sizes[size]}`}>
+    <span className={`inline-flex items-center gap-[3px] font-medium rounded-full whitespace-nowrap text-caption ${variants[variant]} ${sizes[size]}`}>
       {children}
     </span>
   );

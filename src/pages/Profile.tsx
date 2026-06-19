@@ -6,6 +6,8 @@ import Card from '../components/common/Card';
 import Input from '../components/common/Input';
 import Topbar from '../components/layout/Topbar';
 import { useAuth } from '../contexts/AuthContext';
+import { PASSWORD_POLICY_MESSAGE, getPasswordPolicyError } from '../utils/passwordPolicy';
+import { PHONE_POLICY_MESSAGE, getVietnamPhoneError, normalizeVietnamPhone } from '../utils/phonePolicy';
 
 interface MotherProfile {
   id: string;
@@ -29,13 +31,6 @@ const emptyProfile: MotherProfile = {
   address: '',
   city: '',
   avatarUrl: '',
-};
-
-const normalizeVietnamPhone = (value: string) => {
-  const compact = value.replace(/\s+/g, '');
-  if (compact.startsWith('0')) return `+84${compact.slice(1)}`;
-  if (compact.startsWith('84')) return `+${compact}`;
-  return compact;
 };
 
 const getApiErrorMessage = (err: any) => {
@@ -180,6 +175,13 @@ const Profile = () => {
     if (phoneVerified) return;
     setError('');
     setSuccess('');
+
+    const phoneError = getVietnamPhoneError(phoneDraft);
+    if (phoneError) {
+      setError(phoneError);
+      return;
+    }
+
     try {
       const phone = normalizeVietnamPhone(phoneDraft);
       await axiosClient.post('/api/v1/users/me/phone/change', { phone });
@@ -207,6 +209,13 @@ const Profile = () => {
   const createLocalPassword = async () => {
     setError('');
     setSuccess('');
+
+    const passwordError = getPasswordPolicyError(localPassword);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
     try {
       await axiosClient.post('/api/v1/auth/local-password', { password: localPassword });
       await refreshMe();
@@ -235,7 +244,7 @@ const Profile = () => {
       <div className="grid gap-5 lg:grid-cols-[340px_1fr]">
         <Card className="h-fit text-center">
           <div className="relative mx-auto mb-5 h-28 w-28">
-            <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-grad text-3xl font-black text-white shadow-[0_12px_32px_rgba(168,85,247,.25)]">
+            <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-grad text-3xl font-semibold text-white shadow-[0_12px_32px_rgba(168,85,247,.25)]">
               {profile.avatarUrl ? (
                 <img src={profile.avatarUrl} alt={profile.fullName || 'Avatar'} className="h-full w-full object-cover" />
               ) : (
@@ -263,26 +272,27 @@ const Profile = () => {
             />
           </div>
 
-          <h2 className="font-serif text-2xl font-black text-text-dark">{profile.fullName || 'Mẹ Happabi'}</h2>
+          <h2 className="text-heading text-2xl font-semibold text-text-dark">{profile.fullName || 'Mẹ Happabi'}</h2>
           <p className="mt-1 text-sm font-bold text-text-light">{user?.email || user?.phone || 'Chưa có thông tin liên hệ'}</p>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploadingAvatar}
-            className="mt-5 w-full rounded-xl border border-lav-200 bg-lav-100 px-4 py-3 text-sm font-black text-lav-dark transition hover:bg-lav-200 disabled:opacity-60"
+            className="mt-5 w-full rounded-xl border border-lav-200 bg-lav-100 px-4 py-3 text-sm font-semibold text-lav-dark transition hover:bg-lav-200 disabled:opacity-60"
           >
             {isUploadingAvatar ? 'Đang tải ảnh...' : 'Cập nhật ảnh đại diện'}
           </button>
 
           {!hasLocalPassword && phoneVerified && (
             <div className="mt-5 rounded-2xl border border-lav-200 bg-[#fff9fb] p-4 text-left">
-              <div className="mb-3 text-sm font-black text-text-dark">Tạo mật khẩu local</div>
+              <div className="mb-3 text-sm font-semibold text-text-dark">Tạo mật khẩu local</div>
               <Input
                 label="Mật khẩu"
                 type={showLocalPassword ? 'text' : 'password'}
                 value={localPassword}
                 onChange={(event) => setLocalPassword(event.target.value)}
                 placeholder="Tối thiểu 8 ký tự"
+                hint={PASSWORD_POLICY_MESSAGE}
               />
               <label className="mb-3 flex cursor-pointer items-center gap-2 text-xs font-bold text-text-mid">
                 <input type="checkbox" checked={showLocalPassword} onChange={(event) => setShowLocalPassword(event.target.checked)} className="h-4 w-4 accent-lav-dark" />
@@ -315,7 +325,7 @@ const Profile = () => {
                 )}
 
                 <div className="mb-5 border-b border-lav-100 pb-4">
-                  <h3 className="font-serif text-2xl font-black text-text-dark">Thông tin mẹ bỉm</h3>
+                  <h3 className="text-heading text-2xl font-semibold text-text-dark">Thông tin mẹ bỉm</h3>
                   <p className="mt-1 text-sm font-semibold text-text-light">Phone/email đổi bằng luồng xác thực riêng ở phía dưới.</p>
                 </div>
 
@@ -338,10 +348,10 @@ const Profile = () => {
           </Card>
 
           <Card className="p-7">
-            <h3 className="mb-4 font-serif text-2xl font-black text-text-dark">Xác thực liên hệ</h3>
+            <h3 className="mb-4 text-heading text-2xl font-semibold text-text-dark">Xác thực liên hệ</h3>
             <div className="grid gap-5 md:grid-cols-2">
               <div className="rounded-2xl border border-lav-100 bg-[#fff9fb] p-4">
-                <div className="mb-2 text-sm font-black text-text-dark">Email</div>
+                <div className="mb-2 text-sm font-semibold text-text-dark">Email</div>
                 <Input value={emailDraft} onChange={(event) => setEmailDraft(event.target.value)} placeholder="me@example.com" disabled={emailVerified} />
                 {emailVerified ? (
                   <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm font-bold text-green-700">
@@ -365,8 +375,8 @@ const Profile = () => {
               </div>
 
               <div className="rounded-2xl border border-lav-100 bg-[#fff9fb] p-4">
-                <div className="mb-2 text-sm font-black text-text-dark">Số điện thoại</div>
-                <Input value={phoneDraft} onChange={(event) => setPhoneDraft(event.target.value)} placeholder="+84901234567" disabled={phoneVerified} />
+                <div className="mb-2 text-sm font-semibold text-text-dark">Số điện thoại</div>
+                <Input value={phoneDraft} onChange={(event) => setPhoneDraft(event.target.value)} placeholder="0912345678" hint={phoneVerified ? undefined : PHONE_POLICY_MESSAGE} disabled={phoneVerified} />
                 {phoneVerified ? (
                   <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm font-bold text-green-700">
                     <CheckCircle2 size={16} /> Số điện thoại đã được xác thực.

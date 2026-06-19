@@ -18,7 +18,7 @@ const Btn: React.FC<BtnProps> = ({
   const [hov, setHov] = useState(false);
 
   const sizeClasses = {
-    xs: 'text-[11px] px-3 py-[5px]',
+    xs: 'text-caption px-3 py-[5px]',
     sm: 'text-[12.5px] px-4 py-2',
     md: 'text-[14px] px-5 py-[10px]',
     lg: 'text-[16px] px-8 py-[14px]'
@@ -37,7 +37,7 @@ const Btn: React.FC<BtnProps> = ({
   return (
     <button 
       className={`
-        border-none rounded-xl font-serif font-bold transition-all duration-200 
+        border-none rounded-xl font-semibold transition-all duration-200 
         inline-flex items-center gap-1.5 justify-center
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:-translate-y-[1px]'}
         ${full ? 'w-full' : 'w-auto'}
