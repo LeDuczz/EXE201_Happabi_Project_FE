@@ -1,10 +1,11 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import { requireAppEnv, getAppEnv } from '../config/env';
 import { translateApiMessage } from '../utils/apiError';
 
 const baseURL =
-  import.meta.env.VITE_API_BASE_URL ??
-  import.meta.env.VITE_BACKEND_URL ??
-  'http://localhost:8088';
+  getAppEnv('VITE_API_BASE_URL') ??
+  getAppEnv('VITE_BACKEND_URL') ??
+  requireAppEnv('VITE_API_BASE_URL');
 
 const TOKEN_KEY = 'happabi_access_token';
 const USER_KEY = 'happabi_user';
@@ -36,12 +37,15 @@ const refreshClient = axios.create({
 });
 
 const translateResponseError = (error: AxiosError) => {
-  const data = error?.response?.data as any;
+  const data = error?.response?.data as {
+    message?: string;
+    errors?: Array<{ message?: string; [key: string]: unknown }>;
+  } | undefined;
   if (data?.message) {
     data.message = translateApiMessage(data.message);
   }
   if (Array.isArray(data?.errors)) {
-    data.errors = data.errors.map((item: any) => ({
+    data.errors = data.errors.map((item) => ({
       ...item,
       message: translateApiMessage(item?.message) || item?.message,
     }));
@@ -49,7 +53,7 @@ const translateResponseError = (error: AxiosError) => {
 };
 
 const isAuthenticationFailure = (error: AxiosError) => {
-  const data = error.response?.data as any;
+  const data = error.response?.data as { error?: string } | undefined;
   const code = typeof data?.error === 'string' ? data.error : '';
   return !code || [
     'AUTH_FAILED',

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import axiosClient from './api/axiosClient';
@@ -112,7 +112,6 @@ const NurseActiveRoute = ({ children }: { children: ReactNode }) => {
     axiosClient.get('/api/v1/nurses/me/onboarding')
       .then((response) => {
         const nurseStatus = response.data?.data?.nurseStatus;
-        console.log('Nurse Status Check:', nurseStatus);
         setStatus(nurseStatus === 'ACTIVE' ? 'active' : 'blocked');
       })
       .catch((err) => {

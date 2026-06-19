@@ -10,6 +10,7 @@ const transactionLabel: Record<string, string> = {
   BOOKING_PAYMENT_RECEIVED: 'Nhận tiền booking',
   NURSE_PAYOUT: 'Chi trả nurse',
   BOOKING_REFUND: 'Hoàn tiền mother',
+  WITHDRAWAL_PAYOUT: 'Chi rút tiền nurse',
 };
 
 const statusLabel: Record<string, string> = {
@@ -210,7 +211,7 @@ const AdminWalletPage = () => {
                 <thead>
                   <tr className="border-b border-lav-100 bg-lav-50 text-[11px] font-black uppercase tracking-widest text-text-light">
                     <th className="px-5 py-4">Thời gian</th>
-                    <th className="px-5 py-4">Booking</th>
+                    <th className="px-5 py-4">Tham chiếu</th>
                     <th className="px-5 py-4">Loại</th>
                     <th className="px-5 py-4 text-right">Tác động ví</th>
                     <th className="px-5 py-4 text-right">Số dư sau</th>

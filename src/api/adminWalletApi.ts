@@ -1,6 +1,6 @@
 import axiosClient from './axiosClient';
 
-export type AdminWalletTransactionType = 'BOOKING_PAYMENT_RECEIVED' | 'NURSE_PAYOUT';
+export type AdminWalletTransactionType = 'BOOKING_PAYMENT_RECEIVED' | 'NURSE_PAYOUT' | 'BOOKING_REFUND' | 'WITHDRAWAL_PAYOUT';
 
 export interface AdminWalletTransaction {
   id: string;

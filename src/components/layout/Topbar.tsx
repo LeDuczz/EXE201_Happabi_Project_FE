@@ -5,6 +5,7 @@ import Avatar from '../common/Avatar';
 import { useAuth } from '../../contexts/AuthContext';
 import notificationApi from '../../api/notificationApi';
 import type { AppNotification, RealtimeNotificationPayload } from '../../types/notification';
+import { getAppEnv } from '../../config/env';
 import { localizeNotification } from '../../utils/notificationText';
 
 interface TopbarProps {
@@ -80,7 +81,7 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
     const token = localStorage.getItem('happabi_access_token');
     if (!user || !token) return;
 
-    const socketUrl = import.meta.env.VITE_SOCKET_URL ?? 'http://localhost:9093';
+    const socketUrl = getAppEnv('VITE_SOCKET_URL') ?? window.location.origin;
     const socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
       query: { token },

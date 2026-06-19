@@ -1,0 +1,1 @@
+﻿window.__HAPPABI_ENV__ = window.__HAPPABI_ENV__ || {};

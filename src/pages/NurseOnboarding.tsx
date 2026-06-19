@@ -11,7 +11,7 @@ import { getApiErrorMessage, translateApiMessage } from '../utils/apiError';
 
 const toIsoDate = (raw?: string) => {
   if (!raw) return '';
-  const match = raw.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
+  const match = raw.match(/(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
   if (!match) return '';
   const [, day, month, year] = match;
   return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
