@@ -34,7 +34,7 @@ const motherMenus = [
 
 const nurseMenus = [
   { id: '/nurse/onboarding', icon: <ShieldCheck size={18} />, label: 'Onboarding nurse' },
-  { id: '/nurse/home', icon: <Home size={18} />, label: 'Homepage nurse' },
+  { id: '/nurse/home', icon: <Home size={18} />, label: 'Trang chủ' },
   { id: '/nurse/bookings', icon: <Calendar size={18} />, label: 'Lịch làm việc' },
   { id: '/nurse/checklist', icon: <ClipboardCheck size={18} />, label: 'AI Checklist' },
   { id: '/nurse/revenue', icon: <Wallet size={18} />, label: 'Doanh thu' },
@@ -43,7 +43,7 @@ const nurseMenus = [
 ];
 
 const doctorMenus = [
-  { id: '/doctor/nurses/review', icon: <FileSearch size={18} />, label: 'Duyệt hồ sơ nurse' },
+  { id: '/doctor/nurses/review', icon: <FileSearch size={18} />, label: 'Duyệt hồ sơ điều dưỡng' },
   { id: '/doctor/chat', icon: <MessageCircle size={18} />, label: 'Chat & AI' },
   { id: '/doctor/profile', icon: <User size={18} />, label: 'Hồ sơ' },
 ];
@@ -116,9 +116,9 @@ const Sidebar = () => {
       <div className="border-b border-white/5 px-5 pb-[18px] pt-[22px]">
         <div className="mb-1.5 flex cursor-pointer items-center gap-[9px]" onClick={() => navigate('/')}>
           <img src="/image/logo.png" alt="Happabi" className="h-[34px] w-[34px] rounded-[10px] object-cover" />
-          <span className="text-[21px] font-black text-grad">Happabi</span>
+          <span className="text-[21px] font-semibold text-grad">Happabi</span>
         </div>
-        <div className="pl-0.5 text-[10.5px] uppercase tracking-[1.2px] text-white/30">{roleLabel}</div>
+        <div className="pl-0.5 text-overline text-white/30">{roleLabel}</div>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2.5 py-3.5">

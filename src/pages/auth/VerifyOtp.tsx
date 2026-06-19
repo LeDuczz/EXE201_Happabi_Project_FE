@@ -82,10 +82,10 @@ const VerifyOtp = () => {
     <div className="flex min-h-screen items-center justify-center bg-[#fff9fb] p-4">
       <Card className="w-full max-w-[440px] rounded-2xl p-7">
         <div className="mb-6 text-center">
-          <Link to="/" className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-grad text-xl font-black text-white">
+          <Link to="/" className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-grad text-xl font-semibold text-white">
             H
           </Link>
-          <h1 className="text-3xl font-black text-dark-200">Xác thực OTP</h1>
+          <h1 className="text-3xl font-semibold text-dark-200">Xác thực OTP</h1>
           <p className="mt-2 text-sm text-text-mid">Nhập mã OTP được gửi đến số điện thoại của bạn.</p>
         </div>
 
@@ -112,7 +112,7 @@ const VerifyOtp = () => {
           </Btn>
         </form>
 
-        <button className="mt-5 w-full text-center text-sm font-black text-lav-dark" onClick={resend} type="button">
+        <button className="mt-5 w-full text-center text-sm font-semibold text-lav-dark" onClick={resend} type="button">
           Gửi lại OTP
         </button>
       </Card>

@@ -70,7 +70,7 @@ const InfoTile = ({
         </div>
         <div className="min-w-0">
           <p className="text-[12px] font-bold text-text-light">{label}</p>
-          <p className="mt-1 break-words text-[14px] font-black text-text-dark">{formatValue(value)}</p>
+          <p className="mt-1 break-words text-[14px] font-semibold text-text-dark">{formatValue(value)}</p>
         </div>
       </div>
     </div>
@@ -175,7 +175,7 @@ const AdminProfile = () => {
 
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="font-serif text-[34px] font-black leading-tight text-text-dark">
+                      <h2 className="text-heading text-[34px] font-semibold leading-tight text-text-dark">
                         {profile?.fullName || 'Admin Happabi'}
                       </h2>
                       <Tag variant={profile?.isActive ? 'green' : 'gray'}>
@@ -202,7 +202,7 @@ const AdminProfile = () => {
                     </div>
                     <div>
                       <p className="text-[12px] font-bold text-text-light">Quyền truy cập</p>
-                      <p className="mt-1 text-[14px] font-black text-text-dark">Quản trị hệ thống</p>
+                      <p className="mt-1 text-[14px] font-semibold text-text-dark">Quản trị hệ thống</p>
                     </div>
                   </div>
                   <Btn
@@ -227,7 +227,7 @@ const AdminProfile = () => {
                   <UserRound size={20} />
                 </div>
                 <div>
-                  <h3 className="font-serif text-[24px] font-black text-text-dark">Thông tin tài khoản</h3>
+                  <h3 className="text-heading text-[24px] font-semibold text-text-dark">Thông tin tài khoản</h3>
                   <p className="text-[13px] font-semibold text-text-light">Thông tin định danh dùng cho đăng nhập và phân quyền.</p>
                 </div>
               </div>
@@ -246,7 +246,7 @@ const AdminProfile = () => {
                   <KeyRound size={20} />
                 </div>
                 <div>
-                  <h3 className="font-serif text-[24px] font-black text-text-dark">Bảo mật</h3>
+                  <h3 className="text-heading text-[24px] font-semibold text-text-dark">Bảo mật</h3>
                   <p className="text-[13px] font-semibold text-text-light">Provider đăng nhập và trạng thái tài khoản.</p>
                 </div>
               </div>

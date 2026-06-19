@@ -48,7 +48,7 @@ const AdminDashboard = () => {
                 </div>
             ) : error ? (
                 <div className="rounded-2xl border border-red-100 bg-red-50 p-10 text-center">
-                    <div className="font-black text-red-600">{error}</div>
+                    <div className="font-semibold text-red-600">{error}</div>
                     <button onClick={loadData} className="mt-4 text-sm font-bold text-red-700 underline">Thử lại</button>
                 </div>
             ) : (
@@ -78,7 +78,7 @@ const AdminDashboard = () => {
                     <div className="grid gap-6 lg:grid-cols-2">
                         <Card className="p-6">
                             <div className="mb-6 flex items-center justify-between">
-                                <div className="flex items-center gap-2 font-black text-text-dark">
+                                <div className="flex items-center gap-2 font-semibold text-text-dark">
                                     <BarChart3 size={20} className="text-lav-dark" />
                                     Biểu đồ Doanh thu (30 ngày)
                                 </div>
@@ -97,7 +97,7 @@ const AdminDashboard = () => {
                                                 style={{ width: `${Math.min((val / (summary?.totalGmv || 1)) * 500, 100)}%` }}
                                             />
                                         </div>
-                                        <div className="w-32 text-right text-sm font-black text-text-dark">
+                                        <div className="w-32 text-right text-sm font-semibold text-text-dark">
                                             {val.toLocaleString()}đ
                                         </div>
                                     </div>
@@ -111,7 +111,7 @@ const AdminDashboard = () => {
                         </Card>
 
                         <Card className="p-6">
-                            <div className="font-black text-text-dark mb-4">Cảnh báo hệ thống</div>
+                            <div className="font-semibold text-text-dark mb-4">Cảnh báo hệ thống</div>
                             <div className="space-y-3">
                                 <AlertItem type="warning" title="Hồ sơ nurse chờ duyệt" message="Hiện có hồ sơ đang chờ bộ phận chuyên môn phê duyệt." />
                                 <AlertItem type="info" title="Lịch trình hôm nay" message="Hệ thống vận hành ổn định, không ghi nhận sự cố server." />
@@ -130,7 +130,7 @@ const StatCard = ({ icon, label, value, color }: { icon: any, label: string, val
             <div className="rounded-2xl bg-white p-3 shadow-sm">{icon}</div>
             <div>
                 <div className="text-xs font-bold uppercase tracking-wider text-text-mid opacity-70">{label}</div>
-                <div className="text-2xl font-black text-text-dark mt-1">{value}</div>
+                <div className="text-2xl font-semibold text-text-dark mt-1">{value}</div>
             </div>
         </div>
     </Card>
@@ -144,7 +144,7 @@ const AlertItem = ({ type, title, message }: { type: 'warning' | 'info' | 'error
     };
     return (
         <div className={`rounded-xl border p-4 ${styles[type]}`}>
-            <div className="text-sm font-black">{title}</div>
+            <div className="text-sm font-semibold">{title}</div>
             <div className="mt-1 text-xs font-semibold opacity-80">{message}</div>
         </div>
     );

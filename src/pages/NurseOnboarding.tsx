@@ -491,8 +491,8 @@ const NurseOnboardingPage = () => {
         <Card className="p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className={`mb-3 inline-flex rounded-full border px-3 py-1 text-xs font-black ${meta.tone}`}>{meta.label}</div>
-              <h1 className="text-2xl font-black text-text-dark">{data.fullName || user?.fullName || 'Nurse Happabi'}</h1>
+              <div className={`mb-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${meta.tone}`}>{meta.label}</div>
+              <h1 className="text-2xl font-semibold text-text-dark">{data.fullName || user?.fullName || 'Nurse Happabi'}</h1>
               <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-text-mid">{meta.description}</p>
               {status === 'REJECTED' && data.rejectionReason && (
                 <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
@@ -509,7 +509,7 @@ const NurseOnboardingPage = () => {
         </Card>
 
         <Card className="p-5">
-          <div className="mb-4 text-sm font-black text-text-dark">Tiến độ hồ sơ</div>
+          <div className="mb-4 text-sm font-semibold text-text-dark">Tiến độ hồ sơ</div>
           <div className="space-y-3">
             {completion.map((item) => (
               <div key={item.label} className="flex items-center justify-between rounded-xl border border-lav-100 bg-[#fff9fb] px-3 py-2.5">
@@ -543,13 +543,13 @@ const NurseOnboardingPage = () => {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-black ${
+                  <span className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
                     isDone ? 'bg-green-100 text-green-700' : isActive ? 'bg-grad text-white' : 'bg-white text-text-light'
                   }`}>
                     {isDone ? <CheckCircle2 size={17} /> : index + 1}
                   </span>
                   <span>
-                    <span className="block text-sm font-black text-text-dark">{step.title}</span>
+                    <span className="block text-sm font-semibold text-text-dark">{step.title}</span>
                     <span className="mt-0.5 block text-xs font-semibold text-text-light">{step.description}</span>
                   </span>
                 </div>
@@ -570,10 +570,10 @@ const NurseOnboardingPage = () => {
         {activeStep === 0 && <Card className="p-6">
           <div className="mb-5 flex items-center justify-between border-b border-lav-100 pb-4">
             <div>
-              <h2 className="text-xl font-black text-text-dark">1. Thông tin cá nhân và nghề nghiệp</h2>
+              <h2 className="text-xl font-semibold text-text-dark">1. Thông tin cá nhân và nghề nghiệp</h2>
               <p className="mt-1 text-sm font-semibold text-text-light">Thông tin này dùng để doctor kiểm tra năng lực hành nghề.</p>
             </div>
-            {!editable && <span className="rounded-full bg-lav-100 px-3 py-1 text-xs font-black text-lav-dark">Đã khóa chỉnh sửa</span>}
+            {!editable && <span className="rounded-full bg-lav-100 px-3 py-1 text-xs font-semibold text-lav-dark">Đã khóa chỉnh sửa</span>}
           </div>
           <form onSubmit={(event) => saveProfile(event, true)}>
             <div className="grid gap-x-5 md:grid-cols-3">
@@ -597,7 +597,7 @@ const NurseOnboardingPage = () => {
             <Input label="Địa chỉ" value={profileForm.address} disabled={!editable} onChange={(e) => setProfileForm((cur) => ({ ...cur, address: e.target.value }))} />
             <div className="mb-4 rounded-2xl border border-lav-100 bg-[#fff9fb] p-4">
               <div className="mb-3">
-                <div className="text-[13px] font-black text-text-dark">Kỹ năng có thể nhận dịch vụ</div>
+                <div className="text-[13px] font-semibold text-text-dark">Kỹ năng có thể nhận dịch vụ</div>
                 <div className="mt-1 text-xs font-bold text-text-light">
                   Nurse tự khai báo, doctor sẽ xác minh khi duyệt hồ sơ. Booking chỉ dùng kỹ năng đã xác minh.
                 </div>
@@ -605,7 +605,7 @@ const NurseOnboardingPage = () => {
               <div className="grid gap-4 lg:grid-cols-3">
                 {['Chăm sóc mẹ sau sinh', 'Chăm sóc bé sơ sinh', 'Kỹ năng mềm'].map((group) => (
                   <div key={group}>
-                    <p className="mb-2 text-xs font-black uppercase tracking-wide text-lav-dark">{group}</p>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-lav-dark">{group}</p>
                     <div className="space-y-2">
                       {nurseSkillOptions.filter((option) => option.group === group).map((option) => {
                         const checked = profileForm.skills.includes(option.code);
@@ -664,11 +664,11 @@ const NurseOnboardingPage = () => {
         {activeStep === 1 && <Card className="p-6">
           <div className="mb-5 flex items-center justify-between border-b border-lav-100 pb-4">
             <div>
-              <h2 className="text-xl font-black text-text-dark">2. CCCD và OCR local</h2>
+              <h2 className="text-xl font-semibold text-text-dark">2. CCCD và OCR local</h2>
               <p className="mt-1 text-sm font-semibold text-text-light">Upload mặt trước CCCD để OCR local đọc gợi ý, sau đó kiểm tra hoặc nhập tay trước khi lưu.</p>
             </div>
             {ocrResult?.confidence != null && (
-              <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">
+              <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
                 Độ tin cậy {Math.round(ocrResult.confidence * 100)}%
               </span>
             )}
@@ -683,7 +683,7 @@ const NurseOnboardingPage = () => {
                 className="flex min-h-[132px] flex-col items-center justify-center rounded-2xl border border-dashed border-lav-300 bg-[#fff9fb] p-5 text-center transition hover:bg-lav-100 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isOcrLoading ? <Loader2 className="mb-2 animate-spin text-lav-dark" /> : <Camera className="mb-2 text-lav-dark" />}
-                <div className="text-sm font-black text-text-dark">{frontImage ? frontImage.name : 'Upload CCCD mặt trước và đọc OCR local'}</div>
+                <div className="text-sm font-semibold text-text-dark">{frontImage ? frontImage.name : 'Upload CCCD mặt trước và đọc OCR local'}</div>
                 <div className="mt-1 text-xs font-bold text-text-light">JPEG, PNG hoặc WebP</div>
               </button>
               <button
@@ -693,7 +693,7 @@ const NurseOnboardingPage = () => {
                 className="flex min-h-[132px] flex-col items-center justify-center rounded-2xl border border-dashed border-lav-300 bg-[#fff9fb] p-5 text-center transition hover:bg-lav-100 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Upload className="mb-2 text-lav-dark" />
-                <div className="text-sm font-black text-text-dark">{backImage ? backImage.name : 'Upload CCCD mặt sau'}</div>
+                <div className="text-sm font-semibold text-text-dark">{backImage ? backImage.name : 'Upload CCCD mặt sau'}</div>
                 <div className="mt-1 text-xs font-bold text-text-light">Dùng để doctor đối chiếu khi duyệt</div>
               </button>
               <input
@@ -724,7 +724,7 @@ const NurseOnboardingPage = () => {
             )}
             {!!ocrResult?.warnings?.length && (
               <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
-                <div className="mb-2 flex items-center gap-2 font-black"><Sparkles size={16} /> Cảnh báo OCR</div>
+                <div className="mb-2 flex items-center gap-2 font-semibold"><Sparkles size={16} /> Cảnh báo OCR</div>
                 <ul className="list-disc space-y-1 pl-5 font-semibold">
                   {ocrResult.warnings.map((warning) => <li key={warning}>{translateApiMessage(warning)}</li>)}
                 </ul>
@@ -752,10 +752,10 @@ const NurseOnboardingPage = () => {
         {activeStep === 2 && <Card className="p-6">
           <div className="mb-5 flex items-center justify-between border-b border-lav-100 pb-4">
             <div>
-              <h2 className="text-xl font-black text-text-dark">3. Chứng chỉ hành nghề</h2>
+              <h2 className="text-xl font-semibold text-text-dark">3. Chứng chỉ hành nghề</h2>
               <p className="mt-1 text-sm font-semibold text-text-light">Tải ít nhất một chứng chỉ để hồ sơ đủ điều kiện gửi duyệt.</p>
             </div>
-            <span className="rounded-full bg-lav-100 px-3 py-1 text-xs font-black text-lav-dark">{data.certifications?.length || 0} chứng chỉ</span>
+            <span className="rounded-full bg-lav-100 px-3 py-1 text-xs font-semibold text-lav-dark">{data.certifications?.length || 0} chứng chỉ</span>
           </div>
 
           <form onSubmit={(event) => uploadCertification(event, true)} className="mb-5 rounded-2xl border border-lav-100 bg-[#fff9fb] p-4">
@@ -770,7 +770,7 @@ const NurseOnboardingPage = () => {
                 type="button"
                 disabled={!editable}
                 onClick={() => certInputRef.current?.click()}
-                className="flex min-h-[46px] flex-1 items-center justify-center rounded-xl border border-dashed border-lav-300 bg-white px-4 text-sm font-black text-text-mid disabled:opacity-60"
+                className="flex min-h-[46px] flex-1 items-center justify-center rounded-xl border border-dashed border-lav-300 bg-white px-4 text-sm font-semibold text-text-mid disabled:opacity-60"
               >
                 {certFile ? certFile.name : 'Chọn file chứng chỉ'}
               </button>
@@ -786,11 +786,11 @@ const NurseOnboardingPage = () => {
               <div key={cert.id} className="rounded-2xl border border-lav-100 bg-white p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="font-black text-text-dark">{cert.certName}</div>
+                    <div className="font-semibold text-text-dark">{cert.certName}</div>
                     <div className="mt-1 text-sm font-semibold text-text-light">{cert.issuedBy}</div>
                     <div className="mt-2 text-xs font-bold text-text-light">Cấp ngày {cert.issuedDate || '-'} {cert.expiryDate ? `- Hết hạn ${cert.expiryDate}` : ''}</div>
                   </div>
-                  <span className={`rounded-full px-3 py-1 text-xs font-black ${cert.verified ? 'bg-green-50 text-green-700' : 'bg-lav-100 text-lav-dark'}`}>
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${cert.verified ? 'bg-green-50 text-green-700' : 'bg-lav-100 text-lav-dark'}`}>
                     {cert.verified ? 'Đã xác thực' : 'Chờ duyệt'}
                   </span>
                 </div>
@@ -810,7 +810,7 @@ const NurseOnboardingPage = () => {
         {activeStep === 3 && <Card className="p-6">
           <div className="mb-5 flex items-center justify-between border-b border-lav-100 pb-4">
             <div>
-              <h2 className="text-xl font-black text-text-dark">4. Gửi duyệt và hợp đồng</h2>
+              <h2 className="text-xl font-semibold text-text-dark">4. Gửi duyệt và hợp đồng</h2>
               <p className="mt-1 text-sm font-semibold text-text-light">Doctor duyệt hồ sơ trước, sau đó nurse ký hợp đồng để kích hoạt.</p>
             </div>
             <ClipboardCheck className="text-lav-dark" />
@@ -818,7 +818,7 @@ const NurseOnboardingPage = () => {
 
           {status === 'APPROVED_PENDING_CONTRACT' ? (
             <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5">
-              <div className="mb-4 flex items-center gap-2 text-lg font-black text-blue-800"><PenLine size={18} /> Ký hợp đồng nurse</div>
+              <div className="mb-4 flex items-center gap-2 text-lg font-semibold text-blue-800"><PenLine size={18} /> Ký hợp đồng nurse</div>
               <p className="mb-4 text-sm font-semibold leading-6 text-blue-700">
                 Hợp đồng phiên bản {data.latestContract?.contractVersion || 'hiện tại'} đã sẵn sàng. Sau khi ký, tài khoản nurse sẽ chuyển sang trạng thái active.
               </p>
@@ -839,7 +839,7 @@ const NurseOnboardingPage = () => {
           ) : (
             <div className="flex items-center justify-between gap-4 rounded-2xl border border-lav-100 bg-[#fff9fb] p-5">
               <div>
-                <div className="font-black text-text-dark">Sẵn sàng gửi doctor duyệt?</div>
+                <div className="font-semibold text-text-dark">Sẵn sàng gửi doctor duyệt?</div>
                 <p className="mt-1 text-sm font-semibold text-text-light">Nút gửi chỉ thành công khi đủ thông tin cá nhân, KYC và chứng chỉ.</p>
               </div>
               <div className="flex gap-3">

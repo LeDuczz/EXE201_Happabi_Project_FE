@@ -71,7 +71,7 @@ const InfoTile = ({
         </div>
         <div className="min-w-0">
           <p className="text-[12px] font-bold text-text-light">{label}</p>
-          <p className="mt-1 break-words text-[14px] font-black text-text-dark">{formatValue(value)}</p>
+          <p className="mt-1 break-words text-[14px] font-semibold text-text-dark">{formatValue(value)}</p>
         </div>
       </div>
     </div>
@@ -176,7 +176,7 @@ const DoctorProfile = () => {
 
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="font-serif text-[34px] font-black leading-tight text-text-dark">
+                      <h2 className="text-heading text-[34px] font-semibold leading-tight text-text-dark">
                         {profile?.fullName || 'Doctor Happabi'}
                       </h2>
                       <Tag variant={profile?.isActive ? 'green' : 'gray'}>
@@ -203,7 +203,7 @@ const DoctorProfile = () => {
                     </div>
                     <div>
                       <p className="text-[12px] font-bold text-text-light">Vai trò hệ thống</p>
-                      <p className="mt-1 text-[14px] font-black text-text-dark">Duyệt hồ sơ nurse</p>
+                      <p className="mt-1 text-[14px] font-semibold text-text-dark">Duyệt hồ sơ nurse</p>
                     </div>
                   </div>
                   <Btn
@@ -228,7 +228,7 @@ const DoctorProfile = () => {
                   <UserRound size={20} />
                 </div>
                 <div>
-                  <h3 className="font-serif text-[24px] font-black text-text-dark">Thông tin tài khoản</h3>
+                  <h3 className="text-heading text-[24px] font-semibold text-text-dark">Thông tin tài khoản</h3>
                   <p className="text-[13px] font-semibold text-text-light">Thông tin định danh dùng cho đăng nhập doctor portal.</p>
                 </div>
               </div>
@@ -247,7 +247,7 @@ const DoctorProfile = () => {
                   <ShieldCheck size={20} />
                 </div>
                 <div>
-                  <h3 className="font-serif text-[24px] font-black text-text-dark">Quyền thao tác</h3>
+                  <h3 className="text-heading text-[24px] font-semibold text-text-dark">Quyền thao tác</h3>
                   <p className="text-[13px] font-semibold text-text-light">Các phần doctor được phép xử lý.</p>
                 </div>
               </div>
@@ -257,7 +257,7 @@ const DoctorProfile = () => {
                   <div className="flex items-center gap-3">
                     <FileSearch size={18} className="text-lav-dark" />
                     <div>
-                      <p className="text-[13px] font-black text-text-dark">Duyệt hồ sơ nurse</p>
+                      <p className="text-[13px] font-semibold text-text-dark">Duyệt hồ sơ nurse</p>
                       <p className="mt-1 text-[12px] font-bold text-text-mid">Xem KYC, chứng chỉ, approve hoặc reject hồ sơ.</p>
                     </div>
                   </div>
@@ -266,7 +266,7 @@ const DoctorProfile = () => {
                   <div className="flex items-center gap-3">
                     <ClipboardCheck size={18} className="text-lav-dark" />
                     <div>
-                      <p className="text-[13px] font-black text-text-dark">Kiểm duyệt chuyên môn</p>
+                      <p className="text-[13px] font-semibold text-text-dark">Kiểm duyệt chuyên môn</p>
                       <p className="mt-1 text-[12px] font-bold text-text-mid">Thông tin chuyên môn doctor kiểm tra nằm ở màn duyệt nurse.</p>
                     </div>
                   </div>

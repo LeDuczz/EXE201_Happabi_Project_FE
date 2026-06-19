@@ -19,7 +19,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Card from '../../components/common/Card';
 import Btn from '../../components/common/Btn';
 import Topbar from '../../components/layout/Topbar';
+<<<<<<< HEAD
 import bookingService from '../../api/bookingService';
+=======
+import { useNurseWorkSession } from '../../hooks/useNurseWorkSessions';
+>>>>>>> c784401b4f3e1c0ad07b911f7dd89f989a5ece9b
 import workSessionApi from '../../api/workSessionApi';
 import type { WorkSession, WorkSessionChecklistItem } from '../../types/workSession';
 import { getApiErrorMessage } from '../../utils/apiError';
@@ -44,33 +48,24 @@ const canEdit = (session?: WorkSession | null) => session?.status === 'IN_PROGRE
 const NurseChecklist = () => {
   const { workSessionId } = useParams();
   const navigate = useNavigate();
-  const [session, setSession] = useState<WorkSession | null>(null);
+  const { session: loadedSession, setSession, isLoading, error: loadError } = useNurseWorkSession(workSessionId);
+  const session = loadedSession;
   const [checkInFiles, setCheckInFiles] = useState<File[]>([]);
   const [itemFiles, setItemFiles] = useState<Record<string, File[]>>({});
   const [itemNotes, setItemNotes] = useState<Record<string, string>>({});
+<<<<<<< HEAD
   const [cancelReason, setCancelReason] = useState('');
   const [incidentDescription, setIncidentDescription] = useState('');
   const [incidentFiles, setIncidentFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+=======
+>>>>>>> c784401b4f3e1c0ad07b911f7dd89f989a5ece9b
   const [actionId, setActionId] = useState<string | null>(null);
-  const [error, setError] = useState('');
-
-  const loadSession = async () => {
-    if (!workSessionId) return;
-    setIsLoading(true);
-    setError('');
-    try {
-      setSession(await workSessionApi.getNurseSession(workSessionId));
-    } catch (err) {
-      setError(getApiErrorMessage(err));
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [error, setError] = useState(loadError);
 
   useEffect(() => {
-    void loadSession();
-  }, [workSessionId]);
+    setError(loadError);
+  }, [loadError]);
 
   const completedCount = useMemo(
     () => session?.checklistItems.filter((item) => item.status === 'COMPLETED').length ?? 0,
@@ -180,7 +175,7 @@ const NurseChecklist = () => {
       <button
         type="button"
         onClick={() => navigate('/nurse/bookings')}
-        className="mb-5 inline-flex items-center gap-2 text-[13px] font-black text-lav-dark"
+        className="mb-5 inline-flex items-center gap-2 text-[13px] font-semibold text-lav-dark"
       >
         <ArrowLeft size={16} />
         Quay lại lịch ca
@@ -206,12 +201,12 @@ const NurseChecklist = () => {
             <Card>
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="font-serif text-[24px] font-black text-text-dark">{session.serviceName}</h2>
+                  <h2 className="text-heading text-[24px] font-semibold text-text-dark">{session.serviceName}</h2>
                   <p className="mt-1 text-[13px] font-bold text-text-mid">
                     Mẹ: {session.motherName} · Bắt đầu: {formatDateTime(session.scheduledStartAt)}
                   </p>
                 </div>
-                <span className="shrink-0 rounded-full border border-lav-200 bg-lav-50 px-3 py-1 text-[11px] font-black text-lav-dark">
+                <span className="shrink-0 rounded-full border border-lav-200 bg-lav-50 px-3 py-1 text-[11px] font-semibold text-lav-dark">
                   {statusText[session.status]}
                 </span>
               </div>
@@ -223,7 +218,7 @@ const NurseChecklist = () => {
 
               {session.status === 'SCHEDULED' ? (
                 <div className="rounded-[18px] border border-dashed border-lav-300 bg-lav-50 p-5">
-                  <div className="mb-3 flex items-center gap-2 text-[13px] font-black text-text-dark">
+                  <div className="mb-3 flex items-center gap-2 text-[13px] font-semibold text-text-dark">
                     <Camera size={17} />
                     Ảnh check-in
                   </div>
@@ -260,7 +255,7 @@ const NurseChecklist = () => {
                 <Card key={item.id} className={completed ? 'border-green-200 bg-green-50/60' : ''}>
                   <div className="flex items-start gap-4">
                     <div
-                      className={`mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-black ${
+                      className={`mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold ${
                         completed ? 'bg-green-500 text-white' : 'bg-lav-100 text-lav-dark'
                       }`}
                     >
@@ -270,7 +265,7 @@ const NurseChecklist = () => {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <h3 className="text-[16px] font-black text-text-dark">{item.title}</h3>
+                          <h3 className="text-[16px] font-semibold text-text-dark">{item.title}</h3>
                           {item.completedAt && (
                             <p className="mt-1 text-[12px] font-bold text-text-mid">
                               Hoàn thành lúc {formatDateTime(item.completedAt)}
@@ -278,7 +273,7 @@ const NurseChecklist = () => {
                           )}
                         </div>
                         <span
-                          className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-black ${
+                          className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-semibold ${
                             completed ? 'bg-green-100 text-green-700' : 'bg-lav-50 text-text-mid'
                           }`}
                         >
@@ -373,12 +368,12 @@ const NurseChecklist = () => {
               <div className="mb-6">
                 <div className="mb-2 flex items-end justify-between">
                   <div>
-                    <div className="text-sm font-black text-text-dark">Tiến độ ca làm</div>
+                    <div className="text-sm font-semibold text-text-dark">Tiến độ ca làm</div>
                     <div className="mt-1 text-xs font-bold text-text-light">
                       {completedCount}/{session.checklistItems.length} bước đã hoàn thành
                     </div>
                   </div>
-                  <div className="font-serif text-[34px] font-black text-lav-dark">{progress}%</div>
+                  <div className="text-heading text-[34px] font-semibold text-lav-dark">{progress}%</div>
                 </div>
                 <div className="h-3 overflow-hidden rounded-full bg-lav-100">
                   <div className="h-full rounded-full bg-grad transition-all duration-300" style={{ width: `${progress}%` }} />
@@ -480,11 +475,11 @@ const NurseChecklist = () => {
 
 const Metric = ({ icon, label, value }: { icon?: ReactNode; label: string; value: string }) => (
   <div className="rounded-2xl border border-lav-100 bg-white p-4">
-    <div className="mb-1 flex items-center gap-2 text-[12px] font-black text-text-light">
+    <div className="mb-1 flex items-center gap-2 text-[12px] font-semibold text-text-light">
       {icon}
       {label}
     </div>
-    <div className="text-[14px] font-black text-text-dark">{value}</div>
+    <div className="text-[14px] font-semibold text-text-dark">{value}</div>
   </div>
 );
 

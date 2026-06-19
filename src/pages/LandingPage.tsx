@@ -130,18 +130,18 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="landing-page min-h-screen overflow-x-hidden bg-[#fff9fb] text-text-dark">
+    <div className="min-h-screen overflow-x-hidden bg-[#fff9fb] text-text-dark">
       <header className="fixed inset-x-0 top-0 z-40 border-b border-white/60 bg-white/82 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-6">
           <button className="flex items-center gap-2" onClick={() => navigate('/')}>
             <img src="/image/logo.png" alt="Happabi" className="h-11 w-11 rounded-2xl object-cover" />
             <div className="text-left">
-              <div className="brand-script text-3xl leading-none text-grad">Happabi</div>
-              <div className="text-[9px] font-bold uppercase tracking-[2px] text-text-light">Mẹ khỏe · Bé ngoan</div>
+              <div className="text-brand text-3xl leading-tight text-grad">Happabi</div>
+              <div className="text-overline text-text-light">Mẹ khỏe · Bé ngoan</div>
             </div>
           </button>
 
-          <nav className="hidden items-center gap-8 text-[13px] font-black uppercase tracking-[1.4px] text-text-mid lg:flex">
+          <nav className="hidden items-center gap-8 text-overline text-text-mid lg:flex">
             <a href="#roles">Vai trò</a>
             <a href="#features">Tính năng</a>
             <a href="#reviews">Đánh giá</a>
@@ -157,11 +157,11 @@ const LandingPage = () => {
                   type="button"
                 >
                   <Avatar src={user.avatarUrl} initials={initials(user.fullName)} size={34} />
-                  <span className="max-w-36 truncate text-sm font-black">{user.fullName || user.phone || user.email}</span>
+                  <span className="max-w-36 truncate text-sm font-semibold">{user.fullName || user.phone || user.email}</span>
                 </button>
                 {accountOpen && (
                   <div className="absolute right-0 top-[48px] z-50 w-44 overflow-hidden rounded-2xl border border-lav-200 bg-white py-2 text-sm font-bold text-text-mid shadow-[0_18px_50px_rgba(168,85,247,.16)]">
-                    <button className="block w-full px-4 py-2 text-left hover:bg-lav-100" onClick={goHome}>Homepage</button>
+                    <button className="block w-full px-4 py-2 text-left hover:bg-lav-100" onClick={goHome}>Trang chủ</button>
                     <button className="block w-full px-4 py-2 text-left hover:bg-lav-100" onClick={() => navigate(profilePath(primaryRole))}>Hồ sơ</button>
                     <button className="block w-full px-4 py-2 text-left hover:bg-lav-100" onClick={handleLogout}>Đăng xuất</button>
                   </div>
@@ -193,7 +193,7 @@ const LandingPage = () => {
             </div>
             <div className="mt-4 flex gap-2">
               {isAuthenticated ? (
-                <Btn full size="sm" onClick={goHome}>Homepage</Btn>
+                <Btn full size="sm" onClick={goHome}>Trang chủ</Btn>
               ) : (
                 <>
                   <Btn full variant="soft" size="sm" onClick={() => navigate('/register/mother')}>Đăng ký</Btn>
@@ -210,13 +210,13 @@ const LandingPage = () => {
           <div className="absolute inset-x-0 top-0 h-2/3 bg-[radial-gradient(circle_at_20%_20%,rgba(252,231,243,.95),transparent_34%),radial-gradient(circle_at_80%_5%,rgba(216,180,254,.8),transparent_28%)]" />
           <div className="relative mx-auto grid max-w-7xl gap-9 px-4 pb-12 pt-10 md:grid-cols-[1.02fr_0.98fr] md:items-center md:px-6 md:pt-16">
             <div>
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-pink-200 bg-white/85 px-4 py-2 text-xs font-black uppercase tracking-[1.8px] text-pink-dark shadow-sm">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-pink-200 bg-white/85 px-4 py-2 text-overline text-pink-dark shadow-sm">
                 <Sparkles size={15} /> Nền tảng chăm sóc mẹ và bé tại nhà
               </div>
-              <h1 className="max-w-3xl font-serif text-[48px] font-black leading-[0.98] text-dark-200 md:text-[76px]">
+              <h1 className="max-w-3xl text-heading text-4xl font-semibold leading-tight text-dark-200 md:text-5xl lg:text-6xl">
                 Mẹ an tâm, bé được chăm sóc đúng cách.
               </h1>
-              <p className="mt-6 max-w-2xl text-[17px] leading-8 text-text-mid">
+              <p className="mt-6 max-w-2xl text-body-lg text-text-mid">
                 Happabi kết nối mẹ sau sinh với điều dưỡng, nữ hộ sinh đã xác thực. Mother đăng nhập bằng Google, Facebook hoặc số điện thoại. Nurse dùng số điện thoại và mật khẩu để vào thẳng homepage làm việc.
               </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -231,7 +231,7 @@ const LandingPage = () => {
                   </>
                 ) : (
                   <Btn size="lg" onClick={goHome}>
-                    Vào homepage <ArrowRight size={18} />
+                    Vào trang chủ <ArrowRight size={18} />
                   </Btn>
                 )}
               </div>
@@ -245,16 +245,16 @@ const LandingPage = () => {
                 <img src="/image/5.webp" alt="Chăm sóc bé" className="h-full w-full object-cover" />
               </div>
               <div className="absolute right-4 top-8 rounded-3xl border border-lav-200 bg-white/92 p-4 shadow-xl backdrop-blur">
-                <div className="text-[11px] font-black uppercase tracking-[1.3px] text-text-light">Hôm nay</div>
-                <div className="mt-1 font-serif text-2xl font-black text-grad">3 điều dưỡng</div>
-                <div className="text-xs font-bold text-text-mid">phù hợp gần bạn</div>
+                <div className="text-overline text-text-light">Hôm nay</div>
+                <div className="mt-1 text-heading text-2xl font-semibold text-grad">3 điều dưỡng</div>
+                <div className="text-caption text-text-mid">phù hợp gần bạn</div>
               </div>
               <div className="absolute bottom-10 left-0 rounded-3xl border border-pink-100 bg-white/92 p-4 shadow-xl backdrop-blur">
                 <div className="flex items-center gap-3">
                   <Baby className="text-pink-dark" size={28} />
                   <div>
-                    <div className="font-serif text-xl font-black text-dark-200">24/7</div>
-                    <div className="text-xs font-bold text-text-mid">Đồng hành mẹ và bé</div>
+                    <div className="text-heading text-xl font-semibold text-dark-200">24/7</div>
+                    <div className="text-caption text-text-mid">Đồng hành mẹ và bé</div>
                   </div>
                 </div>
               </div>
@@ -265,19 +265,19 @@ const LandingPage = () => {
         <section id="roles" className="bg-dark-200 px-4 py-16 text-white md:px-6">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
-              <p className="text-xs font-black uppercase tracking-[2.6px] text-lav-acc">Ai dùng Happabi?</p>
-              <h2 className="mt-3 font-serif text-4xl font-black">Một app · Hai vai trò</h2>
+              <p className="text-overline text-lav-acc">Ai dùng Happabi?</p>
+              <h2 className="mt-3 text-heading text-4xl font-semibold">Một app · Hai vai trò</h2>
             </div>
             <div className="mt-9 grid gap-5 md:grid-cols-2">
               <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-7">
                 <HeartHandshake className="text-pink-acc" size={34} />
-                <h3 className="mt-5 font-serif text-2xl font-black">Mẹ bỉm sữa</h3>
+                <h3 className="mt-5 text-heading text-2xl font-semibold">Mẹ bỉm sữa</h3>
                 <p className="mt-3 leading-7 text-white/58">Đăng nhập bằng Google, Facebook hoặc số điện thoại và mật khẩu. Sau khi đăng nhập, mẹ quay về landing page, thấy avatar ở góc phải và bấm vào homepage khi cần đặt lịch.</p>
                 {!isAuthenticated && <div className="mt-6 text-sm font-bold text-white/50">Đăng nhập hoặc đăng ký ở thanh trên cùng.</div>}
               </article>
               <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-7">
                 <Stethoscope className="text-lav-acc" size={34} />
-                <h3 className="mt-5 font-serif text-2xl font-black">Điều dưỡng</h3>
+                <h3 className="mt-5 text-heading text-2xl font-semibold">Điều dưỡng</h3>
                 <p className="mt-3 leading-7 text-white/58">Nurse đăng nhập bằng số điện thoại và mật khẩu. Khi đăng nhập thành công, hệ thống đưa vào thẳng homepage dành cho nurse để quản lý lịch làm.</p>
                 {!isAuthenticated && <div className="mt-6 text-sm font-bold text-white/50">Nurse chọn đăng nhập rồi chuyển tab Nurse trong form.</div>}
               </article>
@@ -287,14 +287,14 @@ const LandingPage = () => {
 
         <section id="features" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
           <div className="text-center">
-            <p className="text-xs font-black uppercase tracking-[2.6px] text-pink-dark">Tính năng nổi bật</p>
-            <h2 className="mt-3 font-serif text-4xl font-black text-dark-200">Mọi thứ mẹ cần sau sinh</h2>
+            <p className="text-overline text-pink-dark">Tính năng nổi bật</p>
+            <h2 className="mt-3 text-heading text-4xl font-semibold text-dark-200">Mọi thứ mẹ cần sau sinh</h2>
           </div>
           <div className="mt-9 grid gap-5 md:grid-cols-4">
             {features.map(({ icon: Icon, title, desc }) => (
               <article key={title} className="rounded-[24px] border border-lav-100 bg-white p-6 shadow-[0_10px_36px_rgba(168,85,247,.08)]">
                 <Icon className="text-lav-dark" size={30} />
-                <h3 className="mt-4 font-serif text-xl font-black">{title}</h3>
+                <h3 className="mt-4 text-heading text-xl font-semibold">{title}</h3>
                 <p className="mt-2 text-sm leading-6 text-text-mid">{desc}</p>
               </article>
             ))}
@@ -303,23 +303,23 @@ const LandingPage = () => {
 
         <section className="border-y border-lav-100 bg-white px-4 py-16 md:px-6">
           <div className="mx-auto max-w-4xl text-center">
-            <p className="text-xs font-black uppercase tracking-[2.6px] text-lav-dark">Hành trình của bé</p>
-            <h2 className="mt-3 font-serif text-4xl font-black">Đếm từng ngày yêu thương</h2>
+            <p className="text-overline text-lav-dark">Hành trình của bé</p>
+            <h2 className="mt-3 text-heading text-4xl font-semibold">Đếm từng ngày yêu thương</h2>
             <div className="mx-auto mt-8 max-w-md rounded-[28px] border border-pink-100 bg-[#fff9fb] p-5 shadow-sm">
-              <label className="text-sm font-black text-text-mid" htmlFor="babyBirth">Nhập ngày sinh của bé</label>
-              <input id="babyBirth" type="date" value={babyBirth} onChange={(event) => setBabyBirth(event.target.value)} max={new Date().toISOString().split('T')[0]} className="mt-3 w-full rounded-2xl border border-lav-200 bg-white px-4 py-3 font-serif text-text-dark outline-none focus:border-lav-acc" />
+              <label className="text-subheading text-text-mid" htmlFor="babyBirth">Nhập ngày sinh của bé</label>
+              <input id="babyBirth" type="date" value={babyBirth} onChange={(event) => setBabyBirth(event.target.value)} max={new Date().toISOString().split('T')[0]} className="mt-3 w-full rounded-2xl border border-lav-200 bg-white px-4 py-3 text-body text-text-dark outline-none focus:border-lav-acc" />
               <div className="mt-4 grid grid-cols-3 gap-3">
                 <div className="rounded-2xl bg-white p-4">
-                  <div className="font-serif text-2xl font-black text-grad">{babyDays ?? '-'}</div>
-                  <div className="text-xs font-bold text-text-light">Ngày tuổi</div>
+                  <div className="text-heading text-2xl font-semibold text-grad">{babyDays ?? '-'}</div>
+                  <div className="text-caption text-text-light">Ngày tuổi</div>
                 </div>
                 <div className="rounded-2xl bg-white p-4">
-                  <div className="font-serif text-2xl font-black text-grad">{babyDays === null ? '-' : Math.floor(babyDays / 7)}</div>
-                  <div className="text-xs font-bold text-text-light">Tuần tuổi</div>
+                  <div className="text-heading text-2xl font-semibold text-grad">{babyDays === null ? '-' : Math.floor(babyDays / 7)}</div>
+                  <div className="text-caption text-text-light">Tuần tuổi</div>
                 </div>
                 <div className="rounded-2xl bg-white p-4">
-                  <div className="font-serif text-2xl font-black text-grad">∞</div>
-                  <div className="text-xs font-bold text-text-light">Yêu thương</div>
+                  <div className="text-heading text-2xl font-semibold text-grad">∞</div>
+                  <div className="text-caption text-text-light">Yêu thương</div>
                 </div>
               </div>
             </div>
@@ -328,8 +328,8 @@ const LandingPage = () => {
 
         <section id="reviews" className="overflow-hidden bg-[#f7f0ff] py-16">
           <div className="mx-auto max-w-7xl px-4 md:px-6">
-            <p className="text-center text-xs font-black uppercase tracking-[2.6px] text-pink-dark">Mẹ bỉm nói gì</p>
-            <h2 className="mt-3 text-center font-serif text-4xl font-black">Gia đình tin tưởng Happabi</h2>
+            <p className="text-center text-overline text-pink-dark">Mẹ bỉm nói gì</p>
+            <h2 className="mt-3 text-center text-heading text-4xl font-semibold">Gia đình tin tưởng Happabi</h2>
             <div className="mt-9 grid gap-5 md:grid-cols-3">
               {reviews.map((review) => (
                 <article key={review.name} className="rounded-[24px] border border-lav-100 bg-white p-6 shadow-sm">
@@ -338,8 +338,8 @@ const LandingPage = () => {
                   <div className="mt-5 flex items-center gap-3">
                     <Avatar initials={initials(review.name)} size={42} />
                     <div>
-                      <div className="font-black">{review.name}</div>
-                      <div className="text-xs font-bold text-text-light">{review.role}</div>
+                      <div className="font-semibold">{review.name}</div>
+                      <div className="text-caption text-text-light">{review.role}</div>
                     </div>
                   </div>
                 </article>
@@ -350,10 +350,10 @@ const LandingPage = () => {
 
         <section id="gallery" className="overflow-hidden bg-[linear-gradient(to_bottom,#ffffff,#f3e8ff,#ffffff)] px-4 py-24 md:px-6">
           <div className="text-center">
-            <p className="mx-auto flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[3px] text-text-light before:h-px before:w-9 before:bg-lav-300 after:h-px after:w-9 after:bg-lav-300">
+            <p className="mx-auto flex items-center justify-center gap-3 text-overline text-text-light before:h-px before:w-9 before:bg-lav-300 after:h-px after:w-9 after:bg-lav-300">
               Khoảnh khắc của mẹ và bé
             </p>
-            <h2 className="mt-3 font-serif text-[56px] font-black leading-none text-lav-dark">Kỷ niệm cùng bé</h2>
+            <h2 className="mt-3 text-heading text-4xl font-semibold leading-tight text-lav-dark md:text-5xl">Kỷ niệm cùng bé</h2>
           </div>
 
           <div className="relative mx-auto mt-14 flex w-full max-w-[860px] flex-col gap-20">
@@ -375,9 +375,9 @@ const LandingPage = () => {
                   </div>
 
                   <div className={`memory-copy flex flex-col gap-2 ${isRight ? 'md:items-end md:text-right' : 'md:items-start md:text-left'}`}>
-                    <div className="text-[10px] font-black uppercase tracking-[3px] text-text-light">{memory.tag}</div>
-                    <div className="font-serif text-[26px] font-normal leading-snug text-dark-200">{memory.title}</div>
-                    <p className="max-w-[240px] font-serif text-base italic leading-7 text-text-mid">{memory.desc}</p>
+                    <div className="text-overline text-text-light">{memory.tag}</div>
+                    <div className="text-heading text-2xl font-semibold leading-snug text-dark-200">{memory.title}</div>
+                    <p className="max-w-[240px] text-body leading-relaxed text-text-mid">{memory.desc}</p>
                     <div className="mt-1 text-xl">{memory.heart}</div>
                   </div>
                 </div>
@@ -392,10 +392,10 @@ const LandingPage = () => {
           <div>
             <div className="mb-2 flex min-h-[42px] items-center gap-3">
               <img src="/image/logo.png" alt="Happabi" className="h-[38px] w-[38px] rounded-xl object-cover" />
-              <span className="brand-script text-[30px] text-grad">Happabi</span>
+              <span className="text-brand text-[30px] text-grad">Happabi</span>
             </div>
-            <div className="mb-2 text-[10px] uppercase tracking-[2.5px] text-white/[0.18]">Mẹ Khỏe · Bé Ngoan</div>
-            <p className="mt-3 max-w-[280px] text-[13px] leading-7 text-white/30">
+            <div className="mb-2 text-overline text-white/[0.18]">Mẹ Khỏe · Bé Ngoan</div>
+            <p className="mt-3 max-w-[280px] text-caption leading-relaxed text-white/30">
               Nền tảng kết nối mẹ sau sinh với điều dưỡng, nữ hộ sinh được xác thực. Đặt lịch dễ dàng, chăm sóc tận tâm tại nhà.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -408,8 +408,8 @@ const LandingPage = () => {
                 >
                   <span className="text-lg">{store === 'App Store' ? 'ios' : 'android'}</span>
                   <span>
-                    <span className="block text-[9px] text-white/25">Tải trên</span>
-                    <span className="text-[13px] font-bold">{store}</span>
+                    <span className="block text-caption text-white/25">Tải trên</span>
+                    <span className="text-caption font-semibold">{store}</span>
                   </span>
                 </a>
               ))}
@@ -417,8 +417,8 @@ const LandingPage = () => {
           </div>
 
           <div>
-            <div className="mb-4 text-[11px] font-black uppercase tracking-[2.5px] text-white/25">Sản phẩm</div>
-            <div className="flex flex-col gap-2.5 text-[13px] text-white/40">
+            <div className="mb-4 text-overline text-white/25">Sản phẩm</div>
+            <div className="flex flex-col gap-2.5 text-caption text-white/40">
               {['Dành cho mẹ bỉm', 'Dành cho điều dưỡng', 'AI Matching', 'Bảng giá'].map((item) => (
                 <span key={item} className="cursor-pointer transition hover:text-lav-acc">{item}</span>
               ))}
@@ -426,8 +426,8 @@ const LandingPage = () => {
           </div>
 
           <div>
-            <div className="mb-4 text-[11px] font-black uppercase tracking-[2.5px] text-white/25">Công ty</div>
-            <div className="flex flex-col gap-2.5 text-[13px] text-white/40">
+            <div className="mb-4 text-overline text-white/25">Công ty</div>
+            <div className="flex flex-col gap-2.5 text-caption text-white/40">
               {['Về Happabi', 'Blog sức khỏe', 'Tuyển dụng', 'Báo chí', 'Liên hệ'].map((item) => (
                 <span key={item} className="cursor-pointer transition hover:text-lav-acc">{item}</span>
               ))}
@@ -435,8 +435,8 @@ const LandingPage = () => {
           </div>
 
           <div>
-            <div className="mb-4 text-[11px] font-black uppercase tracking-[2.5px] text-white/25">Liên hệ</div>
-            <div className="text-[13px] leading-8 text-white/30">
+            <div className="mb-4 text-overline text-white/25">Liên hệ</div>
+            <div className="text-caption leading-relaxed text-white/30">
               hello@happabi.vn<br />
               1800 6868<br />
               TP. Hồ Chí Minh<br />
@@ -448,9 +448,9 @@ const LandingPage = () => {
         <div className="mx-auto my-7 h-px max-w-7xl bg-white/[0.05]" />
 
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
-          <div className="text-[11.5px] leading-6 text-white/[0.18]">
+          <div className="text-caption leading-relaxed text-white/[0.18]">
             © 2026 Happabi Technology JSC · GPKD số 0123456789<br />
-            <span className="text-[10px] text-white/[0.1]">Được cấp phép hoạt động bởi Bộ Y tế Việt Nam</span>
+            <span className="text-caption text-white/[0.1]">Được cấp phép hoạt động bởi Bộ Y tế Việt Nam</span>
           </div>
           {!isAuthenticated && (
             <div className="flex gap-3">

@@ -15,7 +15,7 @@ const ChatHeader = ({ activeConversation, onRefresh }: ChatHeaderProps) => (
           <Sparkles size={19} />
         </div>
         <div className="min-w-0">
-          <div className="truncate font-serif text-xl font-black text-text-dark">
+          <div className="truncate text-heading text-xl font-semibold text-text-dark">
             {activeConversation?.title || 'Happabi AI'}
           </div>
           <div className="text-xs font-bold text-text-light">Trợ lý chăm sóc mẹ và bé</div>

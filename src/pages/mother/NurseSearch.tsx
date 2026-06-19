@@ -70,7 +70,7 @@ const NurseCard = ({ nurse, selectedForCompare, compareDisabled, onToggleCompare
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h3 className="truncate text-[16px] font-black text-text-dark">{nurse.fullName || 'Điều dưỡng Happabi'}</h3>
+              <h3 className="truncate text-[16px] font-semibold text-text-dark">{nurse.fullName || 'Điều dưỡng Happabi'}</h3>
               <p className="mt-1 text-[13px] font-bold text-text-mid">
                 {specialtyLabel[nurse.specialty || ''] || 'Điều dưỡng'}
               </p>
@@ -101,18 +101,18 @@ const NurseCard = ({ nurse, selectedForCompare, compareDisabled, onToggleCompare
 
       <div className="mt-4 grid grid-cols-3 gap-2 rounded-2xl bg-lav-100/45 p-3 text-center">
         <div>
-          <div className="flex items-center justify-center gap-1 text-[13px] font-black text-text-dark">
+          <div className="flex items-center justify-center gap-1 text-[13px] font-semibold text-text-dark">
             <Star size={14} className="fill-[#f59e0b] text-[#f59e0b]" />
             {nurse.ratingAvg ?? '0.0'}
           </div>
           <p className="mt-1 text-[10.5px] font-bold text-text-light">Đánh giá</p>
         </div>
         <div>
-          <div className="text-[13px] font-black text-text-dark">{nurse.experienceYears ?? 0} năm</div>
+          <div className="text-[13px] font-semibold text-text-dark">{nurse.experienceYears ?? 0} năm</div>
           <p className="mt-1 text-[10.5px] font-bold text-text-light">Kinh nghiệm</p>
         </div>
         <div>
-          <div className="text-[13px] font-black text-text-dark">{nurse.totalCompletedJobs ?? 0}</div>
+          <div className="text-[13px] font-semibold text-text-dark">{nurse.totalCompletedJobs ?? 0}</div>
           <p className="mt-1 text-[10.5px] font-bold text-text-light">Ca xong</p>
         </div>
       </div>
@@ -262,7 +262,7 @@ const NurseSearch = () => {
             className="h-11 rounded-2xl border border-lav-200 bg-white px-4 text-[14px] font-bold outline-none focus:border-lav-acc focus:ring-4 focus:ring-lav-100"
             aria-label="Ngày muốn đặt lịch"
           />
-          <label className="flex h-11 items-center gap-2 rounded-2xl border border-lav-200 bg-white px-4 text-[13px] font-black text-text-mid">
+          <label className="flex h-11 items-center gap-2 rounded-2xl border border-lav-200 bg-white px-4 text-[13px] font-semibold text-text-mid">
             <input
               type="checkbox"
               checked={availableOnly}
@@ -273,7 +273,7 @@ const NurseSearch = () => {
             />
             Sẵn sàng
           </label>
-          <div className="flex h-11 items-center gap-2 rounded-2xl bg-lav-100 px-4 text-[13px] font-black text-lav-dark">
+          <div className="flex h-11 items-center gap-2 rounded-2xl bg-lav-100 px-4 text-[13px] font-semibold text-lav-dark">
             <Filter size={16} />
             {page.totalElements} hồ sơ
           </div>
@@ -288,14 +288,14 @@ const NurseSearch = () => {
                 <Scale size={18} />
               </div>
               <div>
-                <div className="text-[14px] font-black text-text-dark">Đang chọn để so sánh</div>
+                <div className="text-[14px] font-semibold text-text-dark">Đang chọn để so sánh</div>
                 <div className="text-[12px] font-bold text-text-light">{selectedCompare.length}/2 hồ sơ</div>
               </div>
               <div className="flex flex-wrap gap-2">
                 {selectedCompare.map((nurse) => (
                   <div key={nurse.profileId} className="flex items-center gap-2 rounded-2xl border border-lav-200 bg-white px-3 py-2">
                     <Avatar initials={getInitials(nurse.fullName)} src={nurse.avatarUrl} size={26} />
-                    <span className="max-w-[160px] truncate text-[12px] font-black text-text-dark">
+                    <span className="max-w-[160px] truncate text-[12px] font-semibold text-text-dark">
                       {nurse.fullName || 'Điều dưỡng Happabi'}
                     </span>
                     <button
@@ -352,7 +352,7 @@ const NurseSearch = () => {
         <Card className="flex min-h-[300px] items-center justify-center text-center">
           <div>
             <BriefcaseMedical className="mx-auto text-lav-dark" size={34} />
-            <p className="mt-3 text-[15px] font-black text-text-dark">Chưa có điều dưỡng phù hợp</p>
+            <p className="mt-3 text-[15px] font-semibold text-text-dark">Chưa có điều dưỡng phù hợp</p>
             <p className="mt-1 text-[13px] font-semibold text-text-mid">
               Thử chọn ngày khác hoặc bỏ bớt bộ lọc.
             </p>

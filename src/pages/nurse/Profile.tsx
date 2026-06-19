@@ -104,7 +104,7 @@ const StatusPill = ({
   };
 
   return (
-    <span className={`inline-flex rounded-full border px-3 py-1 text-[12px] font-extrabold ${tones[tone]}`}>
+    <span className={`inline-flex rounded-full border px-3 py-1 text-[12px] font-semibold ${tones[tone]}`}>
       {label}
     </span>
   );
@@ -120,12 +120,12 @@ const statusTone = (status?: string) => {
 const InfoRow = ({ label, value }: { label: string; value?: string | number | null }) => (
   <div className="rounded-2xl border border-lav-100 bg-white px-4 py-3">
     <p className="text-[12px] font-bold text-text-light">{label}</p>
-    <p className="mt-1 text-[14px] font-extrabold text-text-dark">{formatValue(value)}</p>
+    <p className="mt-1 text-[14px] font-semibold text-text-dark">{formatValue(value)}</p>
   </div>
 );
 
 const FieldLabel = ({ children }: { children: React.ReactNode }) => (
-  <label className="text-[12px] font-black uppercase tracking-[0.03em] text-text-light">
+  <label className="text-[12px] font-semibold uppercase tracking-[0.03em] text-text-light">
     {children}
   </label>
 );
@@ -148,7 +148,7 @@ const MetricCard = ({
       </div>
       <span className="text-[12px] font-bold text-text-light">{hint}</span>
     </div>
-    <p className="mt-4 text-[24px] font-black text-text-dark">{value}</p>
+    <p className="mt-4 text-[24px] font-semibold text-text-dark">{value}</p>
     <p className="text-[13px] font-bold text-text-mid">{label}</p>
   </div>
 );
@@ -170,7 +170,7 @@ const VerificationItem = ({
     </div>
     <div className="min-w-0 flex-1">
       <div className="flex flex-wrap items-center gap-2">
-        <p className="text-[14px] font-black text-text-dark">{title}</p>
+        <p className="text-[14px] font-semibold text-text-dark">{title}</p>
         {status && <StatusPill label={status} tone={checked ? 'green' : 'amber'} />}
       </div>
       <p className="mt-1 text-[12.5px] font-semibold leading-5 text-text-mid">{description}</p>
@@ -182,7 +182,7 @@ const CertificationCard = ({ certification }: { certification: NurseCertificatio
   <div className="rounded-2xl border border-lav-100 bg-white p-4">
     <div className="flex items-start justify-between gap-4">
       <div className="min-w-0">
-        <p className="truncate text-[15px] font-black text-text-dark">
+        <p className="truncate text-[15px] font-semibold text-text-dark">
           {certification.certName || 'Chứng chỉ điều dưỡng'}
         </p>
         <p className="mt-1 text-[12.5px] font-bold text-text-mid">
@@ -331,7 +331,7 @@ const NurseProfile = () => {
               <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex min-w-0 items-center gap-5">
                   <div className="relative h-28 w-28 shrink-0">
-                    <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-grad text-3xl font-black text-white shadow-[0_12px_32px_rgba(168,85,247,.25)]">
+                    <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-grad text-3xl font-semibold text-white shadow-[0_12px_32px_rgba(168,85,247,.25)]">
                       {profile.avatarUrl ? (
                         <img src={profile.avatarUrl} alt={profile.fullName || 'Avatar'} className="h-full w-full object-cover" />
                       ) : (
@@ -361,7 +361,7 @@ const NurseProfile = () => {
 
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="truncate font-serif text-[32px] font-black leading-tight text-text-dark">
+                      <h2 className="truncate text-heading text-[32px] font-semibold leading-tight text-text-dark">
                         {profile.fullName || 'Nurse Happabi'}
                       </h2>
                       {profile.featured && <StatusPill label="Nổi bật" tone="lavender" />}
@@ -390,26 +390,26 @@ const NurseProfile = () => {
                   />
 
                   <div className="flex flex-col items-start gap-3 rounded-2xl border border-white/80 bg-white/80 p-4">
-                  <p className="text-[12px] font-bold text-text-light">Hoàn tất hồ sơ</p>
-                  <div className="flex w-full items-center gap-3">
-                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-lav-100">
-                      <div
-                        className="h-full rounded-full bg-grad"
-                        style={{ width: `${(completionItems.done / completionItems.total) * 100}%` }}
-                      />
+                    <p className="text-[12px] font-bold text-text-light">Hoàn tất hồ sơ</p>
+                    <div className="flex w-full items-center gap-3">
+                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-lav-100">
+                        <div
+                          className="h-full rounded-full bg-grad"
+                          style={{ width: `${(completionItems.done / completionItems.total) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-[13px] font-semibold text-text-dark">
+                        {completionItems.done}/{completionItems.total}
+                      </span>
                     </div>
-                    <span className="text-[13px] font-black text-text-dark">
-                      {completionItems.done}/{completionItems.total}
-                    </span>
+                    {profile.canEditProfessionalInfo && (
+                      <Link to="/nurse/onboarding" className="w-full">
+                        <Btn full size="sm">
+                          Cập nhật onboarding
+                        </Btn>
+                      </Link>
+                    )}
                   </div>
-                  {profile.canEditProfessionalInfo && (
-                    <Link to="/nurse/onboarding" className="w-full">
-                      <Btn full size="sm">
-                        Cập nhật onboarding
-                      </Btn>
-                    </Link>
-                  )}
-                </div>
                 </div>
               </div>
             </div>
@@ -430,7 +430,7 @@ const NurseProfile = () => {
                     <BriefcaseMedical size={20} />
                   </div>
                   <div>
-                    <h3 className="font-serif text-[23px] font-black text-text-dark">Thông tin nghề nghiệp</h3>
+                    <h3 className="text-heading text-[23px] font-semibold text-text-dark">Thông tin nghề nghiệp</h3>
                     <p className="text-[13px] font-semibold text-text-light">Các thông tin này được dùng để mother xem và đặt lịch sau này.</p>
                   </div>
                 </div>
@@ -460,7 +460,7 @@ const NurseProfile = () => {
                         placeholder="Ví dụ: Quận 1, Quận 3, Bình Thạnh"
                       />
                     ) : (
-                      <p className="mt-1 text-[14px] font-extrabold text-text-dark">{formatValue(profile.serviceArea)}</p>
+                      <p className="mt-1 text-[14px] font-semibold text-text-dark">{formatValue(profile.serviceArea)}</p>
                     )}
                   </div>
                 </div>
@@ -470,7 +470,7 @@ const NurseProfile = () => {
                     <MapPin size={14} />
                     Địa chỉ
                   </div>
-                  <p className="text-[14px] font-extrabold leading-6 text-text-dark">{formatValue(profile.address)}</p>
+                  <p className="text-[14px] font-semibold leading-6 text-text-dark">{formatValue(profile.address)}</p>
                 </div>
 
                 <div className="mt-4 rounded-2xl border border-lav-100 bg-white px-4 py-3">
@@ -516,7 +516,7 @@ const NurseProfile = () => {
                   <ShieldCheck size={20} />
                 </div>
                 <div>
-                  <h3 className="font-serif text-[23px] font-black text-text-dark">Xác minh</h3>
+                  <h3 className="text-heading text-[23px] font-semibold text-text-dark">Xác minh</h3>
                   <p className="text-[13px] font-semibold text-text-light">Trạng thái duyệt từ doctor và hệ thống.</p>
                 </div>
               </div>
@@ -551,7 +551,7 @@ const NurseProfile = () => {
                   <FileBadge size={20} />
                 </div>
                 <div>
-                  <h3 className="font-serif text-[23px] font-black text-text-dark">Chứng chỉ</h3>
+                  <h3 className="text-heading text-[23px] font-semibold text-text-dark">Chứng chỉ</h3>
                   <p className="text-[13px] font-semibold text-text-light">
                     {profile.certificationCount ?? profile.certifications?.length ?? 0} chứng chỉ đã lưu trong hồ sơ.
                   </p>
@@ -559,7 +559,6 @@ const NurseProfile = () => {
               </div>
               {profile.canEditProfessionalInfo && (
                 <Link to="/nurse/onboarding">
-                  <Btn variant="soft" size="sm">Quản lý chứng chỉ</Btn>
                 </Link>
               )}
             </div>
@@ -573,7 +572,7 @@ const NurseProfile = () => {
             ) : (
               <div className="rounded-2xl border border-dashed border-lav-200 bg-lav-100/40 px-5 py-8 text-center">
                 <FileBadge className="mx-auto text-lav-dark" size={30} />
-                <p className="mt-3 text-[14px] font-black text-text-dark">Chưa có chứng chỉ</p>
+                <p className="mt-3 text-[14px] font-semibold text-text-dark">Chưa có chứng chỉ</p>
                 <p className="mt-1 text-[13px] font-semibold text-text-mid">Bạn có thể bổ sung chứng chỉ trong luồng onboarding.</p>
               </div>
             )}

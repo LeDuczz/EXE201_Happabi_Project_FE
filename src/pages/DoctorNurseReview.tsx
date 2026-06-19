@@ -59,7 +59,7 @@ const DoctorNurseReview = () => {
       <Card className="p-0">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-lav-100 p-5">
           <div>
-            <div className="text-lg font-black text-text-dark">Hồ sơ cần duyệt</div>
+            <div className="text-lg font-semibold text-text-dark">Hồ sơ cần duyệt</div>
             <div className="mt-1 text-sm font-semibold text-text-light">{items.length} hồ sơ đang chờ</div>
           </div>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:min-w-[460px] sm:flex-row">
@@ -95,7 +95,7 @@ const DoctorNurseReview = () => {
               <div className="flex min-h-[360px] items-center justify-center rounded-2xl border border-lav-100 bg-[#fff9fb] text-center">
                 <div>
                   <ShieldCheck className="mx-auto mb-3 text-lav-dark" size={40} />
-                  <div className="font-black text-text-dark">Không có hồ sơ nào đang chờ duyệt</div>
+                  <div className="font-semibold text-text-dark">Không có hồ sơ nào đang chờ duyệt</div>
                   <div className="mt-2 text-sm font-semibold text-text-light">Khi nurse submit hồ sơ, hệ thống sẽ hiển thị tại đây.</div>
                 </div>
               </div>
@@ -111,10 +111,10 @@ const NurseReviewCard = ({ item, onReview }: { item: NurseOnboarding; onReview: 
   <div className="rounded-2xl border border-lav-100 bg-white p-5 shadow-[0_4px_18px_rgba(168,85,247,0.06)]">
     <div className="mb-4 flex items-start justify-between gap-3">
       <div>
-        <div className="text-lg font-black text-text-dark">{item.fullName || 'Nurse chưa có tên'}</div>
+        <div className="text-lg font-semibold text-text-dark">{item.fullName || 'Nurse chưa có tên'}</div>
         <div className="mt-1 text-sm font-semibold text-text-light">{item.phone || item.email || 'Chưa có liên hệ'}</div>
       </div>
-      <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-black text-amber-700">
+      <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-700">
         <Clock3 size={13} /> Chờ duyệt
       </span>
     </div>
@@ -140,13 +140,13 @@ const NurseReviewCard = ({ item, onReview }: { item: NurseOnboarding; onReview: 
 
 const MiniInfo = ({ label, value }: { label: string; value?: string | number | null }) => (
   <div className="rounded-xl bg-[#fff9fb] px-3.5 py-3">
-    <div className="text-[11px] font-black uppercase tracking-wide text-text-light">{label}</div>
+    <div className="text-[11px] font-semibold uppercase tracking-wide text-text-light">{label}</div>
     <div className="mt-1 truncate text-sm font-bold text-text-dark">{value || '-'}</div>
   </div>
 );
 
 const ProgressFlag = ({ label, done }: { label: string; done: boolean }) => (
-  <div className={`rounded-xl px-2.5 py-2 text-center text-[11px] font-black ${done ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+  <div className={`rounded-xl px-2.5 py-2 text-center text-[11px] font-semibold ${done ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
     {label}
   </div>
 );

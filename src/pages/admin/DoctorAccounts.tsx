@@ -92,7 +92,7 @@ const AdminDoctorAccounts = () => {
               <UserPlus size={22} />
             </div>
             <div>
-              <h2 className="font-serif text-2xl font-black text-text-dark">Thông tin doctor</h2>
+              <h2 className="text-heading text-2xl font-semibold text-text-dark">Thông tin doctor</h2>
               <p className="mt-1 text-sm font-semibold text-text-light">Số điện thoại sẽ dùng để đăng nhập portal doctor.</p>
             </div>
           </div>
@@ -155,19 +155,19 @@ const AdminDoctorAccounts = () => {
         </Card>
 
         <Card className="p-6">
-          <div className="mb-4 font-serif text-xl font-black text-text-dark">Tài khoản vừa tạo</div>
+          <div className="mb-4 text-heading text-xl font-semibold text-text-dark">Tài khoản vừa tạo</div>
           {createdDoctor ? (
             <div className="space-y-4">
               <div className="rounded-2xl border border-lav-100 bg-[#fff9fb] p-4">
-                <div className="text-xs font-black uppercase tracking-[1.5px] text-text-light">Doctor</div>
-                <div className="mt-1 font-black text-text-dark">{createdDoctor.fullName}</div>
+                <div className="text-xs font-semibold uppercase tracking-[1.5px] text-text-light">Doctor</div>
+                <div className="mt-1 font-semibold text-text-dark">{createdDoctor.fullName}</div>
                 <div className="mt-2 text-sm font-bold text-text-mid">{createdDoctor.phone}</div>
                 {createdDoctor.email && <div className="text-sm font-bold text-text-light">{createdDoctor.email}</div>}
               </div>
 
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                <div className="text-xs font-black uppercase tracking-[1.5px] text-amber-700">Mật khẩu khởi tạo</div>
-                <div className="mt-2 break-all rounded-xl bg-white px-3 py-2 font-mono text-sm font-black text-text-dark">
+                <div className="text-xs font-semibold uppercase tracking-[1.5px] text-amber-700">Mật khẩu khởi tạo</div>
+                <div className="mt-2 break-all rounded-xl bg-white px-3 py-2 font-mono text-sm font-semibold text-text-dark">
                   {createdDoctor.initialPassword}
                 </div>
                 <Btn type="button" size="sm" variant="soft" className="mt-3" onClick={copyPassword}>
