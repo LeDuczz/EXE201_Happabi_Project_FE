@@ -6,6 +6,7 @@ import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
 import Input from '../../components/common/Input';
 import { useAuth, type UserRole } from '../../contexts/AuthContext';
+import { getAppEnv } from '../../config/env';
 import { getApiErrorMessage } from '../../utils/apiError';
 import { PHONE_POLICY_MESSAGE, getVietnamPhoneError, normalizeVietnamPhone } from '../../utils/phonePolicy';
 
@@ -56,9 +57,9 @@ const portalConfig: Record<UserRole, {
 };
 
 const getSocialUrl = (provider: 'Google' | 'Facebook') => {
-  const rawDomain = import.meta.env.VITE_AWS_COGNITO_DOMAIN;
-  const clientId = import.meta.env.VITE_AWS_COGNITO_CLIENT_ID;
-  const redirectUri = `${window.location.origin}/social/callback`;
+  const rawDomain = getAppEnv('VITE_AWS_COGNITO_DOMAIN');
+  const clientId = getAppEnv('VITE_AWS_COGNITO_CLIENT_ID');
+  const redirectUri = getAppEnv('VITE_COGNITO_REDIRECT_SIGN_IN') ?? `${window.location.origin}/social/callback`;
   if (!rawDomain || !clientId) return '';
 
   const domain = /^https?:\/\//i.test(rawDomain)
