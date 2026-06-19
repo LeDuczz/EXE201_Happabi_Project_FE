@@ -619,8 +619,8 @@ const ReviewPanel = ({
           <MessageSquareText size={18} />
         </div>
         <div>
-          <div className="text-[14px] font-black text-text-dark">Đánh giá nurse sau ca làm</div>
-          <p className="mt-1 text-[12px] font-bold text-text-mid">Không bắt buộc, nhưng giúp hệ thống xếp hạng chính xác hơn.</p>
+          <div className="text-[14px] font-black text-text-dark">{title}</div>
+          <p className="mt-1 text-[12px] font-bold text-text-mid">{description}</p>
         </div>
       </div>
 

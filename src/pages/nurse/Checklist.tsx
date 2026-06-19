@@ -19,11 +19,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Card from '../../components/common/Card';
 import Btn from '../../components/common/Btn';
 import Topbar from '../../components/layout/Topbar';
-<<<<<<< HEAD
 import bookingService from '../../api/bookingService';
-=======
 import { useNurseWorkSession } from '../../hooks/useNurseWorkSessions';
->>>>>>> c784401b4f3e1c0ad07b911f7dd89f989a5ece9b
 import workSessionApi from '../../api/workSessionApi';
 import type { WorkSession, WorkSessionChecklistItem } from '../../types/workSession';
 import { getApiErrorMessage } from '../../utils/apiError';
@@ -48,18 +45,14 @@ const canEdit = (session?: WorkSession | null) => session?.status === 'IN_PROGRE
 const NurseChecklist = () => {
   const { workSessionId } = useParams();
   const navigate = useNavigate();
-  const { session: loadedSession, setSession, isLoading, error: loadError } = useNurseWorkSession(workSessionId);
+  const { session: loadedSession, setSession, isLoading, error: loadError, reload } = useNurseWorkSession(workSessionId);
   const session = loadedSession;
   const [checkInFiles, setCheckInFiles] = useState<File[]>([]);
   const [itemFiles, setItemFiles] = useState<Record<string, File[]>>({});
   const [itemNotes, setItemNotes] = useState<Record<string, string>>({});
-<<<<<<< HEAD
   const [cancelReason, setCancelReason] = useState('');
   const [incidentDescription, setIncidentDescription] = useState('');
   const [incidentFiles, setIncidentFiles] = useState<File[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-=======
->>>>>>> c784401b4f3e1c0ad07b911f7dd89f989a5ece9b
   const [actionId, setActionId] = useState<string | null>(null);
   const [error, setError] = useState(loadError);
 
@@ -126,7 +119,7 @@ const NurseChecklist = () => {
     setError('');
     try {
       await bookingService.cancelByNurse(session.bookingId, cancelReason.trim());
-      await loadSession();
+      await reload();
       setCancelReason('');
     } catch (err) {
       setError(getApiErrorMessage(err));
@@ -141,7 +134,7 @@ const NurseChecklist = () => {
     setError('');
     try {
       await workSessionApi.reportMotherUnreachable(session.id, incidentDescription.trim(), incidentFiles);
-      await loadSession();
+      await reload();
       setIncidentDescription('');
       setIncidentFiles([]);
     } catch (err) {

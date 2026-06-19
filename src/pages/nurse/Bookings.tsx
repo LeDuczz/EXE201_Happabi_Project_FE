@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-import { useEffect, useMemo, useState } from 'react';
 import { CalendarDays, Clock, Loader2, MapPin, Phone, PlayCircle, RefreshCw } from 'lucide-react';
-=======
-import { CalendarDays, Clock, Loader2, MapPin, PlayCircle, RefreshCw } from 'lucide-react';
 import { useMemo, useState } from 'react';
->>>>>>> c784401b4f3e1c0ad07b911f7dd89f989a5ece9b
 import { useNavigate } from 'react-router-dom';
 import Card from '../../components/common/Card';
 import Btn from '../../components/common/Btn';

@@ -1,4 +1,12 @@
-export type WalletTransactionType = 'TOPUP' | 'COMMISSION' | 'WITHDRAW' | 'BOOKING_EARNING';
+export type WalletTransactionType =
+  | 'TOPUP'
+  | 'TOPUP_WALLET'
+  | 'TOPUP_DEPOSIT'
+  | 'COMMISSION'
+  | 'FEE_DEDUCTION'
+  | 'WITHDRAW'
+  | 'PAYOUT'
+  | 'BOOKING_EARNING';
 
 export interface WalletTransaction {
   id: string;
@@ -12,6 +20,7 @@ export interface WalletTransaction {
 export interface NurseWalletInfo {
   balance: number;
   pledgeAmount: number;
+  lockedWithdrawalAmount: number;
   transactions: WalletTransaction[];
 }
 
