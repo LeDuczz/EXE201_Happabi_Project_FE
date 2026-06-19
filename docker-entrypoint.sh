@@ -1,4 +1,4 @@
-﻿#!/bin/sh
+#!/bin/sh
 set -eu
 
 cat > /usr/share/nginx/html/env.js <<EOF
