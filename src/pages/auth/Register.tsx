@@ -54,12 +54,17 @@ const Register = ({ role }: RegisterProps) => {
 
     try {
       const normalizedPhone = normalizeVietnamPhone(phone);
-      await axiosClient.post('/api/v1/auth/register', {
+      const response = await axiosClient.post('/api/v1/auth/register', {
         phone: normalizedPhone,
         password,
         fullName,
         role,
       });
+      const autoConfirmed = response.data?.data?.autoConfirmed === true;
+      if (autoConfirmed) {
+        navigate(role === 'NURSE' ? '/auth/nurse' : '/auth/mother', { replace: true });
+        return;
+      }
       navigate('/verify-otp', { state: { phone: normalizedPhone, role } });
     } catch (err: any) {
       setError(getApiErrorMessage(err));
