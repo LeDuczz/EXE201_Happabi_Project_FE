@@ -204,6 +204,8 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
     }
   };
 
+  const localizedLatestToast = latestToast ? localizeNotification(latestToast) : null;
+
   return (
     <div className="mb-7 flex items-start justify-between">
       <div>
@@ -303,7 +305,7 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
             </div>
           )}
 
-          {latestToast && !isOpen && (
+          {localizedLatestToast && !isOpen && (
             <button
               type="button"
               onClick={handleOpenLatestToast}
@@ -315,15 +317,15 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate text-[13px] font-black text-text-dark">
-                    {latestToast.title}
+                    {localizedLatestToast.title}
                   </span>
                   <span className="block text-[11px] font-bold text-text-light">
-                    {formatRelativeTime(latestToast.createdAt)}
+                    {formatRelativeTime(localizedLatestToast.createdAt)}
                   </span>
                 </span>
               </span>
               <span className="line-clamp-2 text-[12px] font-semibold leading-5 text-text-mid">
-                {latestToast.message}
+                {localizedLatestToast.message}
               </span>
             </button>
           )}

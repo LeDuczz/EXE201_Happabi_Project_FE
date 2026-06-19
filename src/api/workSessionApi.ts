@@ -1,5 +1,5 @@
 import axiosClient from './axiosClient';
-import type { WorkSession } from '../types/workSession';
+import type { WorkSession, WorkSessionIncident } from '../types/workSession';
 
 const unwrap = <T>(response: { data?: { data?: T } }) => response.data?.data as T;
 
@@ -73,6 +73,15 @@ const workSessionApi = {
   reportByMother: async (id: string, reason: string) => {
     const response = await axiosClient.post(`/api/v1/mothers/me/work-sessions/${id}/report`, { reason });
     return unwrap<WorkSession>(response);
+  },
+
+  reportMotherUnreachable: async (id: string, description: string, images: File[]) => {
+    const response = await axiosClient.post(
+      `/api/v1/nurses/me/work-sessions/${id}/incidents/mother-unreachable`,
+      toFormData(images, { description }),
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    );
+    return unwrap<WorkSessionIncident>(response);
   },
 };
 

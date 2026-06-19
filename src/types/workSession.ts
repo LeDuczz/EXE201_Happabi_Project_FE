@@ -40,8 +40,10 @@ export interface WorkSession {
   nurseName: string;
   motherId: string;
   motherName: string;
+  motherPhone?: string;
   serviceOfferingId: string;
   serviceName: string;
+  serviceAddress?: string;
   status: WorkSessionStatus;
   scheduledStartAt: string;
   scheduledEndAt: string;
@@ -54,4 +56,23 @@ export interface WorkSession {
   reportReason?: string;
   checkInEvidences: WorkSessionEvidence[];
   checklistItems: WorkSessionChecklistItem[];
+}
+
+export interface WorkSessionIncident {
+  id: string;
+  workSessionId: string;
+  incidentType: 'MOTHER_UNREACHABLE' | 'NURSE_CANCELLATION' | 'NURSE_NO_SHOW' | 'OTHER';
+  status: 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED';
+  description: string;
+  reportedByName: string;
+  adminNote?: string;
+  reviewedAt?: string;
+  createdAt: string;
+  evidences: Array<{
+    id: string;
+    previewUrl?: string;
+    contentType?: string;
+    fileSize?: number;
+    createdAt?: string;
+  }>;
 }

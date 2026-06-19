@@ -101,6 +101,7 @@ const MotherBookings = () => {
   const [activeBucket, setActiveBucket] = useState<SessionBucket>('UPCOMING');
   const [reviewsBySession, setReviewsBySession] = useState<Record<string, NurseReview | null>>({});
   const [reportReason, setReportReason] = useState('');
+  const [cancelReason, setCancelReason] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
   const [paymentActionId, setPaymentActionId] = useState<string | null>(null);
@@ -229,6 +230,47 @@ const MotherBookings = () => {
     } catch (err) {
       setError(getApiErrorMessage(err));
     } finally {
+      setReviewActionId(null);
+    }
+  };
+
+  const cancelBookingByMother = async (session: WorkSession) => {
+    if (!cancelReason.trim()) return;
+    setActionId('cancel-booking');
+    setError('');
+    try {
+      await bookingService.cancelByMother(session.bookingId, cancelReason.trim());
+      setCancelReason('');
+      await loadSessions();
+      setActiveBucket('HISTORY');
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const confirmAndSubmitReview = async (sessionId: string, rating: number, tags: NurseReviewTag[], comment: string) => {
+    setActionId('confirm-review');
+    setReviewActionId(sessionId);
+    setError('');
+    try {
+      const updated = await workSessionApi.confirmByMother(sessionId);
+      setSessions((current) => current.map((session) => (session.id === updated.id ? updated : session)));
+      setActiveBucket(bucketOf(updated.status));
+      setSelectedId(updated.id);
+      setReportReason('');
+
+      const review = await nurseReviewApi.createMyWorkSessionReview(sessionId, {
+        rating,
+        tags,
+        comment: comment.trim() || undefined,
+      });
+      setReviewsBySession((current) => ({ ...current, [sessionId]: review }));
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setActionId(null);
       setReviewActionId(null);
     }
   };
@@ -399,15 +441,15 @@ const MotherBookings = () => {
                     <AlertCircle size={16} />
                     Ca này đang chờ mẹ xác nhận.
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Btn
-                      disabled={actionId === 'confirm'}
-                      onClick={() => runSessionAction('confirm', () => workSessionApi.confirmByMother(selectedSession.id))}
-                    >
-                      {actionId === 'confirm' ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
-                      Xác nhận hoàn thành
-                    </Btn>
-                  </div>
+                  <ReviewPanel
+                    session={selectedSession}
+                    review={null}
+                    isSubmitting={reviewActionId === selectedSession.id || actionId === 'confirm-review'}
+                    title="Xác nhận và đánh giá nurse"
+                    description="Vui lòng chọn số sao trước khi xác nhận hoàn thành ca."
+                    submitLabel="Xác nhận hoàn thành và gửi đánh giá"
+                    onSubmit={confirmAndSubmitReview}
+                  />
                   <div className="mt-4 grid gap-2">
                     <textarea
                       value={reportReason}
@@ -423,6 +465,35 @@ const MotherBookings = () => {
                     >
                       {actionId === 'report' ? <Loader2 className="animate-spin" size={16} /> : <XCircle size={16} />}
                       Báo cáo vấn đề
+                    </Btn>
+                  </div>
+                </div>
+              )}
+
+              {selectedSession.status === 'SCHEDULED' && (
+                <div className="mb-5 rounded-xl border border-red-100 bg-red-50 p-4">
+                  <div className="mb-3 flex items-center gap-2 text-[13px] font-black text-red-700">
+                    <XCircle size={16} />
+                    Hủy đơn đặt lịch
+                  </div>
+                  <p className="mb-3 text-[12px] font-bold text-text-mid">
+                    Hủy trước 24 giờ sẽ tạo yêu cầu hoàn tiền thủ công. Hủy trong 24 giờ trước ca sẽ không được hoàn tiền theo chính sách.
+                  </p>
+                  <textarea
+                    value={cancelReason}
+                    onChange={(event) => setCancelReason(event.target.value)}
+                    rows={3}
+                    placeholder="Nhập lý do hủy đơn..."
+                    className="w-full resize-none rounded-xl border border-red-100 bg-white px-4 py-3 text-[13px] font-bold text-text-dark outline-none focus:border-red-300"
+                  />
+                  <div className="mt-3 flex justify-end">
+                    <Btn
+                      variant="danger"
+                      disabled={!cancelReason.trim() || actionId === 'cancel-booking'}
+                      onClick={() => cancelBookingByMother(selectedSession)}
+                    >
+                      {actionId === 'cancel-booking' ? <Loader2 className="animate-spin" size={16} /> : <XCircle size={16} />}
+                      Hủy đơn
                     </Btn>
                   </div>
                 </div>
@@ -505,14 +576,20 @@ const ReviewPanel = ({
   session,
   review,
   isSubmitting,
+  title = 'Đánh giá nurse sau ca làm',
+  description = 'Không bắt buộc, nhưng giúp hệ thống xếp hạng chính xác hơn.',
+  submitLabel = 'Gửi đánh giá',
   onSubmit,
 }: {
   session: WorkSession;
   review?: NurseReview | null;
   isSubmitting: boolean;
+  title?: string;
+  description?: string;
+  submitLabel?: string;
   onSubmit: (sessionId: string, rating: number, tags: NurseReviewTag[], comment: string) => Promise<void>;
 }) => {
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(0);
   const [selectedTags, setSelectedTags] = useState<NurseReviewTag[]>([]);
   const [comment, setComment] = useState('');
 
@@ -542,8 +619,8 @@ const ReviewPanel = ({
           <MessageSquareText size={18} />
         </div>
         <div>
-          <div className="text-[14px] font-black text-text-dark">Đánh giá nurse sau ca làm</div>
-          <p className="mt-1 text-[12px] font-bold text-text-mid">Không bắt buộc, nhưng giúp hệ thống xếp hạng chính xác hơn.</p>
+          <div className="text-[14px] font-black text-text-dark">{title}</div>
+          <p className="mt-1 text-[12px] font-bold text-text-mid">{description}</p>
         </div>
       </div>
 
@@ -578,7 +655,7 @@ const ReviewPanel = ({
       <div className="mt-4 flex justify-end">
         <Btn disabled={isSubmitting || rating < 1} onClick={() => onSubmit(session.id, rating, selectedTags, comment)}>
           {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
-          Gửi đánh giá
+          {submitLabel}
         </Btn>
       </div>
     </div>

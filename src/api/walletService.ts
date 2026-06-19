@@ -3,10 +3,11 @@ import axiosClient from './axiosClient';
 export interface WalletInfo {
     balance: number;
     pledgeAmount: number;
+    lockedWithdrawalAmount: number;
     transactions: Array<{
         id: string;
         amount: number;
-        type: 'TOPUP' | 'COMMISSION' | 'WITHDRAW';
+        type: 'TOPUP_WALLET' | 'TOPUP_DEPOSIT' | 'BOOKING_EARNING' | 'FEE_DEDUCTION' | 'PAYOUT';
         status: string;
         createdAt: string;
         description: string;

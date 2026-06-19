@@ -2,6 +2,12 @@ import type { AppNotification, RealtimeNotificationPayload } from '../types/noti
 
 const normalize = (value: string) => value.trim().replace(/\s+/g, ' ');
 
+const formatVnd = (value: string) => {
+  const amount = Number(value.replace(/,/g, ''));
+  if (!Number.isFinite(amount)) return `${value} đ`;
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+};
+
 const titleMap: Record<string, string> = {
   'Nurse profile rejected': 'Hồ sơ nurse bị từ chối',
   'Nurse profile approved': 'Hồ sơ nurse đã được duyệt',
@@ -23,6 +29,21 @@ const titleMap: Record<string, string> = {
   'New booking assigned': 'Bạn có booking mới',
   'Availability window opened': 'Đã mở khung nhận lịch',
   'Availability window cancelled': 'Đã hủy khung nhận lịch',
+  'Booking cancelled by mother': 'Mẹ đã hủy booking',
+  'Booking cancelled by nurse': 'Nurse đã hủy booking',
+  'Booking cancelled - refund pending': 'Đã hủy booking - chờ hoàn tiền',
+  'Booking cancellation recorded': 'Đã ghi nhận hủy booking',
+  'Mother refund request created': 'Yêu cầu hoàn tiền mới',
+  'Refund request approved': 'Yêu cầu hoàn tiền đã được duyệt',
+  'Refund request rejected': 'Yêu cầu hoàn tiền bị từ chối',
+  'Mother unreachable incident reported': 'Báo cáo không liên lạc được mẹ',
+  'Work session incident reported': 'Báo cáo sự cố ca làm',
+  'Incident approved': 'Sự cố đã được duyệt',
+  'Incident rejected': 'Sự cố bị từ chối',
+  'Nurse no-show confirmed': 'Đã xác nhận nurse bỏ ca',
+  'No-show penalty applied': 'Đã áp dụng phạt bỏ ca',
+  'Booking availability suspended': 'Tạm khóa nhận lịch',
+  'Nurse account suspended': 'Tài khoản nurse bị khóa',
 };
 
 const fallbackTitleByType: Record<string, string> = {
@@ -58,6 +79,10 @@ const translateExactMessage = (message: string) => {
 
   if (normalized === 'The mother reported an issue with this work session. Please review the details and wait for system handling.') {
     return 'Mẹ đã báo cáo sự cố với ca làm này. Vui lòng kiểm tra chi tiết và chờ hệ thống xử lý.';
+  }
+
+  if (/^The nurse reported that they could not reach you after arrival\. Admin will review the evidence\.?$/i.test(normalized)) {
+    return 'Nurse báo không liên lạc được với bạn sau khi đến nơi. Admin sẽ kiểm tra bằng chứng.';
   }
 
   if (normalized === 'The mother has confirmed this work session. Your earning has been processed according to the payment policy.') {
@@ -128,13 +153,122 @@ const phraseMap: Array<[RegExp, string]> = [
   [/\breport an issue\b/gi, 'báo cáo sự cố'],
 ];
 
-export const translateNotificationTitle = (title: string, type?: string) => {
+const translateWithdrawalTitle = (title: string) => {
+  const normalized = normalize(title);
+  if (normalized === 'New withdrawal request') return 'Yêu cầu rút tiền mới';
+  if (normalized === 'Withdrawal request created') return 'Yêu cầu rút tiền đã được tạo';
+  if (normalized === 'Withdrawal request approved') return 'Yêu cầu rút tiền đã được duyệt';
+  if (normalized === 'Withdrawal request rejected') return 'Yêu cầu rút tiền bị từ chối';
+  if (normalized === 'Withdrawal request cancelled') return 'Yêu cầu rút tiền đã hủy';
+  if (normalized.toLowerCase().includes('withdrawal request')) return 'Cập nhật rút tiền';
+  return 'Cập nhật rút tiền';
+};
+
+const translateWithdrawalMessage = (message: string) => {
+  const normalized = normalize(message);
+
+  const requestedMatch = normalized.match(/^(.+) requested a withdrawal of ([\d.,eE+-]+) VND\.?$/);
+  if (requestedMatch) {
+    return `${requestedMatch[1]} đã tạo yêu cầu rút ${formatVnd(requestedMatch[2])}.`;
+  }
+
+  const createdMatch = normalized.match(/^Your withdrawal request of ([\d.,eE+-]+) VND has been created and is waiting for admin approval\.?$/);
+  if (createdMatch) {
+    return `Yêu cầu rút ${formatVnd(createdMatch[1])} đã được tạo và đang chờ admin duyệt.`;
+  }
+
+  const cancelledByNurseMatch = normalized.match(/^(.+) cancelled a withdrawal request of ([\d.,eE+-]+) VND\.?$/);
+  if (cancelledByNurseMatch) {
+    return `${cancelledByNurseMatch[1]} đã hủy yêu cầu rút ${formatVnd(cancelledByNurseMatch[2])}.`;
+  }
+
+  if (
+    normalized === 'Your withdrawal request has been approved. Please check your bank account.' ||
+    normalized === 'Your withdrawal request has been đã được duyệt. Please check your bank account.'
+  ) {
+    return 'Yêu cầu rút tiền đã được duyệt. Vui lòng kiểm tra tài khoản ngân hàng.';
+  }
+
+  if (normalized === 'Your withdrawal request has been cancelled and the held amount has been returned to your wallet.') {
+    return 'Yêu cầu rút tiền đã được hủy. Số tiền tạm giữ đã được hoàn về ví.';
+  }
+
+  const rejectedMatch = normalized.match(/^Your withdrawal request was rejected\. Reason: (.+)$/);
+  if (rejectedMatch) {
+    return `Yêu cầu rút tiền bị từ chối. Lý do: ${rejectedMatch[1]}`;
+  }
+
+  if (normalized.toLowerCase().includes('withdrawal request')) {
+    return normalized
+      .replace(/^Your withdrawal request/i, 'Yêu cầu rút tiền')
+      .replace(/has been created and is waiting for admin approval\.?/i, 'đã được tạo và đang chờ admin duyệt.')
+      .replace(/has been approved\.? Please check your bank account\.?/i, 'đã được duyệt. Vui lòng kiểm tra tài khoản ngân hàng.')
+      .replace(/has been cancelled and the held amount has been returned to your wallet\.?/i, 'đã được hủy. Số tiền tạm giữ đã được hoàn về ví.');
+  }
+
+  return normalized;
+};
+
+const translatePolicyMessage = (message: string) => {
+  const normalized = normalize(message);
+  const refundMatch = normalized.match(/^A refund request of ([\d.,eE+-]+) VND was created for booking (.+)\.$/);
+  if (refundMatch) {
+    return `Yêu cầu hoàn ${formatVnd(refundMatch[1])} đã được tạo cho booking ${refundMatch[2]}.`;
+  }
+  if (normalized === 'Your booking was cancelled and a manual refund request has been created.') {
+    return 'Booking đã được hủy và yêu cầu hoàn tiền thủ công đã được tạo.';
+  }
+  if (normalized === 'Your booking was cancelled. This cancellation is not refundable by policy.') {
+    return 'Booking đã được hủy. Lần hủy này không được hoàn tiền theo chính sách.';
+  }
+  if (normalized === 'Your refund request has been approved. Please check your bank account.') {
+    return 'Yêu cầu hoàn tiền đã được duyệt. Vui lòng kiểm tra tài khoản ngân hàng.';
+  }
+  if (normalized.startsWith('Your refund request was rejected. Reason:')) {
+    return normalized.replace('Your refund request was rejected. Reason:', 'Yêu cầu hoàn tiền bị từ chối. Lý do:');
+  }
+  if (normalized === 'The nurse reported that they could not reach you after arrival. Admin will review the evidence.') {
+    return 'Nurse báo không liên lạc được với bạn sau khi đến nơi. Admin sẽ kiểm tra bằng chứng.';
+  }
+  const adminIncidentMatch = normalized.match(/^A nurse reported a mother unreachable incident for work session (.+)\.$/);
+  if (adminIncidentMatch) {
+    return `Nurse đã báo cáo không liên lạc được với mẹ cho ca làm ${adminIncidentMatch[1]}.`;
+  }
+  if (normalized === 'Admin approved the incident report. This work session has been closed according to policy.') {
+    return 'Admin đã duyệt báo cáo sự cố. Ca làm đã được đóng theo chính sách.';
+  }
+  if (normalized === 'Admin confirmed that the nurse did not attend this work session. Support will follow up according to policy.') {
+    return 'Admin đã xác nhận nurse không đến ca. Bộ phận hỗ trợ sẽ xử lý tiếp theo chính sách.';
+  }
+  if (normalized === 'A no-show violation has been confirmed for this work session. Your booking availability has been restricted according to policy.') {
+    return 'Ca này đã bị ghi nhận là bỏ ca. Khả năng nhận lịch của bạn đã bị giới hạn theo chính sách.';
+  }
+  if (normalized === 'Your account has been suspended because of repeated no-show violations.') {
+    return 'Tài khoản của bạn đã bị khóa vì nhiều lần bỏ ca.';
+  }
+  const noShowPenaltyMatch = normalized.match(/^Your booking availability has been suspended until (.+) because of a confirmed no-show violation\.$/);
+  if (noShowPenaltyMatch) {
+    return `Bạn bị tạm khóa nhận lịch đến ${noShowPenaltyMatch[1]} do một ca bỏ đã được xác nhận.`;
+  }
+  if (normalized === 'Admin approved your incident report.') {
+    return 'Admin đã duyệt báo cáo sự cố của bạn.';
+  }
+  return null;
+};
+
+export const translateNotificationTitle = (title: string, type?: string, resourceType?: string) => {
+  if (resourceType === 'NURSE_WITHDRAWAL') return translateWithdrawalTitle(title);
   const normalized = normalize(title);
   if (titleMap[normalized]) return titleMap[normalized];
   return type ? fallbackTitleByType[type] ?? title : title;
 };
 
-export const translateNotificationMessage = (message: string) => {
+export const translateNotificationMessage = (message: string, resourceType?: string) => {
+  if (resourceType === 'NURSE_WITHDRAWAL') return translateWithdrawalMessage(message);
+  if (resourceType === 'MOTHER_REFUND' || resourceType === 'WORK_SESSION_INCIDENT' || resourceType === 'WORK_SESSION' || resourceType === 'BOOKING' || resourceType === 'NURSE_PENALTY') {
+    const policy = translatePolicyMessage(message);
+    if (policy) return policy;
+  }
   const exact = translateExactMessage(message);
   if (exact) return exact;
   return phraseMap.reduce((current, [pattern, replacement]) => current.replace(pattern, replacement), message);
@@ -142,6 +276,6 @@ export const translateNotificationMessage = (message: string) => {
 
 export const localizeNotification = <T extends AppNotification | RealtimeNotificationPayload>(notification: T): T => ({
   ...notification,
-  title: translateNotificationTitle(notification.title, notification.type),
-  message: translateNotificationMessage(notification.message),
+  title: translateNotificationTitle(notification.title, notification.type, notification.resourceType),
+  message: translateNotificationMessage(notification.message, notification.resourceType),
 });

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, Clock, Loader2, MapPin, PlayCircle, RefreshCw } from 'lucide-react';
+import { CalendarDays, Clock, Loader2, MapPin, Phone, PlayCircle, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../../components/common/Card';
 import Btn from '../../components/common/Btn';
@@ -156,7 +156,11 @@ const NurseBookings = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin size={16} className="text-lav-dark" />
-                        Booking #{session.bookingId.slice(0, 8)}
+                        {session.serviceAddress || `Booking #${session.bookingId.slice(0, 8)}`}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Phone size={16} className="text-lav-dark" />
+                        {session.motherPhone || 'Chưa có số điện thoại'}
                       </div>
                     </div>
 

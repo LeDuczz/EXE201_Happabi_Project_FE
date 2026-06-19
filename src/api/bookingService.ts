@@ -77,6 +77,34 @@ const bookingService = {
 
     rejectBooking: (id: string) =>
         axiosClient.post(`/api/v1/bookings/${id}/reject`),
+
+    cancelByMother: async (id: string, reason: string) => {
+        const response = await axiosClient.post(`/api/v1/bookings/${id}/cancel-by-mother`, { reason });
+        return response.data?.data as {
+            id: string;
+            bookingId: string;
+            actor: 'MOTHER' | 'NURSE' | 'SYSTEM' | 'ADMIN';
+            reason: string;
+            refundable: boolean;
+            refundableAmount: number;
+            policyCutoffAt: string;
+            createdAt: string;
+        };
+    },
+
+    cancelByNurse: async (id: string, reason: string) => {
+        const response = await axiosClient.post(`/api/v1/bookings/${id}/cancel-by-nurse`, { reason });
+        return response.data?.data as {
+            id: string;
+            bookingId: string;
+            actor: 'MOTHER' | 'NURSE' | 'SYSTEM' | 'ADMIN';
+            reason: string;
+            refundable: boolean;
+            refundableAmount: number;
+            policyCutoffAt: string;
+            createdAt: string;
+        };
+    },
 };
 
 export default bookingService;

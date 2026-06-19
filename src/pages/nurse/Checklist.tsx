@@ -1,20 +1,25 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   ArrowLeft,
+  AlertTriangle,
   Camera,
   CheckCircle2,
   Clock,
   Image as ImageIcon,
   Loader2,
+  MapPin,
+  Phone,
   RotateCcw,
   Send,
   ShieldCheck,
   Upload,
+  XCircle,
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Card from '../../components/common/Card';
 import Btn from '../../components/common/Btn';
 import Topbar from '../../components/layout/Topbar';
+import bookingService from '../../api/bookingService';
 import workSessionApi from '../../api/workSessionApi';
 import type { WorkSession, WorkSessionChecklistItem } from '../../types/workSession';
 import { getApiErrorMessage } from '../../utils/apiError';
@@ -43,6 +48,9 @@ const NurseChecklist = () => {
   const [checkInFiles, setCheckInFiles] = useState<File[]>([]);
   const [itemFiles, setItemFiles] = useState<Record<string, File[]>>({});
   const [itemNotes, setItemNotes] = useState<Record<string, string>>({});
+  const [cancelReason, setCancelReason] = useState('');
+  const [incidentDescription, setIncidentDescription] = useState('');
+  const [incidentFiles, setIncidentFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -117,6 +125,37 @@ const NurseChecklist = () => {
     await runAction('checkout', () => workSessionApi.checkout(session.id));
   };
 
+  const handleCancelBooking = async () => {
+    if (!session || !cancelReason.trim()) return;
+    setActionId('cancel-booking');
+    setError('');
+    try {
+      await bookingService.cancelByNurse(session.bookingId, cancelReason.trim());
+      await loadSession();
+      setCancelReason('');
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleReportMotherUnreachable = async () => {
+    if (!session || !incidentDescription.trim() || incidentFiles.length === 0) return;
+    setActionId('mother-unreachable');
+    setError('');
+    try {
+      await workSessionApi.reportMotherUnreachable(session.id, incidentDescription.trim(), incidentFiles);
+      await loadSession();
+      setIncidentDescription('');
+      setIncidentFiles([]);
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setActionId(null);
+    }
+  };
+
   const allDone = session?.checklistItems.every((item) => item.status === 'COMPLETED') ?? false;
   const locked = session ? !['SCHEDULED', 'IN_PROGRESS'].includes(session.status) : false;
 
@@ -175,6 +214,11 @@ const NurseChecklist = () => {
                 <span className="shrink-0 rounded-full border border-lav-200 bg-lav-50 px-3 py-1 text-[11px] font-black text-lav-dark">
                   {statusText[session.status]}
                 </span>
+              </div>
+
+              <div className="mb-5 grid gap-3 md:grid-cols-2">
+                <Metric icon={<Phone size={16} />} label="Số điện thoại mẹ" value={session.motherPhone || 'Chưa có'} />
+                <Metric icon={<MapPin size={16} />} label="Địa chỉ chăm sóc" value={session.serviceAddress || 'Chưa có'} />
               </div>
 
               {session.status === 'SCHEDULED' ? (
@@ -367,6 +411,65 @@ const NurseChecklist = () => {
                 {actionId === 'checkout' ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
                 Checkout ca làm
               </Btn>
+
+              {session.status === 'SCHEDULED' && (
+                <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-xs font-black text-red-700">
+                    <XCircle size={16} />
+                    Hủy ca trước 24 giờ
+                  </div>
+                  <textarea
+                    value={cancelReason}
+                    onChange={(event) => setCancelReason(event.target.value)}
+                    rows={3}
+                    placeholder="Nhập lý do hủy ca..."
+                    className="w-full resize-none rounded-xl border border-red-100 bg-white px-3 py-2 text-xs font-bold text-text-dark outline-none focus:border-red-300"
+                  />
+                  <Btn
+                    full
+                    variant="danger"
+                    className="mt-3"
+                    disabled={!cancelReason.trim() || actionId === 'cancel-booking'}
+                    onClick={handleCancelBooking}
+                  >
+                    {actionId === 'cancel-booking' ? <Loader2 className="animate-spin" size={15} /> : <XCircle size={15} />}
+                    Hủy ca
+                  </Btn>
+                </div>
+              )}
+
+              {['SCHEDULED', 'IN_PROGRESS'].includes(session.status) && (
+                <div className="mt-5 rounded-2xl border border-amber-100 bg-amber-50 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-xs font-black text-amber-800">
+                    <AlertTriangle size={16} />
+                    Báo không liên lạc được mẹ
+                  </div>
+                  <textarea
+                    value={incidentDescription}
+                    onChange={(event) => setIncidentDescription(event.target.value)}
+                    rows={3}
+                    placeholder="Mô tả bạn đã gọi/nhắn tin và chờ trong 15 phút..."
+                    className="w-full resize-none rounded-xl border border-amber-100 bg-white px-3 py-2 text-xs font-bold text-text-dark outline-none focus:border-amber-300"
+                  />
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/png,image/jpeg"
+                    onChange={(event) => setIncidentFiles(Array.from(event.target.files ?? []))}
+                    className="mt-3 block w-full cursor-pointer rounded-xl border border-amber-100 bg-white px-3 py-2 text-xs font-bold text-text-mid file:mr-2 file:rounded-lg file:border-0 file:bg-amber-100 file:px-2 file:py-1 file:text-amber-800"
+                  />
+                  <Btn
+                    full
+                    variant="outline"
+                    className="mt-3"
+                    disabled={!incidentDescription.trim() || incidentFiles.length === 0 || actionId === 'mother-unreachable'}
+                    onClick={handleReportMotherUnreachable}
+                  >
+                    {actionId === 'mother-unreachable' ? <Loader2 className="animate-spin" size={15} /> : <AlertTriangle size={15} />}
+                    Gửi báo cáo sự cố
+                  </Btn>
+                </div>
+              )}
             </div>
           </aside>
         </div>
