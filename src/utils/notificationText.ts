@@ -65,6 +65,25 @@ const fallbackTitleByType: Record<string, string> = {
 const translateExactMessage = (message: string) => {
   const normalized = normalize(message);
 
+  if (normalized === 'Your feedback has been received. Our team will review it and use it to improve Happabi.') {
+    return 'Góp ý của bạn đã được ghi nhận. Đội ngũ Happabi sẽ xem xét để cải thiện sản phẩm.';
+  }
+
+  const newFeedbackMatch = normalized.match(/^(.+) submitted feedback about (.+)\.$/);
+  if (newFeedbackMatch) {
+    return `${newFeedbackMatch[1]} đã gửi góp ý về ${newFeedbackMatch[2]}.`;
+  }
+
+  const feedbackStatusMatch = normalized.match(/^Your feedback status was updated to (.+)\.$/);
+  if (feedbackStatusMatch) {
+    const statusMap: Record<string, string> = {
+      REVIEWING: 'đang xem xét',
+      PLANNED: 'đã lên kế hoạch',
+      RESOLVED: 'đã xử lý',
+      CLOSED: 'đã đóng',
+    };
+    return `Góp ý của bạn đã được cập nhật sang trạng thái ${statusMap[feedbackStatusMatch[1]] ?? feedbackStatusMatch[1]}.`;
+  }
   if (normalized === 'Your nurse has checked in for the work session.') {
     return 'Nurse đã check-in cho ca làm.';
   }
