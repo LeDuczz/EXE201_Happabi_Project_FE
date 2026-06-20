@@ -55,6 +55,7 @@ const Profile = () => {
   const [emailCode, setEmailCode] = useState('');
   const [phoneDraft, setPhoneDraft] = useState('');
   const [phoneCode, setPhoneCode] = useState('');
+  const [isPhoneVerificationRequested, setIsPhoneVerificationRequested] = useState(false);
   const [localPassword, setLocalPassword] = useState('');
   const [showLocalPassword, setShowLocalPassword] = useState(false);
 
@@ -184,8 +185,18 @@ const Profile = () => {
 
     try {
       const phone = normalizeVietnamPhone(phoneDraft);
-      await axiosClient.post('/api/v1/users/me/phone/change', { phone });
+      const response = await axiosClient.post('/api/v1/users/me/phone/change', { phone });
       setPhoneDraft(phone);
+      setIsPhoneVerificationRequested(false);
+      const autoConfirmed = response.data?.data?.autoConfirmed === true;
+      if (autoConfirmed) {
+        setPhoneCode('');
+        setIsPhoneVerificationRequested(false);
+        await refreshMe();
+        setSuccess('Số điện thoại đã được xác thực.');
+        return;
+      }
+      setIsPhoneVerificationRequested(true);
       setSuccess('Mã xác thực đã được gửi tới số điện thoại.');
     } catch (err: any) {
       setError(getApiErrorMessage(err));
@@ -200,6 +211,7 @@ const Profile = () => {
       await axiosClient.post('/api/v1/users/me/phone/confirm', { code: phoneCode });
       await refreshMe();
       setPhoneCode('');
+      setIsPhoneVerificationRequested(false);
       setSuccess('Số điện thoại đã được xác thực.');
     } catch (err: any) {
       setError(getApiErrorMessage(err));
@@ -376,7 +388,11 @@ const Profile = () => {
 
               <div className="rounded-2xl border border-lav-100 bg-[#fff9fb] p-4">
                 <div className="mb-2 text-sm font-semibold text-text-dark">Số điện thoại</div>
-                <Input value={phoneDraft} onChange={(event) => setPhoneDraft(event.target.value)} placeholder="0912345678" hint={phoneVerified ? undefined : PHONE_POLICY_MESSAGE} disabled={phoneVerified} />
+                <Input value={phoneDraft} onChange={(event) => {
+                  setPhoneDraft(event.target.value);
+                  setPhoneCode('');
+                  setIsPhoneVerificationRequested(false);
+                }} placeholder="0912345678" hint={phoneVerified ? undefined : PHONE_POLICY_MESSAGE} disabled={phoneVerified} />
                 {phoneVerified ? (
                   <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm font-bold text-green-700">
                     <CheckCircle2 size={16} /> Số điện thoại đã được xác thực.
@@ -388,12 +404,14 @@ const Profile = () => {
                         <Send size={15} /> Gửi mã
                       </Btn>
                     </div>
-                    <div className="mt-3 flex gap-2">
-                      <Input label="Mã xác thực" value={phoneCode} onChange={(event) => setPhoneCode(event.target.value)} />
-                      <Btn type="button" size="sm" className="mt-[25px] h-[45px]" onClick={confirmPhoneChange}>
-                        Xác nhận
-                      </Btn>
-                    </div>
+                    {isPhoneVerificationRequested && (
+                      <div className="mt-3 flex gap-2">
+                        <Input label="Mã xác thực" value={phoneCode} onChange={(event) => setPhoneCode(event.target.value)} />
+                        <Btn type="button" size="sm" className="mt-[25px] h-[45px]" onClick={confirmPhoneChange}>
+                          Xác nhận
+                        </Btn>
+                      </div>
+                    )}
                   </>
                 )}
               </div>

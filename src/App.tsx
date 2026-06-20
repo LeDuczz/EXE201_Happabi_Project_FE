@@ -6,6 +6,7 @@ import { AuthProvider, useAuth, type UserRole } from './contexts/AuthContext';
 import LandingPage from './pages/LandingPage';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
+import Feedback from './pages/Feedback';
 import NurseOnboarding from './pages/NurseOnboarding';
 import DoctorNurseReview from './pages/DoctorNurseReview';
 import DoctorNurseReviewDetail from './pages/DoctorNurseReviewDetail';
@@ -27,6 +28,7 @@ import AdminAuditLogs from './pages/admin/AuditLogs';
 import AdminDoctorAccounts from './pages/admin/DoctorAccounts';
 import AdminWallet from './pages/admin/Wallet';
 import AdminWorkSessionIncidents from './pages/admin/WorkSessionIncidents';
+import AdminFeedbacks from './pages/admin/Feedbacks';
 import AdminProfile from './pages/admin/Profile';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -178,6 +180,7 @@ const AppRoutes = () => (
       <Route path="/compare" element={<RoleRedirect paths={{ MOTHER: '/mother/compare', NURSE: '/nurse/checklist' }} />} />
       <Route path="/bookings" element={<RoleRedirect paths={{ MOTHER: '/mother/bookings', NURSE: '/nurse/bookings' }} />} />
       <Route path="/chat" element={<RoleRedirect paths={{ MOTHER: '/mother/chat', NURSE: '/nurse/chat', DOCTOR: '/doctor/chat', ADMIN: '/admin/chat' }} />} />
+      <Route path="/feedback" element={<RoleRedirect paths={{ MOTHER: '/mother/feedback', NURSE: '/nurse/feedback', DOCTOR: '/doctor/feedback', ADMIN: '/admin/feedbacks' }} />} />
       <Route path="/profile" element={<RoleRedirect paths={{ MOTHER: '/mother/profile', NURSE: '/nurse/profile', DOCTOR: '/doctor/profile', ADMIN: '/admin/profile' }} />} />
 
       <Route path="/mother/home" element={<RoleRoute allowedRoles={['MOTHER']}><Home /></RoleRoute>} />
@@ -187,6 +190,7 @@ const AppRoutes = () => (
       <Route path="/mother/bookings" element={<RoleRoute allowedRoles={['MOTHER']}><MotherBookings /></RoleRoute>} />
       <Route path="/mother/bookings/new" element={<RoleRoute allowedRoles={['MOTHER']}><MotherCreateBooking /></RoleRoute>} />
       <Route path="/mother/chat" element={<RoleRoute allowedRoles={['MOTHER']}><ChatPage /></RoleRoute>} />
+      <Route path="/mother/feedback" element={<RoleRoute allowedRoles={['MOTHER']}><Feedback /></RoleRoute>} />
       <Route path="/mother/profile" element={<RoleRoute allowedRoles={['MOTHER']}><Profile /></RoleRoute>} />
 
       <Route path="/nurse/home" element={<RoleRoute allowedRoles={['NURSE']}><NurseActiveRoute><Home /></NurseActiveRoute></RoleRoute>} />
@@ -196,11 +200,13 @@ const AppRoutes = () => (
       <Route path="/nurse/work-sessions/:workSessionId" element={<RoleRoute allowedRoles={['NURSE']}><NurseActiveRoute><NurseChecklist /></NurseActiveRoute></RoleRoute>} />
       <Route path="/nurse/revenue" element={<RoleRoute allowedRoles={['NURSE']}><NurseActiveRoute><NurseRevenue /></NurseActiveRoute></RoleRoute>} />
       <Route path="/nurse/chat" element={<RoleRoute allowedRoles={['NURSE']}><ChatPage /></RoleRoute>} />
+      <Route path="/nurse/feedback" element={<RoleRoute allowedRoles={['NURSE']}><NurseActiveRoute><Feedback /></NurseActiveRoute></RoleRoute>} />
       <Route path="/nurse/profile" element={<RoleRoute allowedRoles={['NURSE']}><NurseProfile /></RoleRoute>} />
 
       <Route path="/doctor/nurses/review" element={<RoleRoute allowedRoles={['DOCTOR']}><DoctorNurseReview /></RoleRoute>} />
       <Route path="/doctor/nurses/review/:profileId" element={<RoleRoute allowedRoles={['DOCTOR']}><DoctorNurseReviewDetail /></RoleRoute>} />
       <Route path="/doctor/chat" element={<RoleRoute allowedRoles={['DOCTOR']}><ChatPage /></RoleRoute>} />
+      <Route path="/doctor/feedback" element={<RoleRoute allowedRoles={['DOCTOR']}><Feedback /></RoleRoute>} />
       <Route path="/doctor/profile" element={<RoleRoute allowedRoles={['DOCTOR']}><DoctorProfile /></RoleRoute>} />
 
       <Route path="/admin/dashboard" element={<RoleRoute allowedRoles={['ADMIN']}><AdminDashboard /></RoleRoute>} />
@@ -208,6 +214,7 @@ const AppRoutes = () => (
       <Route path="/admin/users" element={<RoleRoute allowedRoles={['ADMIN']}><AdminUserManagement /></RoleRoute>} />
       <Route path="/admin/wallet" element={<RoleRoute allowedRoles={['ADMIN']}><AdminWallet /></RoleRoute>} />
       <Route path="/admin/incidents" element={<RoleRoute allowedRoles={['ADMIN']}><AdminWorkSessionIncidents /></RoleRoute>} />
+      <Route path="/admin/feedbacks" element={<RoleRoute allowedRoles={['ADMIN']}><AdminFeedbacks /></RoleRoute>} />
       <Route path="/admin/system-config" element={<RoleRoute allowedRoles={['ADMIN']}><AdminSystemConfig /></RoleRoute>} />
       <Route path="/admin/audit-logs" element={<RoleRoute allowedRoles={['ADMIN']}><AdminAuditLogs /></RoleRoute>} />
       <Route path="/admin/chat" element={<RoleRoute allowedRoles={['ADMIN']}><ChatPage /></RoleRoute>} />
