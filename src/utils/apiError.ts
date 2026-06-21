@@ -1,14 +1,19 @@
 const ERROR_TRANSLATIONS: Array<[RegExp, string]> = [
+  [/Maximum upload size exceeded/i, 'File tải lên quá lớn. Vui lòng chọn file nhỏ hơn 5MB mỗi file.'],
+  [/Max allowed size is/i, 'File tải lên quá lớn. Vui lòng chọn file nhỏ hơn 5MB mỗi file.'],
+  [/CCCD front image exceeds/i, 'Ảnh CCCD vượt quá dung lượng cho phép. Vui lòng chọn ảnh nhỏ hơn 5MB.'],
+  [/Unsupported CCCD image type/i, 'Định dạng ảnh CCCD không hợp lệ. Chỉ hỗ trợ JPEG, PNG hoặc WebP.'],
+  [/CCCD front image is required/i, 'Vui lòng tải ảnh mặt trước CCCD.'],
+  [/Certification document is required/i, 'Vui lòng tải lên file chứng chỉ.'],
   [/End time must be after start time/i, 'Thời gian kết thúc phải sau thời gian bắt đầu.'],
   [/Availability window must not end in the past/i, 'Khung nhận lịch không được kết thúc trong quá khứ.'],
   [/Availability window overlaps an active window/i, 'Khung nhận lịch bị trùng với khung đang hiệu lực.'],
   [/Check-in is not open yet/i, 'Chưa đến thời gian check-in.'],
-  [/Check-in opens at (.+)/i, 'Chưa đến thời gian check-in. Vui lòng quay lại đúng khung giờ được phép.'],
   [/This work session has already been reviewed/i, 'Ca này đã được đánh giá trước đó.'],
   [/Only completed work sessions can be reviewed/i, 'Chỉ có thể đánh giá sau khi ca làm đã hoàn thành.'],
   [/Rating is required/i, 'Vui lòng chọn số sao đánh giá.'],
   [/Selected nurse is not available for booking/i, 'Nurse hiện không sẵn sàng nhận lịch. Vui lòng chọn nurse khác hoặc thử lại sau.'],
-  [/Selected nurse does not have verified skills required for this service/i, 'Nurse chưa có đủ kỹ năng đã xác minh để nhận dịch vụ này. Vui lòng chọn dịch vụ hoặc nurse khác.'],
+  [/Selected nurse does not have verified skills required for this service/i, 'Nurse chưa có đủ kỹ năng đã xác minh để nhận dịch vụ này.'],
   [/Selected booking slot was already booked/i, 'Khung giờ này đã có lịch đặt. Vui lòng chọn giờ khác.'],
   [/Service offering was not found/i, 'Không tìm thấy dịch vụ hoặc dịch vụ đã tạm ngừng.'],
   [/Nurse onboarding is incomplete/i, 'Hồ sơ nurse chưa đủ thông tin. Vui lòng hoàn tất thông tin cá nhân, CCCD và chứng chỉ.'],
@@ -17,13 +22,9 @@ const ERROR_TRANSLATIONS: Array<[RegExp, string]> = [
   [/Only pending review profiles can be rejected/i, 'Chỉ hồ sơ đang chờ duyệt mới có thể bị từ chối.'],
   [/Nurse profile is not ready for contract signing/i, 'Hồ sơ chưa sẵn sàng để ký hợp đồng.'],
   [/Contract agreement is required/i, 'Bạn cần đồng ý điều khoản hợp đồng trước khi ký.'],
-  [/Certification document is required/i, 'Vui lòng tải lên file chứng chỉ.'],
   [/Nurse profile not found/i, 'Không tìm thấy hồ sơ nurse.'],
   [/Nurse KYC not found/i, 'Không tìm thấy thông tin KYC của nurse.'],
   [/Certification not found/i, 'Không tìm thấy chứng chỉ.'],
-  [/CCCD front image is required/i, 'Vui lòng tải ảnh mặt trước CCCD.'],
-  [/CCCD front image exceeds/i, 'Ảnh CCCD vượt quá dung lượng cho phép.'],
-  [/Unsupported CCCD image type/i, 'Định dạng ảnh CCCD không hợp lệ. Chỉ hỗ trợ JPEG, PNG hoặc WebP.'],
   [/OCR provider is unavailable/i, 'Dịch vụ đọc CCCD bằng AI đang bận. Vui lòng thử lại sau.'],
   [/OCR provider returned an invalid response/i, 'AI trả về dữ liệu CCCD không hợp lệ. Vui lòng nhập thủ công.'],
   [/Failed to extract CCCD fields/i, 'Không đọc được thông tin CCCD từ ảnh. Vui lòng thử ảnh rõ hơn hoặc nhập thủ công.'],
@@ -51,12 +52,13 @@ const ERROR_TRANSLATIONS: Array<[RegExp, string]> = [
   [/OTP code must contain exactly 6 digits/i, 'Mã OTP phải gồm đúng 6 chữ số.'],
   [/Invalid OTP code/i, 'Mã xác thực không hợp lệ. Vui lòng kiểm tra lại.'],
   [/OTP code has expired/i, 'Mã xác thực đã hết hạn. Vui lòng yêu cầu gửi mã mới.'],
-  [/Invalid code provided.*request a code again/i, 'Mã xác thực đã hết hạn hoặc không hợp lệ. Vui lòng yêu cầu gửi mã mới.'],  [/Role .* is already linked to this account/i, 'Vai trò này đã được liên kết với tài khoản.'],
+  [/Invalid code provided.*request a code again/i, 'Mã xác thực đã hết hạn hoặc không hợp lệ. Vui lòng yêu cầu gửi mã mới.'],
+  [/Role .* is already linked to this account/i, 'Vai trò này đã được liên kết với tài khoản.'],
   [/Phone number already exists/i, 'Số điện thoại đã tồn tại. Vui lòng nhập đúng mật khẩu để thêm vai trò mới.'],
   [/Your account is not allowed to sign in to portal/i, 'Tài khoản của bạn không có quyền đăng nhập vào portal này.'],
   [/Portal role is required for sign-in/i, 'Vui lòng chọn vai trò đăng nhập.'],
   [/This account uses social sign-in/i, 'Tài khoản này đăng nhập qua mạng xã hội nên không có mật khẩu local để đặt lại.'],
-  [/This phone number belongs to a social account/i, 'Số điện thoại này thuộc tài khoản mạng xã hội. Vui lòng đăng nhập trước, xác thực số điện thoại rồi tạo mật khẩu local.'],
+  [/This phone number belongs to a social account/i, 'Số điện thoại này thuộc tài khoản mạng xã hội. Vui lòng đăng nhập trước rồi tạo mật khẩu local.'],
   [/Registration successful/i, 'Đăng ký thành công.'],
   [/Account verified successfully/i, 'Tài khoản đã được xác thực thành công.'],
   [/OTP code has been resent via SMS/i, 'Mã OTP đã được gửi lại qua SMS.'],
@@ -83,8 +85,13 @@ export const getApiErrorMessage = (err: any, fallback = 'Không thể xử lý y
   const data = err?.response?.data;
   const validationMessage = data?.errors?.[0]?.message;
   const message = validationMessage || data?.message || err?.message;
+  const status = err?.response?.status;
 
-  if (err?.response?.status === 0 || err?.code === 'ERR_NETWORK') {
+  if (status === 413) {
+    return 'File tải lên quá lớn. Vui lòng chọn file nhỏ hơn 5MB mỗi file và thử lại.';
+  }
+
+  if (status === 0 || err?.code === 'ERR_NETWORK') {
     return 'Không kết nối được server. Vui lòng kiểm tra kết nối mạng và thử lại.';
   }
 

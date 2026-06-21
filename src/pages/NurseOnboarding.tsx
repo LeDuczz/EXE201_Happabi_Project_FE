@@ -9,6 +9,10 @@ import { useAuth } from '../contexts/AuthContext';
 import type { CccdOcrExtraction, NurseOnboarding, NurseSkillCode, NurseSpecialty, NurseStatus } from '../types/nurseOnboarding';
 import { getApiErrorMessage, translateApiMessage } from '../utils/apiError';
 
+const MAX_KYC_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+
+const isTooLarge = (file?: File | null) => Boolean(file && file.size > MAX_KYC_IMAGE_SIZE_BYTES);
+
 const toIsoDate = (raw?: string) => {
   if (!raw) return '';
   const match = raw.match(/(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
@@ -388,6 +392,10 @@ const NurseOnboardingPage = () => {
     event?.preventDefault();
     setError('');
     setSuccess('');
+    if (isTooLarge(frontImage) || isTooLarge(backImage)) {
+      setError('Ảnh CCCD quá lớn. Vui lòng chọn mỗi ảnh nhỏ hơn 5MB.');
+      return;
+    }
     setIsSavingKyc(true);
     try {
       const formData = new FormData();

@@ -8,6 +8,13 @@ import type {
 } from '../types/nurseOnboarding';
 
 const unwrap = <T>(response: { data?: { data?: T } }) => response.data?.data as T;
+const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
+
+const assertFileSize = (file?: File | null) => {
+  if (file && file.size > MAX_UPLOAD_SIZE_BYTES) {
+    throw new Error('File tải lên quá lớn. Vui lòng chọn file nhỏ hơn 5MB mỗi file.');
+  }
+};
 
 export interface UpdateNurseProfilePayload {
   licenseNumber?: string;
@@ -54,6 +61,8 @@ export const updateMyOnboardingProfile = async (payload: UpdateNurseProfilePaylo
 };
 
 export const updateMyOnboardingKyc = async (payload: UpdateNurseKycPayload) => {
+  assertFileSize(payload.frontImage);
+  assertFileSize(payload.backImage);
   const formData = new FormData();
   formData.append('cccdNumber', payload.cccdNumber);
   formData.append('cccdName', payload.cccdName);
@@ -69,6 +78,7 @@ export const updateMyOnboardingKyc = async (payload: UpdateNurseKycPayload) => {
 };
 
 export const addMyCertification = async (payload: CreateNurseCertificationPayload) => {
+  assertFileSize(payload.document);
   const formData = new FormData();
   if (payload.certName) formData.append('certName', payload.certName);
   if (payload.issuedBy) formData.append('issuedBy', payload.issuedBy);

@@ -1,153 +1,430 @@
-import { BarChart3, Loader2, RefreshCw, TrendingUp, UserCheck, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import axiosClient from '../../api/axiosClient';
+import {
+  BarChart3,
+  BellRing,
+  CalendarClock,
+  CreditCard,
+  Loader2,
+  MessageSquareText,
+  RefreshCw,
+  ShieldAlert,
+  Star,
+  UserCheck,
+  Users,
+  Wallet,
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  getAdminOperationsDashboard,
+  type AdminDashboardRiskAlert,
+  type AdminOperationsDashboard,
+} from '../../api/adminDashboardApi';
 import Card from '../../components/common/Card';
 import Topbar from '../../components/layout/Topbar';
 import { getApiErrorMessage } from '../../utils/apiError';
 
-interface SummaryData {
-    totalUsers: number;
-    totalNurses: number;
-    totalGmv: number;
-}
+const formatNumber = (value?: number) => new Intl.NumberFormat('vi-VN').format(Number(value ?? 0));
+
+const formatVnd = (value?: number) =>
+  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(Number(value ?? 0));
+
+const formatDateTime = (value?: string) => {
+  if (!value) return '--';
+  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
+};
+
+const categoryLabel: Record<string, string> = {
+  APP_EXPERIENCE: 'Trải nghiệm app',
+  BOOKING: 'Đặt lịch',
+  PAYMENT: 'Thanh toán',
+  CHAT_AI: 'Chat & AI',
+  NURSE_ONBOARDING: 'Hồ sơ nurse',
+  DOCTOR_REVIEW: 'Duyệt hồ sơ',
+  SUGGESTION: 'Đề xuất',
+  OTHER: 'Khác',
+};
+
+const severityText: Record<string, string> = {
+  HIGH: 'Ưu tiên cao',
+  MEDIUM: 'Cần xử lý',
+  LOW: 'Theo dõi',
+};
+
+const riskAlertTitleMap: Record<string, string> = {
+  'Work session incidents need review': 'Sự cố ca làm cần kiểm tra',
+  'Refund requests need payout': 'Yêu cầu hoàn tiền cần xử lý',
+  'Nurse withdrawals need payout': 'Yêu cầu rút tiền cần chi trả',
+  'Nurse profiles need review': 'Hồ sơ nurse cần duyệt',
+  'New user feedback': 'Góp ý mới cần phân loại',
+  'Knowledge items need review': 'Tri thức AI cần duyệt',
+  'Sessions waiting for mother confirmation': 'Ca làm chờ mẹ xác nhận',
+  'Nurse penalty watchlist': 'Nurse trong danh sách theo dõi',
+};
+
+const riskAlertMessageMap: Record<string, string> = {
+  'There are incident reports waiting for admin review.': 'Có báo cáo sự cố đang chờ admin kiểm tra bằng chứng.',
+  'Mother refund requests are waiting for manual transfer evidence.': 'Có yêu cầu hoàn tiền cần chuyển khoản thủ công và tải bằng chứng.',
+  'Nurse withdrawal requests are waiting for admin bank transfer.': 'Có yêu cầu rút tiền của nurse đang chờ admin chuyển khoản ngân hàng.',
+  'Nurse onboarding profiles are waiting for verification.': 'Có hồ sơ nurse đang chờ xác minh và duyệt onboarding.',
+  'Fresh product feedback is waiting for triage.': 'Có góp ý mới từ người dùng cần phân loại và phản hồi.',
+  'AI knowledge items are waiting for admin approval before indexing.': 'Có tri thức AI đang chờ admin duyệt trước khi đưa vào chatbot.',
+  'Completed sessions are waiting for mother confirmation or auto-confirm.': 'Có ca đã checkout đang chờ mẹ xác nhận hoặc hệ thống tự xác nhận.',
+  'Some nurses currently have violations or booking suspension history.': 'Một số nurse đang có vi phạm hoặc lịch sử tạm khóa nhận lịch.',
+};
+
+const translateRiskAlertTitle = (title: string) => riskAlertTitleMap[title] ?? title;
+
+const translateRiskAlertMessage = (message: string) => riskAlertMessageMap[message] ?? message;
 
 const AdminDashboard = () => {
-    const [summary, setSummary] = useState<SummaryData | null>(null);
-    const [gmvData, setGmvData] = useState<Record<string, number>>({});
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState('');
+  const [dashboard, setDashboard] = useState<AdminOperationsDashboard | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
-    const loadData = async () => {
-        setIsLoading(true);
-        setError('');
-        try {
-            const [sumRes, gmvRes] = await Promise.all([
-                axiosClient.get('/api/admin/analytics/summary'),
-                axiosClient.get('/api/admin/analytics/gmv/daily')
-            ]);
-            setSummary(sumRes.data?.data);
-            setGmvData(gmvRes.data?.data || {});
-        } catch (err: any) {
-            setError(getApiErrorMessage(err, 'Không tải được dữ liệu thống kê.'));
-        } finally {
-            setIsLoading(false);
-        }
-    };
+  const loadDashboard = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      setDashboard(await getAdminOperationsDashboard());
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Không tải được dữ liệu tổng quan vận hành.'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    useEffect(() => {
-        void loadData();
-    }, []);
+  useEffect(() => {
+    void loadDashboard();
+  }, []);
 
-    return (
-        <>
-            <Topbar title="Hệ thống Happabi" subtitle="Tổng quan hoạt động kinh doanh và tăng trưởng của nền tảng." />
+  const maxTrendValue = useMemo(() => {
+    const values = dashboard?.appPaymentTrend?.map((item) => item.value) ?? [];
+    return Math.max(1, ...values);
+  }, [dashboard?.appPaymentTrend]);
 
-            {isLoading ? (
-                <div className="flex h-96 items-center justify-center">
-                    <Loader2 className="animate-spin text-lav-dark" size={40} />
+  return (
+    <>
+      <Topbar
+        title="Operations Dashboard"
+        subtitle="Theo dõi GMV, booking, payout, nguồn cung nurse và các việc admin cần xử lý."
+      />
+
+      {isLoading ? (
+        <div className="flex h-96 items-center justify-center">
+          <Loader2 className="animate-spin text-lav-dark" size={40} />
+        </div>
+      ) : error ? (
+        <div className="rounded-2xl border border-red-100 bg-red-50 p-10 text-center">
+          <div className="font-semibold text-red-600">{error}</div>
+          <button onClick={loadDashboard} className="mt-4 text-sm font-bold text-red-700 underline">Thử lại</button>
+        </div>
+      ) : dashboard ? (
+        <div className="space-y-6">
+          <div className="grid gap-4 xl:grid-cols-4">
+            <MetricCard
+              icon={<BellRing size={20} />}
+              label="Action Queue"
+              value={formatNumber(totalActionItems(dashboard))}
+              helper="Hồ sơ, payout, refund, sự cố và feedback"
+              tone="lavender"
+            />
+            <MetricCard
+              icon={<Wallet size={20} />}
+              label="Admin Wallet"
+              value={formatVnd(dashboard.financialControl.adminWalletBalance)}
+              helper={`Cập nhật ${formatDateTime(dashboard.generatedAt)}`}
+              tone="pink"
+            />
+            <MetricCard
+              icon={<CalendarClock size={20} />}
+              label="Bookings Today"
+              value={formatNumber(dashboard.bookingOperations.todayBookings)}
+              helper={`${formatNumber(dashboard.bookingOperations.upcoming24hBookings)} ca trong 24 giờ tới`}
+              tone="blue"
+            />
+            <MetricCard
+              icon={<UserCheck size={20} />}
+              label="Active Supply"
+              value={formatNumber(dashboard.nurseSupplyHealth.availableNurses)}
+              helper={`${formatNumber(dashboard.nurseSupplyHealth.activeNurses)} nurse đang hoạt động`}
+              tone="green"
+            />
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr]">
+            <Card className="p-6">
+              <div className="mb-5 flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-black text-text-dark">Hàng đợi vận hành</h2>
+                  <p className="mt-1 text-sm font-semibold text-text-light">Các mục admin nên xử lý trước để flow không bị nghẽn.</p>
                 </div>
-            ) : error ? (
-                <div className="rounded-2xl border border-red-100 bg-red-50 p-10 text-center">
-                    <div className="font-semibold text-red-600">{error}</div>
-                    <button onClick={loadData} className="mt-4 text-sm font-bold text-red-700 underline">Thử lại</button>
+                <button
+                  type="button"
+                  onClick={loadDashboard}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-lav-50 text-lav-dark transition hover:bg-lav-100"
+                  aria-label="Làm mới dashboard"
+                >
+                  <RefreshCw size={18} />
+                </button>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <ActionItem label="Hồ sơ nurse chờ duyệt" value={dashboard.actionQueue.pendingNurseProfiles} to="/admin/users" />
+                <ActionItem label="Yêu cầu rút tiền" value={dashboard.actionQueue.pendingWithdrawals} to="/admin/wallet" />
+                <ActionItem label="Yêu cầu hoàn tiền" value={dashboard.actionQueue.pendingRefunds} to="/admin/wallet" />
+                <ActionItem label="Sự cố ca làm" value={dashboard.actionQueue.pendingIncidents} to="/admin/incidents" />
+                <ActionItem label="Góp ý mới" value={dashboard.actionQueue.newFeedbacks} to="/admin/feedbacks" />
+                <ActionItem label="Tri thức AI chờ duyệt" value={dashboard.actionQueue.pendingKnowledgeItems} to="/admin/knowledge" />
+                <ActionItem label="Chờ mẹ xác nhận ca" value={dashboard.actionQueue.waitingMotherConfirmations} to="/admin/incidents" />
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="mb-5 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert size={20} className="text-rose-500" />
+                  <h2 className="text-lg font-black text-text-dark">Risk Alerts</h2>
                 </div>
-            ) : (
-                <div className="space-y-6">
-                    {/* Summary Cards */}
-                    <div className="grid gap-5 md:grid-cols-3">
-                        <StatCard
-                            icon={<Users className="text-blue-500" />}
-                            label="Tổng người dùng"
-                            value={summary?.totalUsers || 0}
-                            color="bg-blue-50"
+                <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-black text-rose-600">
+                  {formatNumber(dashboard.riskAlerts.length)} cảnh báo
+                </span>
+              </div>
+              <div className="space-y-3">
+                {dashboard.riskAlerts.map((alert) => (
+                  <RiskAlertItem key={`${alert.title}-${alert.targetPath}`} alert={alert} />
+                ))}
+                {!dashboard.riskAlerts.length && (
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm font-bold text-emerald-700">
+                    Không có cảnh báo cần xử lý ngay. Hệ thống đang ổn định.
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-3">
+            <Card className="p-6">
+              <SectionHeader icon={<CalendarClock size={18} />} title="Booking Operations" />
+              <StatRows
+                rows={[
+                  ['Đã thanh toán hôm nay', dashboard.bookingOperations.paidBookingsToday],
+                  ['Chờ thanh toán', dashboard.bookingOperations.pendingPaymentBookings],
+                  ['Đang diễn ra', dashboard.bookingOperations.inProgressSessions],
+                  ['Chờ check-in', dashboard.bookingOperations.waitingCheckInSessions],
+                  ['Ca bị report', dashboard.bookingOperations.reportedSessions],
+                  ['Đã hủy hôm nay', dashboard.bookingOperations.cancelledBookingsToday],
+                ]}
+              />
+            </Card>
+
+            <Card className="p-6">
+              <SectionHeader icon={<CreditCard size={18} />} title="Revenue Operations" />
+              <StatRows
+                money
+                rows={[
+                  ['GMV Today', dashboard.financialControl.todayAppPayments],
+                  ['GMV 7D', dashboard.financialControl.last7DaysAppPayments],
+                  ['GMV 30D', dashboard.financialControl.last30DaysAppPayments],
+                  ['Platform Revenue 30D', dashboard.financialControl.last30DaysPlatformRevenue],
+                  ['Pending Payout', dashboard.financialControl.pendingWithdrawalAmount],
+                  ['Refund Exposure', dashboard.financialControl.pendingRefundAmount],
+                ]}
+              />
+            </Card>
+
+            <Card className="p-6">
+              <SectionHeader icon={<Users size={18} />} title="Supply Health" />
+              <StatRows
+                rows={[
+                  ['Tổng nurse', dashboard.nurseSupplyHealth.totalNurses],
+                  ['Đang hoạt động', dashboard.nurseSupplyHealth.activeNurses],
+                  ['Đang bận', dashboard.nurseSupplyHealth.busyNurses],
+                  ['Tạm nghỉ', dashboard.nurseSupplyHealth.offlineNurses],
+                  ['Chờ ký hợp đồng', dashboard.nurseSupplyHealth.pendingContractNurses],
+                  ['Đang bị phạt', dashboard.nurseSupplyHealth.penalizedNurses],
+                ]}
+              />
+            </Card>
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+            <Card className="p-6">
+              <div className="mb-6 flex items-center justify-between">
+                <SectionHeader icon={<BarChart3 size={18} />} title="GMV Trend (30D)" />
+                <span className="text-xs font-black text-text-light">Theo ví admin</span>
+              </div>
+              <div className="flex h-56 items-end gap-2">
+                {dashboard.appPaymentTrend.slice(-30).map((item) => {
+                  const height = Math.max(4, (item.value / maxTrendValue) * 100);
+                  return (
+                    <div key={item.date} className="flex min-w-0 flex-1 flex-col items-center gap-2">
+                      <div className="flex h-44 w-full items-end rounded-full bg-lav-50">
+                        <div
+                          className="w-full rounded-full bg-grad transition-all duration-500"
+                          style={{ height: `${height}%` }}
+                          title={`${item.date}: ${formatVnd(item.value)}`}
                         />
-                        <StatCard
-                            icon={<UserCheck className="text-green-500" />}
-                            label="Tổng điều dưỡng"
-                            value={summary?.totalNurses || 0}
-                            color="bg-green-50"
-                        />
-                        <StatCard
-                            icon={<TrendingUp className="text-lav-dark" />}
-                            label="Tổng GMV (VND)"
-                            value={(summary?.totalGmv || 0).toLocaleString()}
-                            color="bg-lav-50"
-                        />
+                      </div>
                     </div>
+                  );
+                })}
+              </div>
+              {!dashboard.appPaymentTrend.some((item) => item.value > 0) && (
+                <div className="mt-4 text-center text-sm font-bold text-text-light">Chưa có GMV booking trong 30 ngày qua.</div>
+              )}
+            </Card>
 
-                    <div className="grid gap-6 lg:grid-cols-2">
-                        <Card className="p-6">
-                            <div className="mb-6 flex items-center justify-between">
-                                <div className="flex items-center gap-2 font-semibold text-text-dark">
-                                    <BarChart3 size={20} className="text-lav-dark" />
-                                    Biểu đồ Doanh thu (30 ngày)
-                                </div>
-                                <button onClick={loadData} className="text-text-light hover:text-lav-dark">
-                                    <RefreshCw size={18} />
-                                </button>
-                            </div>
+            <Card className="p-6">
+              <div className="mb-5 flex items-center justify-between gap-3">
+                <SectionHeader icon={<MessageSquareText size={18} />} title="Voice of Customer" />
+                <Link to="/admin/feedbacks" className="text-sm font-black text-lav-acc">Xem tất cả</Link>
+              </div>
 
-                            <div className="space-y-4">
-                                {Object.entries(gmvData).reverse().slice(0, 10).map(([date, val]) => (
-                                    <div key={date} className="flex items-center gap-4">
-                                        <div className="w-24 text-xs font-bold text-text-light">{new Date(date).toLocaleDateString('vi-VN')}</div>
-                                        <div className="flex-1 h-3 rounded-full bg-lav-50 overflow-hidden">
-                                            <div
-                                                className="h-full bg-grad transition-all duration-1000"
-                                                style={{ width: `${Math.min((val / (summary?.totalGmv || 1)) * 500, 100)}%` }}
-                                            />
-                                        </div>
-                                        <div className="w-32 text-right text-sm font-semibold text-text-dark">
-                                            {val.toLocaleString()}đ
-                                        </div>
-                                    </div>
-                                ))}
-                                {!Object.keys(gmvData).length && (
-                                    <div className="py-20 text-center text-sm font-semibold text-text-light italic">
-                                        Chưa có dữ liệu giao dịch trong 30 ngày qua.
-                                    </div>
-                                )}
-                            </div>
-                        </Card>
+              <div className="mb-4 grid grid-cols-2 gap-3">
+                <MiniBox label="Mới" value={dashboard.feedbackInsight.newFeedbacks} />
+                <MiniBox label="Đang xem xét" value={dashboard.feedbackInsight.reviewingFeedbacks} />
+                <MiniBox label="Đã lên kế hoạch" value={dashboard.feedbackInsight.plannedFeedbacks} />
+                <MiniBox label="CSAT" value={`${Number(dashboard.feedbackInsight.averageRating).toFixed(1)}/5`} />
+              </div>
 
-                        <Card className="p-6">
-                            <div className="font-semibold text-text-dark mb-4">Cảnh báo hệ thống</div>
-                            <div className="space-y-3">
-                                <AlertItem type="warning" title="Hồ sơ nurse chờ duyệt" message="Hiện có hồ sơ đang chờ bộ phận chuyên môn phê duyệt." />
-                                <AlertItem type="info" title="Lịch trình hôm nay" message="Hệ thống vận hành ổn định, không ghi nhận sự cố server." />
-                            </div>
-                        </Card>
+              <div className="space-y-3">
+                {dashboard.feedbackInsight.latestFeedbacks.map((feedback) => (
+                  <div key={feedback.id} className="rounded-2xl border border-lav-100 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="truncate font-black text-text-dark">{feedback.title}</div>
+                        <div className="mt-1 text-xs font-bold text-text-light">
+                          {feedback.submittedByName} · {categoryLabel[feedback.category] ?? feedback.category}
+                        </div>
+                      </div>
+                      {feedback.rating && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-xs font-black text-amber-600">
+                          <Star size={12} /> {feedback.rating}
+                        </span>
+                      )}
                     </div>
-                </div>
-            )}
-        </>
-    );
+                  </div>
+                ))}
+                {!dashboard.feedbackInsight.latestFeedbacks.length && (
+                  <div className="rounded-2xl border border-lav-100 p-5 text-center text-sm font-bold text-text-light">
+                    Chưa có góp ý người dùng.
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
 };
 
-const StatCard = ({ icon, label, value, color }: { icon: any, label: string, value: string | number, color: string }) => (
-    <Card className={`p-6 border-none ${color}`}>
-        <div className="flex items-center gap-4">
-            <div className="rounded-2xl bg-white p-3 shadow-sm">{icon}</div>
-            <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-text-mid opacity-70">{label}</div>
-                <div className="text-2xl font-semibold text-text-dark mt-1">{value}</div>
-            </div>
+const totalActionItems = (dashboard: AdminOperationsDashboard) =>
+  dashboard.actionQueue.pendingNurseProfiles +
+  dashboard.actionQueue.pendingWithdrawals +
+  dashboard.actionQueue.pendingRefunds +
+  dashboard.actionQueue.pendingIncidents +
+  dashboard.actionQueue.newFeedbacks +
+  dashboard.actionQueue.pendingKnowledgeItems +
+  dashboard.actionQueue.waitingMotherConfirmations;
+
+const MetricCard = ({
+  icon,
+  label,
+  value,
+  helper,
+  tone,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string | number;
+  helper: string;
+  tone: 'lavender' | 'pink' | 'blue' | 'green';
+}) => {
+  const toneClass = {
+    lavender: 'bg-lav-50 text-lav-dark',
+    pink: 'bg-pink-50 text-pink-600',
+    blue: 'bg-sky-50 text-sky-600',
+    green: 'bg-emerald-50 text-emerald-600',
+  }[tone];
+
+  return (
+    <Card className="p-5">
+      <div className="flex items-start gap-4">
+        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${toneClass}`}>{icon}</div>
+        <div className="min-w-0">
+          <div className="text-xs font-black uppercase tracking-wider text-text-light">{label}</div>
+          <div className="mt-1 truncate text-2xl font-black text-text-dark">{value}</div>
+          <div className="mt-1 text-xs font-bold text-text-mid">{helper}</div>
         </div>
+      </div>
     </Card>
+  );
+};
+
+const ActionItem = ({ label, value, to }: { label: string; value: number; to: string }) => (
+  <Link
+    to={to}
+    className="group flex items-center justify-between gap-4 rounded-2xl border border-lav-100 bg-white p-4 transition hover:border-lav-300 hover:bg-lav-50"
+  >
+    <div>
+      <div className="text-sm font-black text-text-dark">{label}</div>
+      <div className="mt-1 text-xs font-bold text-text-light">Nhấn để mở màn xử lý</div>
+    </div>
+    <div className={`rounded-2xl px-3 py-2 text-lg font-black ${value > 0 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>
+      {formatNumber(value)}
+    </div>
+  </Link>
 );
 
-const AlertItem = ({ type, title, message }: { type: 'warning' | 'info' | 'error', title: string, message: string }) => {
-    const styles = {
-        warning: 'border-amber-100 bg-amber-50 text-amber-700',
-        info: 'border-blue-100 bg-blue-50 text-blue-700',
-        error: 'border-red-100 bg-red-50 text-red-700'
-    };
-    return (
-        <div className={`rounded-xl border p-4 ${styles[type]}`}>
-            <div className="text-sm font-semibold">{title}</div>
-            <div className="mt-1 text-xs font-semibold opacity-80">{message}</div>
+const RiskAlertItem = ({ alert }: { alert: AdminDashboardRiskAlert }) => {
+  const toneClass = {
+    HIGH: 'border-rose-200 bg-rose-50/80 text-rose-700 before:bg-rose-500',
+    MEDIUM: 'border-amber-200 bg-amber-50/80 text-amber-700 before:bg-amber-500',
+    LOW: 'border-sky-200 bg-sky-50/80 text-sky-700 before:bg-sky-500',
+  }[alert.severity] ?? 'border-sky-200 bg-sky-50/80 text-sky-700 before:bg-sky-500';
+
+  return (
+    <Link
+      to={alert.targetPath}
+      className={`relative block overflow-hidden rounded-2xl border p-4 pl-5 transition before:absolute before:left-0 before:top-0 before:h-full before:w-1 hover:-translate-y-0.5 hover:shadow-sm ${toneClass}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[11px] font-black uppercase tracking-wider opacity-70">{severityText[alert.severity] ?? 'Theo dõi'}</div>
+          <div className="mt-1 font-black text-text-dark">{translateRiskAlertTitle(alert.title)}</div>
+          <div className="mt-1 text-sm font-semibold leading-5 opacity-80">{translateRiskAlertMessage(alert.message)}</div>
         </div>
-    );
+        <div className="shrink-0 rounded-full bg-white px-3 py-1 text-sm font-black shadow-sm">{formatNumber(alert.count)}</div>
+      </div>
+    </Link>
+  );
 };
+
+const SectionHeader = ({ icon, title }: { icon: ReactNode; title: string }) => (
+  <div className="flex items-center gap-2">
+    <div className="text-lav-dark">{icon}</div>
+    <h2 className="font-black text-text-dark">{title}</h2>
+  </div>
+);
+
+const StatRows = ({ rows, money = false }: { rows: Array<[string, number]>; money?: boolean }) => (
+  <div className="mt-5 space-y-3">
+    {rows.map(([label, value]) => (
+      <div key={label} className="flex items-center justify-between gap-4 rounded-xl bg-lav-50 px-4 py-3">
+        <span className="text-sm font-bold text-text-mid">{label}</span>
+        <span className="text-sm font-black text-text-dark">{money ? formatVnd(value) : formatNumber(value)}</span>
+      </div>
+    ))}
+  </div>
+);
+
+const MiniBox = ({ label, value }: { label: string; value: string | number }) => (
+  <div className="rounded-2xl border border-lav-100 bg-lav-50 p-3">
+    <div className="text-xs font-black uppercase text-text-light">{label}</div>
+    <div className="mt-1 text-lg font-black text-text-dark">{value}</div>
+  </div>
+);
 
 export default AdminDashboard;
