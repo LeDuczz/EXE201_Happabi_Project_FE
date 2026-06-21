@@ -1,4 +1,4 @@
-import { Loader2, MessageSquareText, RefreshCw, Send, Star } from 'lucide-react';
+import { Loader2, MessageSquareText, RefreshCw, Send, Sparkles, Star } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { feedbackApi, type UserFeedback, type UserFeedbackCategory } from '../api/feedbackApi';
 import Btn from '../components/common/Btn';
@@ -32,6 +32,14 @@ const statusClass: Record<string, string> = {
   PLANNED: 'border-violet-200 bg-violet-50 text-violet-700',
   RESOLVED: 'border-emerald-200 bg-emerald-50 text-emerald-700',
   CLOSED: 'border-slate-200 bg-slate-50 text-slate-700',
+};
+
+const ratingText: Record<number, string> = {
+  1: 'Rất chưa hài lòng',
+  2: 'Chưa hài lòng',
+  3: 'Bình thường',
+  4: 'Hài lòng',
+  5: 'Rất hài lòng',
 };
 
 const categories = Object.keys(categoryLabel) as UserFeedbackCategory[];
@@ -112,26 +120,28 @@ const FeedbackPage = () => {
       {success && <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">{success}</div>}
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,1.05fr)]">
-        <Card className="p-6">
-          <div className="mb-5 flex items-start gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-lav-50 text-lav-dark">
-              <MessageSquareText size={22} />
-            </div>
-            <div>
-              <h2 className="text-xl font-black text-text-dark">Gửi góp ý</h2>
-              <p className="mt-1 text-sm font-semibold leading-6 text-text-mid">
-                Nội dung góp ý được gửi cho admin để xem xét cải tiến app. Phần này không dùng cho báo cáo sự cố khẩn cấp.
-              </p>
+        <Card className="overflow-hidden p-0">
+          <div className="border-b border-lav-100 bg-gradient-to-br from-white via-[#fff8fb] to-lav-50 p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-lav-50 text-lav-dark">
+                <MessageSquareText size={23} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-black text-text-dark">Gửi góp ý</h2>
+                <p className="mt-2 text-sm font-semibold leading-6 text-text-mid">
+                  Nội dung góp ý được gửi cho admin để xem xét cải tiến app. Phần này không dùng cho báo cáo sự cố khẩn cấp.
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-5 p-6">
             <div>
               <label className="mb-2 block text-xs font-black uppercase tracking-wider text-text-light">Chủ đề</label>
               <select
                 value={category}
                 onChange={(event) => setCategory(event.target.value as UserFeedbackCategory)}
-                className="w-full rounded-xl border border-lav-100 bg-white px-4 py-3 text-sm font-bold text-text-dark outline-none focus:border-lav-300"
+                className="w-full rounded-2xl border border-lav-100 bg-white px-4 py-3 text-sm font-bold text-text-dark outline-none focus:border-lav-300"
               >
                 {categories.map((item) => (
                   <option key={item} value={item}>{categoryLabel[item]}</option>
@@ -140,21 +150,29 @@ const FeedbackPage = () => {
             </div>
 
             <div>
-              <label className="mb-2 block text-xs font-black uppercase tracking-wider text-text-light">Mức hài lòng</label>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <label className="block text-xs font-black uppercase tracking-wider text-text-light">Mức hài lòng</label>
+                <span className="text-xs font-black text-amber-600">{rating ? ratingText[rating] : 'Chưa chọn'}</span>
+              </div>
               <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setRating(value)}
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-black transition ${
-                      rating === value ? 'border-amber-300 bg-amber-50 text-amber-600' : 'border-lav-100 bg-white text-text-light'
-                    }`}
-                    aria-label={`${value} sao`}
-                  >
-                    <Star size={16} fill={rating && rating >= value ? 'currentColor' : 'none'} />
-                  </button>
-                ))}
+                {[1, 2, 3, 4, 5].map((value) => {
+                  const active = Boolean(rating && rating >= value);
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setRating(value)}
+                      className={`flex h-12 w-12 items-center justify-center rounded-2xl border text-sm font-black transition hover:-translate-y-0.5 ${
+                        active
+                          ? 'border-amber-300 bg-amber-50 text-amber-500 shadow-[0_10px_24px_rgba(245,158,11,0.16)]'
+                          : 'border-lav-100 bg-white text-text-light hover:border-amber-200 hover:text-amber-400'
+                      }`}
+                      aria-label={`${value} sao`}
+                    >
+                      <Star size={18} fill={active ? 'currentColor' : 'none'} />
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -165,7 +183,7 @@ const FeedbackPage = () => {
                 maxLength={120}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Ví dụ: Cần lọc nurse theo ngày tốt hơn"
-                className="w-full rounded-xl border border-lav-100 bg-white px-4 py-3 text-sm font-bold text-text-dark outline-none focus:border-lav-300"
+                className="w-full rounded-2xl border border-lav-100 bg-white px-4 py-3 text-sm font-bold text-text-dark outline-none focus:border-lav-300"
               />
             </div>
 
@@ -177,7 +195,7 @@ const FeedbackPage = () => {
                 rows={7}
                 onChange={(event) => setMessage(event.target.value)}
                 placeholder="Mô tả điều bạn gặp phải hoặc ý tưởng cải tiến..."
-                className="w-full resize-none rounded-xl border border-lav-100 bg-white px-4 py-3 text-sm font-bold leading-6 text-text-dark outline-none focus:border-lav-300"
+                className="w-full resize-none rounded-2xl border border-lav-100 bg-white px-4 py-3 text-sm font-bold leading-6 text-text-dark outline-none focus:border-lav-300"
               />
               <div className="mt-1 text-right text-xs font-bold text-text-light">{message.length}/2000</div>
             </div>
@@ -189,10 +207,13 @@ const FeedbackPage = () => {
           </div>
         </Card>
 
-        <Card className="p-0">
-          <div className="flex items-center justify-between border-b border-lav-100 px-5 py-4">
+        <Card className="overflow-hidden p-0">
+          <div className="flex items-center justify-between border-b border-lav-100 bg-white px-5 py-4">
             <div>
-              <h2 className="text-lg font-black text-text-dark">Góp ý gần đây</h2>
+              <div className="flex items-center gap-2">
+                <Sparkles size={18} className="text-lav-dark" />
+                <h2 className="text-lg font-black text-text-dark">Góp ý gần đây</h2>
+              </div>
               <p className="mt-1 text-xs font-bold text-text-light">Theo dõi phản hồi từ admin.</p>
             </div>
             <Btn variant="soft" size="sm" onClick={loadFeedbacks} disabled={isLoading}>
@@ -206,9 +227,11 @@ const FeedbackPage = () => {
               <Loader2 className="animate-spin text-lav-dark" size={32} />
             </div>
           ) : feedbacks.length === 0 ? (
-            <div className="p-8 text-center text-sm font-bold text-text-light">Bạn chưa gửi góp ý nào.</div>
+            <div className="flex h-[420px] items-center justify-center p-8 text-center text-sm font-bold text-text-light">
+              Bạn chưa gửi góp ý nào.
+            </div>
           ) : (
-            <div className="divide-y divide-lav-100">
+            <div className="max-h-[720px] divide-y divide-lav-100 overflow-y-auto">
               {feedbacks.map((item) => (
                 <div key={item.id} className="px-5 py-4">
                   <div className="mb-2 flex items-start justify-between gap-3">

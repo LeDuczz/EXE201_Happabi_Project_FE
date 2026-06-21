@@ -29,6 +29,7 @@ import AdminDoctorAccounts from './pages/admin/DoctorAccounts';
 import AdminWallet from './pages/admin/Wallet';
 import AdminWorkSessionIncidents from './pages/admin/WorkSessionIncidents';
 import AdminFeedbacks from './pages/admin/Feedbacks';
+import AdminKnowledgeBase from './pages/admin/KnowledgeBase';
 import AdminProfile from './pages/admin/Profile';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -215,6 +216,7 @@ const AppRoutes = () => (
       <Route path="/admin/wallet" element={<RoleRoute allowedRoles={['ADMIN']}><AdminWallet /></RoleRoute>} />
       <Route path="/admin/incidents" element={<RoleRoute allowedRoles={['ADMIN']}><AdminWorkSessionIncidents /></RoleRoute>} />
       <Route path="/admin/feedbacks" element={<RoleRoute allowedRoles={['ADMIN']}><AdminFeedbacks /></RoleRoute>} />
+      <Route path="/admin/knowledge" element={<RoleRoute allowedRoles={['ADMIN']}><AdminKnowledgeBase /></RoleRoute>} />
       <Route path="/admin/system-config" element={<RoleRoute allowedRoles={['ADMIN']}><AdminSystemConfig /></RoleRoute>} />
       <Route path="/admin/audit-logs" element={<RoleRoute allowedRoles={['ADMIN']}><AdminAuditLogs /></RoleRoute>} />
       <Route path="/admin/chat" element={<RoleRoute allowedRoles={['ADMIN']}><ChatPage /></RoleRoute>} />

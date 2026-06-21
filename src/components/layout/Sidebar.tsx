@@ -1,10 +1,11 @@
 import {
+  AlertTriangle,
+  BookOpenCheck,
   Calendar,
   ClipboardCheck,
   FileSearch,
   History,
   Home,
-  AlertTriangle,
   LayoutDashboard,
   LogOut,
   MessageCircle,
@@ -29,7 +30,7 @@ const motherMenus = [
   { id: '/mother/compare', icon: <Scale size={18} />, label: 'So sánh' },
   { id: '/mother/bookings/new', icon: <Calendar size={18} />, label: 'Đặt lịch' },
   { id: '/mother/bookings', icon: <Calendar size={18} />, label: 'Đơn của tôi' },
-  { id: '/mother/chat', icon: <MessageCircle size={18} />, label: 'Chat & AI hỗ trợ' },
+  { id: '/mother/chat', icon: <MessageCircle size={18} />, label: 'Chat & AI hỗ trợ' },
   { id: '/mother/feedback', icon: <MessageSquareText size={18} />, label: 'Góp ý' },
   { id: '/mother/profile', icon: <User size={18} />, label: 'Hồ sơ' },
 ];
@@ -40,14 +41,14 @@ const nurseMenus = [
   { id: '/nurse/bookings', icon: <Calendar size={18} />, label: 'Lịch làm việc' },
   { id: '/nurse/checklist', icon: <ClipboardCheck size={18} />, label: 'AI Checklist' },
   { id: '/nurse/revenue', icon: <Wallet size={18} />, label: 'Doanh thu' },
-  { id: '/nurse/chat', icon: <MessageCircle size={18} />, label: 'Chat & hỗ trợ' },
+  { id: '/nurse/chat', icon: <MessageCircle size={18} />, label: 'Chat & hỗ trợ' },
   { id: '/nurse/feedback', icon: <MessageSquareText size={18} />, label: 'Góp ý' },
   { id: '/nurse/profile', icon: <User size={18} />, label: 'Hồ sơ nurse' },
 ];
 
 const doctorMenus = [
   { id: '/doctor/nurses/review', icon: <FileSearch size={18} />, label: 'Duyệt hồ sơ điều dưỡng' },
-  { id: '/doctor/chat', icon: <MessageCircle size={18} />, label: 'Chat & AI' },
+  { id: '/doctor/chat', icon: <MessageCircle size={18} />, label: 'Chat & AI' },
   { id: '/doctor/feedback', icon: <MessageSquareText size={18} />, label: 'Góp ý' },
   { id: '/doctor/profile', icon: <User size={18} />, label: 'Hồ sơ' },
 ];
@@ -57,8 +58,9 @@ const adminMenus = [
   { id: '/admin/doctors', icon: <Stethoscope size={18} />, label: 'Tạo tài khoản Doctor' },
   { id: '/admin/users', icon: <Users size={18} />, label: 'Quản lý người dùng' },
   { id: '/admin/wallet', icon: <Wallet size={18} />, label: 'Ví nền tảng' },
-  { id: '/admin/incidents', icon: <AlertTriangle size={18} />, label: 'Sự cố ca làm' },
+  { id: '/admin/incidents', icon: <AlertTriangle size={18} />, label: 'Sự cố ca làm' },
   { id: '/admin/feedbacks', icon: <MessageSquareText size={18} />, label: 'Góp ý người dùng' },
+  { id: '/admin/knowledge', icon: <BookOpenCheck size={18} />, label: 'AI Knowledge Base' },
   { id: '/admin/audit-logs', icon: <History size={18} />, label: 'Audit Logs' },
   { id: '/admin/system-config', icon: <Settings size={18} />, label: 'Cấu hình hệ thống' },
   { id: '/admin/chat', icon: <MessageCircle size={18} />, label: 'Hệ thống Chat' },

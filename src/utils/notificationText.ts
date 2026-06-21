@@ -44,6 +44,9 @@ const titleMap: Record<string, string> = {
   'No-show penalty applied': 'Đã áp dụng phạt bỏ ca',
   'Booking availability suspended': 'Tạm khóa nhận lịch',
   'Nurse account suspended': 'Tài khoản nurse bị khóa',
+  'New user feedback': 'Góp ý mới',
+  'Feedback received': 'Góp ý đã được ghi nhận',
+  'Feedback status updated': 'Cập nhật góp ý',
 };
 
 const fallbackTitleByType: Record<string, string> = {
@@ -275,8 +278,16 @@ const translatePolicyMessage = (message: string) => {
   return null;
 };
 
+const translateFeedbackTitle = (title: string) => {
+  const normalized = normalize(title);
+  if (normalized === 'New user feedback') return 'Góp ý mới';
+  if (normalized === 'Feedback received') return 'Góp ý đã được ghi nhận';
+  if (normalized === 'Feedback status updated') return 'Cập nhật góp ý';
+  return 'Góp ý';
+};
 export const translateNotificationTitle = (title: string, type?: string, resourceType?: string) => {
   if (resourceType === 'NURSE_WITHDRAWAL') return translateWithdrawalTitle(title);
+  if (resourceType === 'USER_FEEDBACK') return translateFeedbackTitle(title);
   const normalized = normalize(title);
   if (titleMap[normalized]) return titleMap[normalized];
   return type ? fallbackTitleByType[type] ?? title : title;
