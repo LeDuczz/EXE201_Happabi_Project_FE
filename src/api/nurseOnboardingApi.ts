@@ -102,4 +102,9 @@ export const signMyContract = async (payload: SignNurseContractPayload) => {
   return unwrap<NurseOnboarding>(response);
 };
 
+export const createNurseDepositPaymentLink = async () => {
+  const response = await axiosClient.post('/api/v1/payments/nurse-deposit-link');
+  return unwrap<{ checkoutUrl: string }>(response);
+};
+
 export type { CccdOcrExtraction };
