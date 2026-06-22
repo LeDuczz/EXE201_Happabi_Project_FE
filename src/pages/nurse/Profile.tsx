@@ -46,6 +46,8 @@ const nurseStatusLabel: Record<string, string> = {
   SUSPENDED: 'Tạm khóa',
 };
 
+nurseStatusLabel.PENDING_DEPOSIT = 'Chờ ký quỹ';
+
 const availabilityLabel: Record<string, string> = {
   AVAILABLE: 'Sẵn sàng nhận lịch',
   BUSY: 'Đang bận',
@@ -113,7 +115,7 @@ const StatusPill = ({
 const statusTone = (status?: string) => {
   if (status === 'ACTIVE' || status === 'PASSED' || status === 'SIGNED' || status === 'AVAILABLE') return 'green';
   if (status === 'REJECTED' || status === 'FAILED' || status === 'SUSPENDED' || status === 'CANCELLED') return 'red';
-  if (status === 'PENDING_REVIEW' || status === 'APPROVED_PENDING_CONTRACT' || status === 'REVIEW_NEEDED' || status === 'PENDING') return 'amber';
+  if (status === 'PENDING_REVIEW' || status === 'APPROVED_PENDING_CONTRACT' || status === 'PENDING_DEPOSIT' || status === 'REVIEW_NEEDED' || status === 'PENDING') return 'amber';
   return 'slate';
 };
 

@@ -1,6 +1,7 @@
 import { AlertCircle, BadgeCheck, BriefcaseMedical, Camera, CheckCircle2, ClipboardCheck, FileCheck2, FileText, Loader2, PenLine, Send, ShieldCheck, Sparkles, Upload } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import axiosClient from '../api/axiosClient';
+import { createNurseDepositPaymentLink } from '../api/nurseOnboardingApi';
 import Btn from '../components/common/Btn';
 import Card from '../components/common/Card';
 import Input from '../components/common/Input';
@@ -169,6 +170,11 @@ const statusMeta: Record<NurseStatus, { label: string; tone: string; description
     tone: 'border-blue-200 bg-blue-50 text-blue-700',
     description: 'Hồ sơ đã được duyệt. Vui lòng ký hợp đồng để kích hoạt tài khoản nurse.',
   },
+  PENDING_DEPOSIT: {
+    label: 'Đã ký hợp đồng, chờ ký quỹ',
+    tone: 'border-violet-200 bg-violet-50 text-violet-700',
+    description: 'Thanh toán ký quỹ tối thiểu 300.000 đ để kích hoạt tài khoản và nhận lịch.',
+  },
   ACTIVE: {
     label: 'Đã kích hoạt',
     tone: 'border-green-200 bg-green-50 text-green-700',
@@ -222,7 +228,13 @@ const wizardSteps = [
   { title: 'Gửi duyệt', description: 'Submit hoặc ký hợp đồng' },
 ];
 
+const onboardingSteps = [
+  ...wizardSteps,
+  { title: 'Ký quỹ', description: 'Thanh toán ký quỹ để kích hoạt' },
+];
+
 const NurseOnboardingPage = () => {
+  const nurseDepositAmount = 300000;
   const { user } = useAuth();
   const frontInputRef = useRef<HTMLInputElement | null>(null);
   const backInputRef = useRef<HTMLInputElement | null>(null);
@@ -236,6 +248,7 @@ const NurseOnboardingPage = () => {
   const [isUploadingCert, setIsUploadingCert] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSigning, setIsSigning] = useState(false);
+  const [isCreatingDepositPayment, setIsCreatingDepositPayment] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeStep, setActiveStep] = useState(0);
@@ -304,7 +317,9 @@ const NurseOnboardingPage = () => {
     });
     setSignedName(next.fullName || user?.fullName || '');
 
-    if (next.nurseStatus === 'APPROVED_PENDING_CONTRACT' || next.nurseStatus === 'PENDING_REVIEW' || next.nurseStatus === 'ACTIVE') {
+    if (next.nurseStatus === 'PENDING_DEPOSIT' || next.nurseStatus === 'ACTIVE') {
+      setActiveStep(4);
+    } else if (next.nurseStatus === 'APPROVED_PENDING_CONTRACT' || next.nurseStatus === 'PENDING_REVIEW') {
       setActiveStep(3);
     } else if (!next.profileCompleted) {
       setActiveStep(0);
@@ -480,6 +495,23 @@ const NurseOnboardingPage = () => {
     }
   };
 
+  const createDepositPaymentLink = async () => {
+    setError('');
+    setSuccess('');
+    setIsCreatingDepositPayment(true);
+    try {
+      const { checkoutUrl } = await createNurseDepositPaymentLink();
+      if (!checkoutUrl) {
+        throw new Error('NURSE_DEPOSIT_CHECKOUT_URL_MISSING');
+      }
+      window.location.assign(checkoutUrl);
+    } catch (err: any) {
+      setError(getApiErrorMessage(err, 'Không thể tạo liên kết thanh toán ký quỹ. Vui lòng thử lại.'));
+    } finally {
+      setIsCreatingDepositPayment(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <>
@@ -530,14 +562,16 @@ const NurseOnboardingPage = () => {
       </div>
 
       <Card className="mb-5 p-5">
-        <div className="grid grid-cols-4 gap-3">
-          {wizardSteps.map((step, index) => {
+          <div className="grid grid-cols-5 gap-3">
+           {onboardingSteps.map((step, index) => {
             const isActive = activeStep === index;
             const isDone =
               index === 0 ? Boolean(data.profileCompleted) :
               index === 1 ? Boolean(data.kycCompleted) :
               index === 2 ? Boolean(data.certificationsCompleted) :
-              status === 'PENDING_REVIEW' || status === 'APPROVED_PENDING_CONTRACT' || status === 'ACTIVE';
+              index === 3
+                ? status === 'PENDING_REVIEW' || status === 'APPROVED_PENDING_CONTRACT' || status === 'PENDING_DEPOSIT' || status === 'ACTIVE'
+                : status === 'ACTIVE';
 
             return (
               <button
@@ -858,6 +892,41 @@ const NurseOnboardingPage = () => {
                   <Send size={16} /> {isSubmitting ? 'Đang gửi...' : 'Gửi duyệt'}
                 </Btn>
               </div>
+            </div>
+          )}
+        </Card>}
+
+        {activeStep === 4 && <Card className="p-6">
+          <div className="mb-5 flex items-center justify-between border-b border-lav-100 pb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-text-dark">5. Ký quỹ để kích hoạt tài khoản</h2>
+              <p className="mt-1 text-sm font-semibold text-text-light">Ký quỹ là khoản bảo đảm nghĩa vụ nhận ca, được tách riêng với số dư khả dụng.</p>
+            </div>
+            <BadgeCheck className="text-lav-dark" />
+          </div>
+
+          {status === 'PENDING_DEPOSIT' ? (
+            <div className="rounded-2xl border border-violet-200 bg-violet-50 p-5">
+              <div className="mb-2 text-sm font-semibold text-violet-700">Mức ký quỹ tối thiểu</div>
+              <div className="text-3xl font-bold text-text-dark">{nurseDepositAmount.toLocaleString('vi-VN')} đ</div>
+              <p className="mt-3 max-w-2xl text-sm font-semibold leading-6 text-violet-700">
+                Sau khi PayOS xác nhận thanh toán, hệ thống sẽ tự động kích hoạt tài khoản nurse. Tiền ký quỹ không phải số dư khả dụng để rút.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Btn type="button" variant="soft" onClick={() => setActiveStep(3)}>Xem hợp đồng</Btn>
+                <Btn type="button" onClick={createDepositPaymentLink} disabled={isCreatingDepositPayment}>
+                  {isCreatingDepositPayment ? <Loader2 className="animate-spin" size={16} /> : <BadgeCheck size={16} />}
+                  {isCreatingDepositPayment ? 'Đang tạo thanh toán...' : 'Thanh toán ký quỹ qua PayOS'}
+                </Btn>
+              </div>
+            </div>
+          ) : status === 'ACTIVE' ? (
+            <div className="rounded-2xl border border-green-200 bg-green-50 p-5 text-sm font-semibold text-green-700">
+              Ký quỹ đã được xác nhận. Tài khoản nurse đang hoạt động và có thể nhận lịch.
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-lav-100 bg-[#fff9fb] p-5 text-sm font-semibold text-text-mid">
+              Bước ký quỹ sẽ mở sau khi hợp đồng được ký thành công.
             </div>
           )}
         </Card>}

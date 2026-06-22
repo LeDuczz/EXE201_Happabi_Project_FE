@@ -242,6 +242,7 @@ const AdminDashboard = () => {
                   ['Đang bận', dashboard.nurseSupplyHealth.busyNurses],
                   ['Tạm nghỉ', dashboard.nurseSupplyHealth.offlineNurses],
                   ['Chờ ký hợp đồng', dashboard.nurseSupplyHealth.pendingContractNurses],
+                  ['Chờ ký quỹ', dashboard.nurseSupplyHealth.pendingDepositNurses],
                   ['Đang bị phạt', dashboard.nurseSupplyHealth.penalizedNurses],
                 ]}
               />

@@ -12,6 +12,13 @@ const titleMap: Record<string, string> = {
   'Nurse profile rejected': 'Hồ sơ nurse bị từ chối',
   'Nurse profile approved': 'Hồ sơ nurse đã được duyệt',
   'Nurse profile active': 'Tài khoản nurse đã hoạt động',
+  'Nurse profile needs updates': 'Hồ sơ nurse cần cập nhật',
+  'Nurse account activated': 'Tài khoản nurse đã được kích hoạt',
+  'Nurse account temporarily suspended': 'Tài khoản nurse bị tạm khóa',
+  'Nurse account reactivated': 'Tài khoản nurse đã được mở lại',
+  'Nurse deposit required': 'Cần hoàn tất ký quỹ',
+  'Nurse deposit confirmed': 'Ký quỹ đã được xác nhận',
+  'Nurse deposit confirmed and account activated': 'Ký quỹ đã được xác nhận và tài khoản đã kích hoạt',
   'Nurse suspended': 'Tài khoản nurse bị tạm khóa',
   'Nurse reactivated': 'Tài khoản nurse đã được mở lại',
   'Work session updated': 'Cập nhật ca làm',
@@ -52,6 +59,8 @@ const titleMap: Record<string, string> = {
 const fallbackTitleByType: Record<string, string> = {
   NURSE_PROFILE_REJECTED: 'Hồ sơ nurse bị từ chối',
   NURSE_PROFILE_APPROVED_PENDING_CONTRACT: 'Hồ sơ nurse đã được duyệt',
+  NURSE_DEPOSIT_REQUIRED: 'Cần hoàn tất ký quỹ',
+  NURSE_DEPOSIT_CONFIRMED: 'Ký quỹ đã được xác nhận',
   NURSE_PROFILE_ACTIVE: 'Tài khoản nurse đã hoạt động',
   NURSE_SUSPENDED: 'Tài khoản nurse bị tạm khóa',
   NURSE_REACTIVATED: 'Tài khoản nurse đã được mở lại',
@@ -89,6 +98,27 @@ const translateExactMessage = (message: string) => {
   }
   if (normalized === 'Your nurse has checked in for the work session.') {
     return 'Nurse đã check-in cho ca làm.';
+  }
+  if (normalized === 'Your nurse profile was not approved. Please review the requirements and submit it again.') {
+    return 'Hồ sơ nurse chưa được duyệt. Vui lòng kiểm tra yêu cầu và nộp lại.';
+  }
+  if (normalized === 'Please review and sign your contract to activate your nurse account.') {
+    return 'Vui lòng xem và ký hợp đồng để kích hoạt tài khoản nurse.';
+  }
+  if (normalized === 'You can now accept bookings and use Happabi.') {
+    return 'Bạn đã có thể nhận lịch và sử dụng Happabi.';
+  }
+  if (normalized === 'Your nurse account has been temporarily suspended.') {
+    return 'Tài khoản nurse của bạn đang bị tạm khóa.';
+  }
+  if (normalized === 'You can resume accepting bookings on Happabi.') {
+    return 'Bạn có thể tiếp tục nhận lịch trên Happabi.';
+  }
+  if (normalized === 'Please pay the required nurse deposit to activate your account.') {
+    return 'Vui lòng hoàn tất ký quỹ để kích hoạt tài khoản nurse.';
+  }
+  if (normalized === 'Your nurse deposit was received and your account is now active.') {
+    return 'Hệ thống đã nhận ký quỹ và kích hoạt tài khoản nurse của bạn.';
   }
 
   if (normalized === 'Your nurse has checked out. Please confirm completion or report an issue.') {

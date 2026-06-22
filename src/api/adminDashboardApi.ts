@@ -46,6 +46,7 @@ export interface AdminDashboardNurseSupplyHealth {
   suspendedNurses: number;
   pendingReviewNurses: number;
   pendingContractNurses: number;
+  pendingDepositNurses: number;
   penalizedNurses: number;
 }
 
