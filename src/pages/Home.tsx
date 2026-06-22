@@ -1,5 +1,7 @@
-import { CalendarDays, CheckCircle2, ClipboardCheck, Clock, HeartPulse, Loader2, MapPin, Star, Wallet } from 'lucide-react';
+import { CalendarDays, CheckCircle2, ClipboardCheck, Clock, HeartPulse, Loader2, Star, Wallet, type LucideIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getMotherDashboard, type MotherDashboard } from '../api/motherDashboardApi';
 import Avatar from '../components/common/Avatar';
 import Btn from '../components/common/Btn';
 import Card from '../components/common/Card';
@@ -7,17 +9,7 @@ import Topbar from '../components/layout/Topbar';
 import { useAuth } from '../contexts/AuthContext';
 import { useNurseDashboard } from '../hooks/useNurseDashboard';
 import type { WorkSessionStatus } from '../types/workSession';
-
-const suggestedNurses = [
-  { name: 'Nguyễn Thị Lan Anh', title: 'Điều dưỡng trưởng', avatar: 'LA', rating: 4.97, distance: '1.2km', price: '350k' },
-  { name: 'Trần Minh Châu', title: 'Nữ hộ sinh cao cấp', avatar: 'MC', rating: 4.95, distance: '2.1km', price: '420k' },
-  { name: 'Võ Thị Mỹ Linh', title: 'Chuyên gia hậu sản', avatar: 'ML', rating: 4.99, distance: '4.1km', price: '520k' },
-];
-
-const bookings = [
-  { nurse: 'Trần Minh Châu', service: 'Hỗ trợ cho con bú', date: '14/05/2026', time: '10:00', avatar: 'MC', price: '420.000đ' },
-  { nurse: 'Võ Thị Mỹ Linh', service: 'Phục hồi toàn diện', date: '20/05/2026', time: '09:00', avatar: 'ML', price: '520.000đ' },
-];
+import { getApiErrorMessage } from '../utils/apiError';
 
 const nurseStatusLabel: Record<WorkSessionStatus, string> = {
   SCHEDULED: 'Sắp tới',
@@ -134,40 +126,106 @@ const NurseHome = () => {
     </>
   );
 };
+const specialtyLabel: Record<string, string> = {
+  NURSE: 'Điều dưỡng',
+  MIDWIFE: 'Hộ sinh',
+  CAREGIVER: 'Chăm sóc sau sinh',
+};
+
+const getInitials = (name?: string) => {
+  if (!name) return 'HB';
+  const parts = name.trim().split(/\s+/);
+  return parts.length > 1
+    ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
+    : name.slice(0, 2).toUpperCase();
+};
+
+const formatSessionTime = (value: string) => new Intl.DateTimeFormat('vi-VN', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+}).format(new Date(value));
+
 const MotherHome = () => {
   const navigate = useNavigate();
+  const [dashboard, setDashboard] = useState<MotherDashboard | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDashboard = async () => {
+      setIsLoading(true);
+      setError('');
+      try {
+        const response = await getMotherDashboard();
+        if (!cancelled) setDashboard(response);
+      } catch (requestError) {
+        if (!cancelled) setError(getApiErrorMessage(requestError, 'Không thể tải dữ liệu trang chủ. Vui lòng thử lại.'));
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    void loadDashboard();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const metrics = dashboard?.metrics;
+  const recommendedNurses = dashboard?.recommendedNurses ?? [];
+  const upcomingSessions = dashboard?.upcomingSessions ?? [];
+  const metricCards: Array<{ Icon: LucideIcon; value: string | number; label: string }> = [
+    { Icon: CalendarDays, value: metrics?.upcomingSessions ?? 0, label: 'Lịch sắp tới' },
+    { Icon: CheckCircle2, value: metrics?.completedSessions ?? 0, label: 'Ca hoàn thành' },
+    { Icon: Star, value: metrics?.averageRatingGiven == null ? '—' : Number(metrics.averageRatingGiven).toFixed(1), label: 'Đánh giá đã gửi' },
+    { Icon: HeartPulse, value: metrics?.paidBookings ?? 0, label: 'Lần đã đặt' },
+  ];
 
   return (
     <>
-      <Topbar title="Trang chủ" subtitle="Hôm nay mẹ và bé thế nào rồi?" />
+      <Topbar title="Trang chủ" subtitle="Theo dõi lịch chăm sóc và tìm điều dưỡng phù hợp cho mẹ và bé." />
+
+      {error && (
+        <div className="mb-5 rounded-xl border border-red-200 bg-danger-bg px-4 py-3 text-sm font-bold text-danger">
+          {error}
+        </div>
+      )}
 
       <section className="relative mb-6 overflow-hidden rounded-[28px] bg-grad p-7 shadow-lg">
         <div className="absolute -right-10 -top-10 h-52 w-52 rounded-full bg-white/10" />
         <div className="relative z-10 max-w-2xl">
-          <div className="mb-2 text-overline text-white/75">AI gợi ý hôm nay</div>
+          <div className="mb-2 text-overline text-white/75">Gợi ý điều dưỡng</div>
           <h2 className="text-heading text-3xl font-semibold leading-tight text-white">
-            3 điều dưỡng phù hợp nhất trong khu vực của bạn
+            {isLoading
+              ? 'Đang tìm điều dưỡng phù hợp cho bạn'
+              : recommendedNurses.length
+                ? `${recommendedNurses.length} điều dưỡng đang sẵn sàng nhận lịch`
+                : 'Chưa có điều dưỡng phù hợp tại thời điểm này'}
           </h2>
           <p className="mt-3 max-w-xl text-sm leading-6 text-white/72">
-            Dựa trên vị trí, nhu cầu chăm sóc sau sinh và lịch trống của điều dưỡng.
+            {dashboard?.profileLocationConfigured
+              ? 'Gợi ý dựa trên khu vực hồ sơ, trạng thái hoạt động và khung thời gian nhận lịch của điều dưỡng.'
+              : 'Hoàn thiện thành phố trong hồ sơ để nhận gợi ý phù hợp hơn với khu vực của bạn.'}
           </p>
           <Btn variant="outline" size="sm" className="mt-5 border-white/45 bg-white/15 text-white backdrop-blur" onClick={() => navigate('/mother/search')}>
-            Tìm điều dưỡng ngay
+            Tìm điều dưỡng
           </Btn>
         </div>
       </section>
 
       <div className="mb-6 grid gap-4 md:grid-cols-4">
-        {[
-          [CalendarDays, '2', 'Lịch sắp tới'],
-          [CheckCircle2, '4', 'Ca hoàn thành'],
-          [Star, '4.95', 'Rating trung bình'],
-          [HeartPulse, '3', 'Lần đặt lịch'],
-        ].map(([Icon, value, label]) => (
-          <Card key={String(label)} className="p-5 text-center">
+        {metricCards.map(({ Icon, value, label }) => (
+          <Card key={label} className="p-5 text-center">
             <Icon className="mx-auto mb-2 text-lav-dark" size={24} />
-            <div className="text-heading text-3xl font-semibold text-grad">{String(value)}</div>
-            <div className="mt-1 text-xs font-bold text-text-light">{String(label)}</div>
+            <div className="text-heading text-3xl font-semibold text-grad">
+              {isLoading ? <Loader2 className="mx-auto animate-spin" size={28} /> : value}
+            </div>
+            <div className="mt-1 text-xs font-bold text-text-light">{label}</div>
           </Card>
         ))}
       </div>
@@ -178,42 +236,62 @@ const MotherHome = () => {
             <h3 className="text-heading text-xl font-semibold">Lịch hẹn sắp tới</h3>
             <Btn variant="ghost" size="sm" onClick={() => navigate('/mother/bookings')}>Xem tất cả</Btn>
           </div>
-          {bookings.map((booking) => (
-            <div key={`${booking.nurse}-${booking.time}`} className="flex items-center gap-3 border-b border-lav-200 py-4 last:border-b-0">
-              <Avatar initials={booking.avatar} size={44} />
-              <div className="min-w-0 flex-1">
-                <div className="font-semibold">{booking.nurse}</div>
-                <div className="text-sm text-text-light">{booking.service}</div>
-                <div className="mt-1 text-xs font-bold text-text-light">{booking.date} · {booking.time}</div>
-              </div>
-              <div className="text-right text-sm font-semibold text-lav-dark">{booking.price}</div>
+          {isLoading ? (
+            <div className="flex h-40 items-center justify-center"><Loader2 className="animate-spin text-lav-dark" size={30} /></div>
+          ) : upcomingSessions.length === 0 ? (
+            <div className="py-8 text-center">
+              <p className="text-sm font-bold text-text-mid">Bạn chưa có lịch hẹn sắp tới.</p>
+              <Btn size="sm" className="mt-4" onClick={() => navigate('/mother/search')}>Đặt lịch mới</Btn>
             </div>
-          ))}
-          <Btn full className="mt-4" onClick={() => navigate('/mother/search')}>Đặt lịch mới</Btn>
+          ) : (
+            <>
+              {upcomingSessions.map((session) => (
+                <button
+                  key={session.workSessionId}
+                  type="button"
+                  onClick={() => navigate('/mother/bookings')}
+                  className="flex w-full items-center gap-3 border-b border-lav-200 py-4 text-left last:border-b-0"
+                >
+                  <Avatar initials={getInitials(session.nurseName)} src={session.nurseAvatarUrl || undefined} size={44} />
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold">{session.nurseName}</div>
+                    <div className="truncate text-sm text-text-light">{session.serviceName}</div>
+                    <div className="mt-1 text-xs font-bold text-text-light">{formatSessionTime(session.scheduledStartAt)}</div>
+                  </div>
+                  <div className="text-sm font-semibold text-lav-dark">Sắp tới</div>
+                </button>
+              ))}
+              <Btn full className="mt-4" onClick={() => navigate('/mother/search')}>Đặt lịch mới</Btn>
+            </>
+          )}
         </Card>
 
         <Card>
-          <h3 className="text-heading text-xl font-semibold">AI gợi ý cho bạn</h3>
-          <p className="mt-1 text-xs font-bold text-text-light">Dựa trên vị trí và nhu cầu chăm sóc</p>
-          <div className="mt-4">
-            {suggestedNurses.map((nurse) => (
-              <div key={nurse.name} className="flex items-center gap-3 border-b border-lav-200 py-3 last:border-b-0">
-                <Avatar initials={nurse.avatar} size={40} />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-semibold">{nurse.name}</div>
-                  <div className="truncate text-xs text-text-light">{nurse.title}</div>
-                  <div className="mt-1 flex items-center gap-2 text-xs font-bold text-text-light">
-                    <Star size={12} className="fill-[#f59e0b] text-[#f59e0b]" /> {nurse.rating}
-                    <MapPin size={12} /> {nurse.distance}
+          <h3 className="text-heading text-xl font-semibold">Điều dưỡng phù hợp</h3>
+          <p className="mt-1 text-xs font-bold text-text-light">Đang hoạt động và có khung nhận lịch hợp lệ</p>
+          {isLoading ? (
+            <div className="flex h-40 items-center justify-center"><Loader2 className="animate-spin text-lav-dark" size={30} /></div>
+          ) : recommendedNurses.length === 0 ? (
+            <div className="py-8 text-center text-sm font-bold text-text-mid">Chưa có điều dưỡng phù hợp.</div>
+          ) : (
+            <div className="mt-4">
+              {recommendedNurses.map((nurse) => (
+                <div key={nurse.nurseProfileId} className="flex items-center gap-3 border-b border-lav-200 py-3 last:border-b-0">
+                  <Avatar initials={getInitials(nurse.fullName)} src={nurse.avatarUrl || undefined} size={40} />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-semibold">{nurse.fullName}</div>
+                    <div className="truncate text-xs text-text-light">{specialtyLabel[nurse.specialty || ''] || 'Điều dưỡng'}</div>
+                    <div className="mt-1 flex items-center gap-2 text-xs font-bold text-text-light">
+                      <Star size={12} className="fill-[#f59e0b] text-[#f59e0b]" />
+                      {Number(nurse.ratingAvg ?? 0).toFixed(1)}
+                      <span>{nurse.totalReviews ?? 0} đánh giá</span>
+                    </div>
                   </div>
+                  <Btn size="xs" onClick={() => navigate(`/mother/nurses/${nurse.nurseProfileId}`)}>Xem</Btn>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold text-lav-dark">{nurse.price}</div>
-                  <Btn size="xs" onClick={() => navigate('/mother/search')}>Đặt</Btn>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </Card>
       </div>
     </>
