@@ -1,5 +1,4 @@
 import {
-  BadgeCheck,
   BriefcaseMedical,
   Camera,
   CheckCircle2,
@@ -76,11 +75,6 @@ const contractStatusLabel: Record<string, string> = {
 const formatValue = (value?: string | number | null) => {
   if (value === undefined || value === null || value === '') return 'Chưa cập nhật';
   return String(value);
-};
-
-const formatPercent = (value?: number) => {
-  if (value === undefined || value === null) return '0%';
-  return `${Math.round(Number(value) * 100) / 100}%`;
 };
 
 const getInitials = (name?: string) => {
@@ -417,10 +411,9 @@ const NurseProfile = () => {
             </div>
           </Card>
 
-          <div className="grid gap-4 xl:grid-cols-4 md:grid-cols-2">
+          <div className="grid gap-4 xl:grid-cols-3 md:grid-cols-2">
             <MetricCard icon={<Star size={20} />} label="Điểm đánh giá" value={String(profile.ratingAvg ?? '0.0')} hint={`${profile.totalReviews ?? 0} đánh giá`} />
             <MetricCard icon={<ClipboardCheck size={20} />} label="Ca đã hoàn thành" value={String(profile.totalCompletedJobs ?? 0)} hint="Happabi" />
-            <MetricCard icon={<BadgeCheck size={20} />} label="Tỷ lệ phản hồi" value={formatPercent(profile.responseRate)} hint="Hiệu suất" />
             <MetricCard icon={<ShieldCheck size={20} />} label="Xác minh nền tảng" value={profile.backgroundChecked ? 'Đạt' : 'Chờ'} hint="An toàn" />
           </div>
 

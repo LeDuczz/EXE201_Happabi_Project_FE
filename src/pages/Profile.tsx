@@ -53,7 +53,7 @@ const getApiErrorMessage = (err: any) => {
   const validationMessage = data?.errors?.[0]?.message;
   if (validationMessage) return validationMessage;
   if (data?.message) return data.message;
-  return 'KhÃ´ng thá»ƒ xá»­ lÃ½ yÃªu cáº§u. Vui lÃ²ng thá»­ láº¡i.';
+  return 'Không thể xử lý yêu cầu. Vui lòng thử lại.';
 };
 
 const Profile = () => {
@@ -126,7 +126,7 @@ const Profile = () => {
       const avatarUrl = response.data?.data;
       setProfile((current) => ({ ...current, avatarUrl }));
       await refreshMe();
-      setSuccess('áº¢nh Ä‘áº¡i diá»‡n Ä‘Ã£ Ä‘Æ°á»£c cáº­p nháº­t.');
+      setSuccess('Ảnh đại diện đã được cập nhật.');
     } catch (err: any) {
       setError(getApiErrorMessage(err));
     } finally {
@@ -151,7 +151,7 @@ const Profile = () => {
       });
       setProfile({ ...emptyProfile, ...response.data?.data });
       await refreshMe();
-      setSuccess('Há»“ sÆ¡ Ä‘Ã£ Ä‘Æ°á»£c cáº­p nháº­t.');
+      setSuccess('Hồ sơ đã được cập nhật.');
     } catch (err: any) {
       setError(getApiErrorMessage(err));
     } finally {
@@ -167,7 +167,7 @@ const Profile = () => {
       const email = emailDraft.trim().toLowerCase();
       await axiosClient.post('/api/v1/users/me/email/change', { email });
       setEmailDraft(email);
-      setSuccess('MÃ£ xÃ¡c thá»±c Ä‘Ã£ Ä‘Æ°á»£c gá»­i tá»›i email.');
+      setSuccess('Mã xác thực đã được gửi tới email.');
     } catch (err: any) {
       setError(getApiErrorMessage(err));
     }
@@ -181,7 +181,7 @@ const Profile = () => {
       await axiosClient.post('/api/v1/users/me/email/confirm', { code: emailCode });
       await refreshMe();
       setEmailCode('');
-      setSuccess('Email Ä‘Ã£ Ä‘Æ°á»£c xÃ¡c thá»±c.');
+      setSuccess('Email đã được xác thực.');
     } catch (err: any) {
       setError(getApiErrorMessage(err));
     }
@@ -208,11 +208,11 @@ const Profile = () => {
         setPhoneCode('');
         setIsPhoneVerificationRequested(false);
         await refreshMe();
-        setSuccess('Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c xÃ¡c thá»±c.');
+        setSuccess('Số điện thoại đã được xác thực.');
         return;
       }
       setIsPhoneVerificationRequested(true);
-      setSuccess('MÃ£ xÃ¡c thá»±c Ä‘Ã£ Ä‘Æ°á»£c gá»­i tá»›i sá»‘ Ä‘iá»‡n thoáº¡i.');
+      setSuccess('Mã xác thực đã được gửi tới số điện thoại.');
     } catch (err: any) {
       setError(getApiErrorMessage(err));
     }
@@ -227,7 +227,7 @@ const Profile = () => {
       await refreshMe();
       setPhoneCode('');
       setIsPhoneVerificationRequested(false);
-      setSuccess('Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c xÃ¡c thá»±c.');
+      setSuccess('Số điện thoại đã được xác thực.');
     } catch (err: any) {
       setError(getApiErrorMessage(err));
     }
@@ -247,7 +247,7 @@ const Profile = () => {
       await axiosClient.post('/api/v1/auth/local-password', { password: localPassword });
       await refreshMe();
       setLocalPassword('');
-      setSuccess('Máº­t kháº©u Ä‘Äƒng nháº­p báº±ng sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c táº¡o.');
+      setSuccess('Mật khẩu đăng nhập bằng số điện thoại đã được tạo.');
     } catch (err: any) {
       setError(getApiErrorMessage(err));
     }
@@ -256,9 +256,9 @@ const Profile = () => {
   if (primaryRole !== 'MOTHER') {
     return (
       <>
-        <Topbar title="Há»“ sÆ¡ nurse" subtitle="Trang há»“ sÆ¡ nurse Ä‘ang phÃ¡t triá»ƒn." />
+        <Topbar title="Hồ sơ nurse" subtitle="Trang hồ sơ nurse đang phát triển." />
         <Card>
-          <p className="text-sm font-bold text-text-mid">API há»“ sÆ¡ nurse sáº½ Ä‘Æ°á»£c ná»‘i khi backend hoÃ n thiá»‡n pháº§n cáº­p nháº­t.</p>
+          <p className="text-sm font-bold text-text-mid">API hồ sơ nurse sẽ được nối khi backend hoàn thiện phần cập nhật.</p>
         </Card>
       </>
     );
@@ -266,7 +266,7 @@ const Profile = () => {
 
   return (
     <>
-      <Topbar title="Há»“ sÆ¡ cá»§a máº¹" subtitle="Cáº­p nháº­t há»“ sÆ¡, xÃ¡c thá»±c email/sá»‘ Ä‘iá»‡n thoáº¡i vÃ  áº£nh Ä‘áº¡i diá»‡n." />
+      <Topbar title="Hồ sơ của mẹ" subtitle="Cập nhật hồ sơ, xác thực email/số điện thoại và ảnh đại diện." />
 
       <div className="grid gap-5 lg:grid-cols-[340px_1fr]">
         <Card className="h-fit text-center">
@@ -283,7 +283,7 @@ const Profile = () => {
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploadingAvatar}
               className="absolute bottom-0 right-0 flex h-10 w-10 items-center justify-center rounded-full border-4 border-white bg-dark-200 text-white shadow-lg disabled:opacity-60"
-              aria-label="Cáº­p nháº­t avatar"
+              aria-label="Cập nhật avatar"
             >
               <Camera size={17} />
             </button>
@@ -299,34 +299,34 @@ const Profile = () => {
             />
           </div>
 
-          <h2 className="text-heading text-2xl font-semibold text-text-dark">{profile.fullName || 'Máº¹ Happabi'}</h2>
-          <p className="mt-1 text-sm font-bold text-text-light">{user?.email || user?.phone || 'ChÆ°a cÃ³ thÃ´ng tin liÃªn há»‡'}</p>
+          <h2 className="text-heading text-2xl font-semibold text-text-dark">{profile.fullName || 'Mẹ Happabi'}</h2>
+          <p className="mt-1 text-sm font-bold text-text-light">{user?.email || user?.phone || 'Chưa có thông tin liên hệ'}</p>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploadingAvatar}
             className="mt-5 w-full rounded-xl border border-lav-200 bg-lav-100 px-4 py-3 text-sm font-semibold text-lav-dark transition hover:bg-lav-200 disabled:opacity-60"
           >
-            {isUploadingAvatar ? 'Äang táº£i áº£nh...' : 'Cáº­p nháº­t áº£nh Ä‘áº¡i diá»‡n'}
+            {isUploadingAvatar ? 'Đang tải ảnh...' : 'Cập nhật ảnh đại diện'}
           </button>
 
           {!hasLocalPassword && phoneVerified && (
             <div className="mt-5 rounded-2xl border border-lav-200 bg-[#fff9fb] p-4 text-left">
-              <div className="mb-3 text-sm font-semibold text-text-dark">Táº¡o máº­t kháº©u local</div>
+              <div className="mb-3 text-sm font-semibold text-text-dark">Tạo mật khẩu local</div>
               <Input
-                label="Máº­t kháº©u"
+                label="Mật khẩu"
                 type={showLocalPassword ? 'text' : 'password'}
                 value={localPassword}
                 onChange={(event) => setLocalPassword(event.target.value)}
-                placeholder="Tá»‘i thiá»ƒu 8 kÃ½ tá»±"
+                placeholder="Tối thiểu 8 ký tự"
                 hint={PASSWORD_POLICY_MESSAGE}
               />
               <label className="mb-3 flex cursor-pointer items-center gap-2 text-xs font-bold text-text-mid">
                 <input type="checkbox" checked={showLocalPassword} onChange={(event) => setShowLocalPassword(event.target.checked)} className="h-4 w-4 accent-lav-dark" />
-                Hiá»ƒn thá»‹ máº­t kháº©u
+                Hiển thị mật khẩu
               </label>
               <Btn full size="sm" type="button" onClick={createLocalPassword}>
-                <KeyRound size={15} /> Táº¡o máº­t kháº©u
+                <KeyRound size={15} /> Tạo mật khẩu
               </Btn>
             </div>
           )}
@@ -335,7 +335,7 @@ const Profile = () => {
         <div className="space-y-5">
           <Card className="p-7">
             {isLoading ? (
-              <div className="py-12 text-center text-sm font-bold text-text-light">Äang táº£i há»“ sÆ¡...</div>
+              <div className="py-12 text-center text-sm font-bold text-text-light">Đang tải hồ sơ...</div>
             ) : (
               <form onSubmit={saveProfile}>
                 {error && (
@@ -352,22 +352,22 @@ const Profile = () => {
                 )}
 
                 <div className="mb-5 border-b border-lav-100 pb-4">
-                  <h3 className="text-heading text-2xl font-semibold text-text-dark">ThÃ´ng tin máº¹ bá»‰m</h3>
-                  <p className="mt-1 text-sm font-semibold text-text-light">Phone/email Ä‘á»•i báº±ng luá»“ng xÃ¡c thá»±c riÃªng á»Ÿ phÃ­a dÆ°á»›i.</p>
+                  <h3 className="text-heading text-2xl font-semibold text-text-dark">Thông tin mẹ bỉm</h3>
+                  <p className="mt-1 text-sm font-semibold text-text-light">Phone/email đổi bằng luồng xác thực riêng ở phía dưới.</p>
                 </div>
 
                 <div className="grid gap-x-5 md:grid-cols-2">
-                  <Input label="Há» vÃ  tÃªn" value={profile.fullName ?? ''} onChange={(event) => updateField('fullName', event.target.value)} />
+                  <Input label="Họ và tên" value={profile.fullName ?? ''} onChange={(event) => updateField('fullName', event.target.value)} />
                   <DateDisplayInput label="Ngày sinh của bé" value={profile.babyBirthDate ?? ''} onChange={(value) => updateField('babyBirthDate', value)} />
                   <DateDisplayInput label="Ngày sinh của mẹ" value={profile.dayOfBirth ?? ''} onChange={(value) => updateField('dayOfBirth', value)} />
-                  <Input label="ThÃ nh phá»‘" value={profile.city ?? ''} onChange={(event) => updateField('city', event.target.value)} />
+                  <Input label="Thành phố" value={profile.city ?? ''} onChange={(event) => updateField('city', event.target.value)} />
                 </div>
 
-                <Input label="Äá»‹a chá»‰" value={profile.address ?? ''} onChange={(event) => updateField('address', event.target.value)} />
+                <Input label="Địa chỉ" value={profile.address ?? ''} onChange={(event) => updateField('address', event.target.value)} />
 
                 <div className="mt-5 flex justify-end">
                   <Btn type="submit" disabled={isSaving}>
-                    <Save size={16} /> {isSaving ? 'Äang lÆ°u...' : 'LÆ°u há»“ sÆ¡'}
+                    <Save size={16} /> {isSaving ? 'Đang lưu...' : 'Lưu hồ sơ'}
                   </Btn>
                 </div>
               </form>
@@ -375,26 +375,26 @@ const Profile = () => {
           </Card>
 
           <Card className="p-7">
-            <h3 className="mb-4 text-heading text-2xl font-semibold text-text-dark">XÃ¡c thá»±c liÃªn há»‡</h3>
+            <h3 className="mb-4 text-heading text-2xl font-semibold text-text-dark">Xác thực liên hệ</h3>
             <div className="grid gap-5 md:grid-cols-2">
               <div className="rounded-2xl border border-lav-100 bg-[#fff9fb] p-4">
                 <div className="mb-2 text-sm font-semibold text-text-dark">Email</div>
                 <Input value={emailDraft} onChange={(event) => setEmailDraft(event.target.value)} placeholder="me@example.com" disabled={emailVerified} />
                 {emailVerified ? (
                   <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm font-bold text-green-700">
-                    <CheckCircle2 size={16} /> Email Ä‘Ã£ Ä‘Æ°á»£c xÃ¡c thá»±c.
+                    <CheckCircle2 size={16} /> Email đã được xác thực.
                   </div>
                 ) : (
                   <>
                     <div className="flex gap-2">
                       <Btn type="button" size="sm" onClick={requestEmailChange}>
-                        <Send size={15} /> Gá»­i mÃ£
+                        <Send size={15} /> Gửi mã
                       </Btn>
                     </div>
                     <div className="mt-3 flex gap-2">
-                      <Input label="MÃ£ xÃ¡c thá»±c" value={emailCode} onChange={(event) => setEmailCode(event.target.value)} />
+                      <Input label="Mã xác thực" value={emailCode} onChange={(event) => setEmailCode(event.target.value)} />
                       <Btn type="button" size="sm" className="mt-[25px] h-[45px]" onClick={confirmEmailChange}>
-                        XÃ¡c nháº­n
+                        Xác nhận
                       </Btn>
                     </div>
                   </>
@@ -402,7 +402,7 @@ const Profile = () => {
               </div>
 
               <div className="rounded-2xl border border-lav-100 bg-[#fff9fb] p-4">
-                <div className="mb-2 text-sm font-semibold text-text-dark">Sá»‘ Ä‘iá»‡n thoáº¡i</div>
+                <div className="mb-2 text-sm font-semibold text-text-dark">Số điện thoại</div>
                 <Input value={phoneDraft} onChange={(event) => {
                   setPhoneDraft(event.target.value);
                   setPhoneCode('');
@@ -410,20 +410,20 @@ const Profile = () => {
                 }} placeholder="0912345678" hint={phoneVerified ? undefined : PHONE_POLICY_MESSAGE} disabled={phoneVerified} />
                 {phoneVerified ? (
                   <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm font-bold text-green-700">
-                    <CheckCircle2 size={16} /> Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c xÃ¡c thá»±c.
+                    <CheckCircle2 size={16} /> Số điện thoại đã được xác thực.
                   </div>
                 ) : (
                   <>
                     <div className="flex gap-2">
                       <Btn type="button" size="sm" onClick={requestPhoneChange}>
-                        <Send size={15} /> Gá»­i mÃ£
+                        <Send size={15} /> Gửi mã
                       </Btn>
                     </div>
                     {isPhoneVerificationRequested && (
                       <div className="mt-3 flex gap-2">
-                        <Input label="MÃ£ xÃ¡c thá»±c" value={phoneCode} onChange={(event) => setPhoneCode(event.target.value)} />
+                        <Input label="Mã xác thực" value={phoneCode} onChange={(event) => setPhoneCode(event.target.value)} />
                         <Btn type="button" size="sm" className="mt-[25px] h-[45px]" onClick={confirmPhoneChange}>
-                          XÃ¡c nháº­n
+                          Xác nhận
                         </Btn>
                       </div>
                     )}
