@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bell, Check, Loader2 } from 'lucide-react';
+import { Bell, Check, Home, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { io, type Socket } from 'socket.io-client';
 import Avatar from '../common/Avatar';
 import { useAuth } from '../../contexts/AuthContext';
@@ -215,6 +216,14 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
       </div>
 
       <div className="flex items-center gap-2.5">
+        <Link
+          to="/"
+          title="Về trang giới thiệu"
+          aria-label="Về trang giới thiệu"
+          className="flex h-[38px] w-[38px] items-center justify-center rounded-[11px] border border-lav-200 bg-lav-100 text-lav-dark transition-colors hover:bg-lav-200"
+        >
+          <Home size={18} />
+        </Link>
         <div ref={dropdownRef} className="relative">
           <button
             type="button"
