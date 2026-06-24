@@ -31,6 +31,9 @@ export interface AdminDashboardFinancialControl {
   last30DaysAppPayments: number;
   todayPlatformRevenue: number;
   last30DaysPlatformRevenue: number;
+  last30DaysPaymentGatewayFees: number;
+  last30DaysNursePayouts: number;
+  last30DaysNetPlatformRevenue: number;
   pendingWithdrawalAmount: number;
   pendingRefundAmount: number;
   pendingWithdrawals: number;
@@ -83,6 +86,13 @@ export interface AdminDashboardDailyMetric {
   value: number;
 }
 
+export interface AdminDashboardFinancialDailyMetric {
+  date: string;
+  platformRevenue: number;
+  paymentGatewayFee: number;
+  netPlatformRevenue: number;
+}
+
 export interface AdminOperationsDashboard {
   actionQueue: AdminDashboardActionQueue;
   bookingOperations: AdminDashboardBookingOperations;
@@ -91,6 +101,7 @@ export interface AdminOperationsDashboard {
   feedbackInsight: AdminDashboardFeedbackInsight;
   riskAlerts: AdminDashboardRiskAlert[];
   appPaymentTrend: AdminDashboardDailyMetric[];
+  financialTrend: AdminDashboardFinancialDailyMetric[];
   generatedAt: string;
 }
 
@@ -108,6 +119,9 @@ const normalizeDashboard = (data: AdminOperationsDashboard): AdminOperationsDash
     last30DaysAppPayments: toNumber(data.financialControl?.last30DaysAppPayments),
     todayPlatformRevenue: toNumber(data.financialControl?.todayPlatformRevenue),
     last30DaysPlatformRevenue: toNumber(data.financialControl?.last30DaysPlatformRevenue),
+    last30DaysPaymentGatewayFees: toNumber(data.financialControl?.last30DaysPaymentGatewayFees),
+    last30DaysNursePayouts: toNumber(data.financialControl?.last30DaysNursePayouts),
+    last30DaysNetPlatformRevenue: toNumber(data.financialControl?.last30DaysNetPlatformRevenue),
     pendingWithdrawalAmount: toNumber(data.financialControl?.pendingWithdrawalAmount),
     pendingRefundAmount: toNumber(data.financialControl?.pendingRefundAmount),
   },
@@ -120,6 +134,12 @@ const normalizeDashboard = (data: AdminOperationsDashboard): AdminOperationsDash
   appPaymentTrend: (data.appPaymentTrend ?? []).map((item) => ({
     ...item,
     value: toNumber(item.value),
+  })),
+  financialTrend: (data.financialTrend ?? []).map((item) => ({
+    ...item,
+    platformRevenue: toNumber(item.platformRevenue),
+    paymentGatewayFee: toNumber(item.paymentGatewayFee),
+    netPlatformRevenue: toNumber(item.netPlatformRevenue),
   })),
 });
 

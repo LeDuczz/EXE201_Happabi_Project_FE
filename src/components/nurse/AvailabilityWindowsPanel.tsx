@@ -137,7 +137,7 @@ const AvailabilityWindowsPanel = ({ onAvailabilityStatusChanged }: AvailabilityW
           <CalendarDays size={20} />
         </div>
         <div>
-          <h3 className="font-serif text-[23px] font-black text-text-dark">{text.title}</h3>
+          <h3 className="font-sans text-[23px] font-black text-text-dark">{text.title}</h3>
           <p className="text-[13px] font-semibold text-text-light">{text.subtitle}</p>
         </div>
       </div>

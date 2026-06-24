@@ -8,6 +8,7 @@ import {
   RefreshCw,
   ShieldAlert,
   Star,
+  TrendingUp,
   UserCheck,
   Users,
   Wallet,
@@ -17,6 +18,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import {
   getAdminOperationsDashboard,
+  type AdminDashboardFinancialDailyMetric,
   type AdminDashboardRiskAlert,
   type AdminOperationsDashboard,
 } from '../../api/adminDashboardApi';
@@ -28,6 +30,13 @@ const formatNumber = (value?: number) => new Intl.NumberFormat('vi-VN').format(N
 
 const formatVnd = (value?: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(Number(value ?? 0));
+
+const formatCompactVnd = (value: number) => {
+  const absoluteValue = Math.abs(value);
+  if (absoluteValue >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (absoluteValue >= 1_000) return `${Math.round(value / 1_000)}K`;
+  return `${Math.round(value)}`;
+};
 
 const formatDateTime = (value?: string) => {
   if (!value) return '--';
@@ -227,6 +236,7 @@ const AdminDashboard = () => {
                   ['GMV 7D', dashboard.financialControl.last7DaysAppPayments],
                   ['GMV 30D', dashboard.financialControl.last30DaysAppPayments],
                   ['Platform Revenue 30D', dashboard.financialControl.last30DaysPlatformRevenue],
+                  ['Payment Processing Fees 30D', dashboard.financialControl.last30DaysPaymentGatewayFees],
                   ['Pending Payout', dashboard.financialControl.pendingWithdrawalAmount],
                   ['Refund Exposure', dashboard.financialControl.pendingRefundAmount],
                 ]}
@@ -248,6 +258,53 @@ const AdminDashboard = () => {
               />
             </Card>
           </div>
+
+          <Card className="p-6">
+            <div className="flex flex-col gap-3 border-b border-lav-100 pb-5 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <SectionHeader icon={<TrendingUp size={18} />} title="Financial Performance" />
+                <p className="mt-1 text-sm font-semibold text-text-light">
+                  Theo dõi GMV, doanh thu nền tảng, phí xử lý thanh toán và phần doanh thu ròng trong 30 ngày.
+                </p>
+              </div>
+              <span className="text-xs font-black uppercase tracking-wider text-text-light">30 ngày gần nhất</span>
+            </div>
+
+            <div className="grid divide-y divide-lav-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-5">
+              <FinancialKpi
+                label="GMV"
+                value={dashboard.financialControl.last30DaysAppPayments}
+                helper="Tổng tiền nhận qua app"
+                tone="lavender"
+              />
+              <FinancialKpi
+                label="Platform Revenue"
+                value={dashboard.financialControl.last30DaysPlatformRevenue}
+                helper="15% booking đã hoàn tất"
+                tone="green"
+              />
+              <FinancialKpi
+                label="Payment Processing Fees"
+                value={dashboard.financialControl.last30DaysPaymentGatewayFees}
+                helper="Chi phí bên thứ ba (PayOS)"
+                tone="rose"
+              />
+              <FinancialKpi
+                label="Nurse Payouts"
+                value={dashboard.financialControl.last30DaysNursePayouts}
+                helper="Tiền đã phân bổ vào ví nurse"
+                tone="amber"
+              />
+              <FinancialKpi
+                label="Net Platform Revenue"
+                value={dashboard.financialControl.last30DaysNetPlatformRevenue}
+                helper="Doanh thu nền tảng sau phí PayOS"
+                tone="blue"
+              />
+            </div>
+
+            <FinancialTrendChart data={dashboard.financialTrend} />
+          </Card>
 
           <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
             <Card className="p-6">
@@ -426,6 +483,103 @@ const MiniBox = ({ label, value }: { label: string; value: string | number }) =>
     <div className="text-xs font-black uppercase text-text-light">{label}</div>
     <div className="mt-1 text-lg font-black text-text-dark">{value}</div>
   </div>
+);
+
+const FinancialKpi = ({
+  label,
+  value,
+  helper,
+  tone,
+}: {
+  label: string;
+  value: number;
+  helper: string;
+  tone: 'lavender' | 'green' | 'rose' | 'amber' | 'blue';
+}) => {
+  const toneClass = {
+    lavender: 'text-lav-dark',
+    green: 'text-emerald-600',
+    rose: 'text-rose-600',
+    amber: 'text-amber-600',
+    blue: 'text-sky-600',
+  }[tone];
+
+  return (
+    <div className="min-w-0 px-4 py-5 first:pl-0 last:pr-0 sm:px-5">
+      <div className="text-[11px] font-black uppercase tracking-wider text-text-light">{label}</div>
+      <div className={`mt-2 truncate text-xl font-black ${toneClass}`}>{formatVnd(value)}</div>
+      <div className="mt-1 text-xs font-semibold text-text-mid">{helper}</div>
+    </div>
+  );
+};
+
+const FinancialTrendChart = ({ data }: { data: AdminDashboardFinancialDailyMetric[] }) => {
+  const chartData = data.slice(-30);
+  const values = chartData.flatMap((item) => [
+    item.platformRevenue,
+    item.paymentGatewayFee,
+    Math.max(0, item.netPlatformRevenue),
+  ]);
+  const maximumValue = Math.max(1, ...values);
+  const width = 800;
+  const height = 250;
+  const padding = { top: 18, right: 18, bottom: 30, left: 48 };
+  const innerWidth = width - padding.left - padding.right;
+  const innerHeight = height - padding.top - padding.bottom;
+  const x = (index: number) => padding.left + (chartData.length <= 1 ? innerWidth / 2 : (index / (chartData.length - 1)) * innerWidth);
+  const y = (value: number) => padding.top + innerHeight - (Math.max(0, value) / maximumValue) * innerHeight;
+  const line = (selector: (item: AdminDashboardFinancialDailyMetric) => number) => chartData
+    .map((item, index) => `${x(index)},${y(selector(item))}`)
+    .join(' ');
+  const hasData = values.some((value) => value > 0);
+
+  return (
+    <div className="mt-6">
+      <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-text-mid">
+        <ChartLegend color="bg-emerald-500" label="Platform Revenue" />
+        <ChartLegend color="bg-rose-500" label="Payment Processing Fees" />
+        <ChartLegend color="bg-sky-500" label="Net Platform Revenue" />
+      </div>
+      <div className="h-[250px] overflow-x-auto">
+        <svg viewBox={`0 0 ${width} ${height}`} className="h-full min-w-[640px] w-full" role="img" aria-label="Biểu đồ doanh thu nền tảng và phí PayOS trong 30 ngày">
+          {[0, 0.5, 1].map((ratio) => {
+            const axisValue = maximumValue * ratio;
+            const axisY = y(axisValue);
+            return (
+              <g key={ratio}>
+                <line x1={padding.left} x2={width - padding.right} y1={axisY} y2={axisY} stroke="#eee7f7" strokeDasharray="4 5" />
+                <text x={padding.left - 8} y={axisY + 4} textAnchor="end" fill="#a99ab8" fontSize="10" fontWeight="700">
+                  {formatCompactVnd(axisValue)}
+                </text>
+              </g>
+            );
+          })}
+          {hasData && (
+            <>
+              <polyline points={line((item) => item.platformRevenue)} fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              <polyline points={line((item) => item.paymentGatewayFee)} fill="none" stroke="#f43f5e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              <polyline points={line((item) => item.netPlatformRevenue)} fill="none" stroke="#0ea5e9" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+            </>
+          )}
+          {chartData.map((item, index) => {
+            const shouldShowLabel = index === 0 || index === chartData.length - 1 || index % 7 === 0;
+            return shouldShowLabel ? (
+              <text key={item.date} x={x(index)} y={height - 8} textAnchor="middle" fill="#a99ab8" fontSize="10" fontWeight="700">
+                {new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit' }).format(new Date(`${item.date}T00:00:00`))}
+              </text>
+            ) : null;
+          })}
+        </svg>
+      </div>
+      {!hasData && (
+        <div className="-mt-28 text-center text-sm font-bold text-text-light">Chưa có dữ liệu doanh thu, phí PayOS hoặc phân bổ hoàn tất trong 30 ngày qua.</div>
+      )}
+    </div>
+  );
+};
+
+const ChartLegend = ({ color, label }: { color: string; label: string }) => (
+  <span className="inline-flex items-center gap-2"><span className={`h-2.5 w-2.5 rounded-full ${color}`} />{label}</span>
 );
 
 export default AdminDashboard;

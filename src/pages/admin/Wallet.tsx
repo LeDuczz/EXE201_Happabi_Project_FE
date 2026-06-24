@@ -8,6 +8,7 @@ import { getApiErrorMessage } from '../../utils/apiError';
 
 const transactionLabel: Record<string, string> = {
   BOOKING_PAYMENT_RECEIVED: 'Nhận tiền booking',
+  PAYMENT_GATEWAY_FEE: 'Phí cổng thanh toán',
   NURSE_PAYOUT: 'Chi trả nurse',
   BOOKING_REFUND: 'Hoàn tiền mother',
   WITHDRAWAL_PAYOUT: 'Chi rút tiền nurse',
@@ -125,7 +126,7 @@ const AdminWalletPage = () => {
                   <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-white/70">
                     <WalletIcon size={16} /> Số dư ví admin
                   </div>
-                  <div className="mt-3 font-serif text-4xl font-black">{formatVnd(wallet?.balance)}</div>
+                  <div className="mt-3 font-sans text-4xl font-black">{formatVnd(wallet?.balance)}</div>
                   <div className="mt-3 text-xs font-semibold text-white/70">Cập nhật: {formatDate(wallet?.updatedAt)}</div>
                 </div>
                 <button
@@ -149,7 +150,7 @@ const AdminWalletPage = () => {
           <Card className="p-6">
             <div className="mb-4 flex items-center justify-between gap-4">
               <div>
-                <div className="font-serif text-xl font-black text-text-dark">Yêu cầu rút tiền của nurse</div>
+                <div className="font-sans text-xl font-black text-text-dark">Yêu cầu rút tiền của nurse</div>
                 <div className="mt-1 text-sm font-semibold text-text-light">Duyệt sau khi đã chuyển khoản ngân hàng thực tế.</div>
               </div>
               <button onClick={loadData} className="text-sm font-black text-lav-acc">Làm mới</button>
@@ -202,7 +203,7 @@ const AdminWalletPage = () => {
 
           <Card className="overflow-hidden p-0">
             <div className="border-b border-lav-100 px-6 py-5">
-              <div className="font-serif text-xl font-black text-text-dark">Lịch sử ví admin</div>
+              <div className="font-sans text-xl font-black text-text-dark">Lịch sử ví admin</div>
               <div className="mt-1 text-sm font-semibold text-text-light">Dòng dương là tiền app nhận, dòng âm là tiền chi trả cho nurse.</div>
             </div>
 
