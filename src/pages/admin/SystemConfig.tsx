@@ -1,4 +1,4 @@
-import { Loader2, Save, Settings } from 'lucide-react';
+import { BadgePercent, Loader2, Save, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import axiosClient from '../../api/axiosClient';
 import Btn from '../../components/common/Btn';
@@ -13,8 +13,16 @@ interface ConfigItem {
     updatedAt: string;
 }
 
+interface FinancialConfiguration {
+    payOsGatewayFeeRate: number;
+    platformCommissionRate: number;
+}
+
 const AdminSystemConfig = () => {
     const [configs, setConfigs] = useState<ConfigItem[]>([]);
+    const [financialConfig, setFinancialConfig] = useState<FinancialConfiguration | null>(null);
+    const [payOsFeePercent, setPayOsFeePercent] = useState('0');
+    const [platformCommissionPercent, setPlatformCommissionPercent] = useState('15');
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState<string | null>(null);
     const [error, setError] = useState('');
@@ -23,12 +31,48 @@ const AdminSystemConfig = () => {
     const loadConfigs = async () => {
         setIsLoading(true);
         try {
-            const response = await axiosClient.get('/api/v1/admin/system-configs');
-            setConfigs(response.data?.data || []);
+            const [configsResponse, financialResponse] = await Promise.all([
+                axiosClient.get('/api/v1/admin/system-configs'),
+                axiosClient.get('/api/v1/admin/system-configs/financial'),
+            ]);
+            const nextFinancialConfig = financialResponse.data?.data as FinancialConfiguration;
+            setConfigs((configsResponse.data?.data || []).filter((config: ConfigItem) => (
+                config.configKey !== 'PAYOS_GATEWAY_FEE_RATE'
+                && config.configKey !== 'PLATFORM_COMMISSION_RATE'
+            )));
+            setFinancialConfig(nextFinancialConfig);
+            setPayOsFeePercent(String((Number(nextFinancialConfig?.payOsGatewayFeeRate ?? 0) * 100)));
+            setPlatformCommissionPercent(String((Number(nextFinancialConfig?.platformCommissionRate ?? 0.15) * 100)));
         } catch (err: any) {
             setError(getApiErrorMessage(err, 'Không tải được cấu hình hệ thống.'));
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleFinancialUpdate = async () => {
+        setIsSaving('financial');
+        setError('');
+        setSuccess('');
+        try {
+            const payOsGatewayFeeRate = Number(payOsFeePercent) / 100;
+            const platformCommissionRate = Number(platformCommissionPercent) / 100;
+            if (!Number.isFinite(payOsGatewayFeeRate) || !Number.isFinite(platformCommissionRate)
+                || payOsGatewayFeeRate < 0 || platformCommissionRate < 0
+                || payOsGatewayFeeRate > 1 || platformCommissionRate > 1) {
+                setError('Tỷ lệ phải nằm trong khoảng từ 0% đến 100%.');
+                return;
+            }
+            await axiosClient.put('/api/v1/admin/system-configs/financial', {
+                payOsGatewayFeeRate,
+                platformCommissionRate,
+            });
+            setSuccess('Đã cập nhật cấu hình tài chính. Chỉ đơn mới được áp dụng tỷ lệ mới.');
+            await loadConfigs();
+        } catch (err: any) {
+            setError(getApiErrorMessage(err, 'Không thể cập nhật cấu hình tài chính.'));
+        } finally {
+            setIsSaving(null);
         }
     };
 
@@ -67,6 +111,39 @@ const AdminSystemConfig = () => {
                 </div>
             ) : (
                 <div className="grid gap-6">
+                    <Card className="border-lav-200 p-6">
+                        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                            <div>
+                                <div className="flex items-center gap-2 font-sans text-xl font-black text-text-dark">
+                                    <BadgePercent size={20} className="text-lav-acc" />
+                                    Cấu hình tài chính
+                                </div>
+                                <div className="mt-1 text-sm font-semibold text-text-light">
+                                    Tỷ lệ được snapshot khi tạo payment link hoặc booking, không ảnh hưởng đơn cũ.
+                                </div>
+                            </div>
+                            <Btn size="sm" onClick={handleFinancialUpdate} disabled={isSaving === 'financial' || !financialConfig}>
+                                {isSaving === 'financial' ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                                Lưu cấu hình tài chính
+                            </Btn>
+                        </div>
+
+                        <div className="mt-5 grid gap-4 md:grid-cols-2">
+                            <PercentageInput
+                                label="Phí cổng PayOS"
+                                helper="Happabi chịu phí này. Áp dụng khi tạo payment link mới."
+                                value={payOsFeePercent}
+                                onChange={setPayOsFeePercent}
+                            />
+                            <PercentageInput
+                                label="Tỷ lệ Happabi giữ lại"
+                                helper="Phần còn lại được phân bổ cho nurse khi booking hoàn tất."
+                                value={platformCommissionPercent}
+                                onChange={setPlatformCommissionPercent}
+                            />
+                        </div>
+                    </Card>
+
                     {configs.map((config) => (
                         <ConfigCard
                             key={config.configKey}
@@ -86,6 +163,30 @@ const AdminSystemConfig = () => {
         </>
     );
 };
+
+const PercentageInput = ({ label, helper, value, onChange }: {
+    label: string;
+    helper: string;
+    value: string;
+    onChange: (value: string) => void;
+}) => (
+    <label className="block rounded-xl border border-lav-100 bg-lav-50/30 p-4">
+        <span className="block text-sm font-black text-text-dark">{label}</span>
+        <span className="mt-1 block text-xs font-semibold leading-5 text-text-light">{helper}</span>
+        <div className="mt-3 flex items-center rounded-xl border border-lav-200 bg-white px-3 focus-within:border-lav-acc">
+            <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+                className="w-full bg-transparent py-2 text-lg font-black text-text-dark outline-none"
+            />
+            <span className="text-sm font-black text-text-mid">%</span>
+        </div>
+    </label>
+);
 
 const ConfigCard = ({ config, onSave, isSaving }: { config: ConfigItem, onSave: (k: string, v: string) => void, isSaving: boolean }) => {
     const [val, setVal] = useState(config.configValue);
