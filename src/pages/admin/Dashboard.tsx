@@ -13,11 +13,12 @@ import {
   Users,
   Wallet,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import {
   getAdminOperationsDashboard,
+  type AdminDashboardDailyMetric,
   type AdminDashboardFinancialDailyMetric,
   type AdminDashboardRiskAlert,
   type AdminOperationsDashboard,
@@ -106,11 +107,6 @@ const AdminDashboard = () => {
   useEffect(() => {
     void loadDashboard();
   }, []);
-
-  const maxTrendValue = useMemo(() => {
-    const values = dashboard?.appPaymentTrend?.map((item) => item.value) ?? [];
-    return Math.max(1, ...values);
-  }, [dashboard?.appPaymentTrend]);
 
   return (
     <>
@@ -232,9 +228,10 @@ const AdminDashboard = () => {
               <StatRows
                 money
                 rows={[
-                  ['GMV Today', dashboard.financialControl.todayAppPayments],
-                  ['GMV 7D', dashboard.financialControl.last7DaysAppPayments],
-                  ['GMV 30D', dashboard.financialControl.last30DaysAppPayments],
+                  ['GMV Today', dashboard.financialControl.todayGrossMerchandiseValue],
+                  ['GMV 7D', dashboard.financialControl.last7DaysGrossMerchandiseValue],
+                  ['GMV 30D', dashboard.financialControl.last30DaysGrossMerchandiseValue],
+                  ['Payment Volume 30D', dashboard.financialControl.last30DaysAppPayments],
                   ['Platform Revenue 30D', dashboard.financialControl.last30DaysPlatformRevenue],
                   ['Payment Processing Fees 30D', dashboard.financialControl.last30DaysPaymentGatewayFees],
                   ['Pending Payout', dashboard.financialControl.pendingWithdrawalAmount],
@@ -270,12 +267,18 @@ const AdminDashboard = () => {
               <span className="text-xs font-black uppercase tracking-wider text-text-light">30 ngày gần nhất</span>
             </div>
 
-            <div className="grid divide-y divide-lav-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-5">
+            <div className="grid divide-y divide-lav-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-6">
               <FinancialKpi
                 label="GMV"
-                value={dashboard.financialControl.last30DaysAppPayments}
+                value={dashboard.financialControl.last30DaysGrossMerchandiseValue}
                 helper="Tổng tiền nhận qua app"
                 tone="lavender"
+              />
+              <FinancialKpi
+                label="Payment Volume"
+                value={dashboard.financialControl.last30DaysAppPayments}
+                helper="Customer payments received via app"
+                tone="blue"
               />
               <FinancialKpi
                 label="Platform Revenue"
@@ -296,39 +299,31 @@ const AdminDashboard = () => {
                 tone="amber"
               />
               <FinancialKpi
-                label="Net Platform Revenue"
-                value={dashboard.financialControl.last30DaysNetPlatformRevenue}
+                label="Net Cash Contribution"
+                value={dashboard.financialControl.last30DaysNetCashContribution}
                 helper="Doanh thu nền tảng sau phí PayOS"
                 tone="blue"
               />
             </div>
 
-            <FinancialTrendChart data={dashboard.financialTrend} />
+            <FinancialBreakdownChart
+              platformRevenue={dashboard.financialControl.last30DaysPlatformRevenue}
+              paymentGatewayFees={dashboard.financialControl.last30DaysPaymentGatewayFees}
+              netCashContribution={dashboard.financialControl.last30DaysNetCashContribution}
+            />
           </Card>
 
           <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
             <Card className="p-6">
-              <div className="mb-6 flex items-center justify-between">
-                <SectionHeader icon={<BarChart3 size={18} />} title="GMV Trend (30D)" />
+              <div className="mb-6 flex items-center justify-between [&>span]:hidden">
+                <div>
+                  <SectionHeader icon={<BarChart3 size={18} />} title="GMV Trend (30D)" />
+                  <p className="mt-1 text-xs font-semibold text-text-light">Theo giá trị booking đã thanh toán, không lấy từ ví admin.</p>
+                </div>
                 <span className="text-xs font-black text-text-light">Theo ví admin</span>
               </div>
-              <div className="flex h-56 items-end gap-2">
-                {dashboard.appPaymentTrend.slice(-30).map((item) => {
-                  const height = Math.max(4, (item.value / maxTrendValue) * 100);
-                  return (
-                    <div key={item.date} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                      <div className="flex h-44 w-full items-end rounded-full bg-lav-50">
-                        <div
-                          className="w-full rounded-full bg-grad transition-all duration-500"
-                          style={{ height: `${height}%` }}
-                          title={`${item.date}: ${formatVnd(item.value)}`}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              {!dashboard.appPaymentTrend.some((item) => item.value > 0) && (
+              <GmvTrendChart data={dashboard.gmvTrend} />
+              {!dashboard.gmvTrend.some((item) => item.value > 0) && (
                 <div className="mt-4 text-center text-sm font-bold text-text-light">Chưa có GMV booking trong 30 ngày qua.</div>
               )}
             </Card>
@@ -496,6 +491,14 @@ const FinancialKpi = ({
   helper: string;
   tone: 'lavender' | 'green' | 'rose' | 'amber' | 'blue';
 }) => {
+  const helperText: Record<string, string> = {
+    GMV: 'Tổng giá trị các booking đã thanh toán',
+    'Payment Volume': 'Tổng tiền khách đã thanh toán qua app',
+    'Platform Revenue': '15% từ các booking đã hoàn thành',
+    'Payment Processing Fees': 'Phí bên thứ ba PayOS đã phát sinh',
+    'Nurse Payouts': 'Tiền đã phân bổ vào ví điều dưỡng',
+    'Net Cash Contribution': 'Doanh thu đã ghi nhận trừ phí PayOS',
+  };
   const toneClass = {
     lavender: 'text-lav-dark',
     green: 'text-emerald-600',
@@ -508,12 +511,118 @@ const FinancialKpi = ({
     <div className="min-w-0 px-4 py-5 first:pl-0 last:pr-0 sm:px-5">
       <div className="text-[11px] font-black uppercase tracking-wider text-text-light">{label}</div>
       <div className={`mt-2 truncate text-xl font-black ${toneClass}`}>{formatVnd(value)}</div>
-      <div className="mt-1 text-xs font-semibold text-text-mid">{helper}</div>
+      <div className="mt-1 text-xs font-semibold text-text-mid">{helperText[label] ?? helper}</div>
     </div>
   );
 };
 
-const FinancialTrendChart = ({ data }: { data: AdminDashboardFinancialDailyMetric[] }) => {
+const FinancialBreakdownChart = ({
+  platformRevenue,
+  paymentGatewayFees,
+  netCashContribution,
+}: {
+  platformRevenue: number;
+  paymentGatewayFees: number;
+  netCashContribution: number;
+}) => {
+  const rows = [
+    { label: 'Doanh thu nền tảng đã ghi nhận', value: platformRevenue, color: 'bg-emerald-500', textColor: 'text-emerald-700' },
+    { label: 'Phí xử lý thanh toán PayOS', value: paymentGatewayFees, color: 'bg-rose-500', textColor: 'text-rose-700' },
+    { label: 'Đóng góp tiền ròng', value: netCashContribution, color: 'bg-sky-500', textColor: 'text-sky-700' },
+  ];
+  const maximumValue = Math.max(1, ...rows.map((row) => Math.abs(row.value)));
+
+  return (
+    <div className="mt-6 rounded-2xl border border-lav-100 bg-lav-50/50 p-4 sm:p-5">
+      <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <div className="font-black text-text-dark">Phân rã dòng tiền nền tảng</div>
+        <div className="text-xs font-semibold text-text-light">Doanh thu đã ghi nhận trừ phí cổng thanh toán trong kỳ</div>
+      </div>
+      <div className="space-y-4">
+        {rows.map((row) => (
+          <div key={row.label} className="grid gap-2 sm:grid-cols-[180px_1fr_112px] sm:items-center">
+            <div className="text-sm font-bold text-text-mid">{row.label}</div>
+            <div className="h-3 overflow-hidden rounded-full bg-white ring-1 ring-lav-100">
+              <div
+                className={`h-full rounded-full ${row.color} transition-all duration-500`}
+                style={{ width: `${(Math.abs(row.value) / maximumValue) * 100}%` }}
+              />
+            </div>
+            <div className={`text-right text-sm font-black ${row.textColor}`}>{formatVnd(row.value)}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const GmvTrendChart = ({ data }: { data: AdminDashboardDailyMetric[] }) => {
+  const chartData = data.slice(-30);
+  const maximumValue = Math.max(1, ...chartData.map((item) => item.value));
+  const hasData = chartData.some((item) => item.value > 0);
+  const width = 760;
+  const height = 240;
+  const padding = { top: 18, right: 16, bottom: 34, left: 52 };
+  const innerWidth = width - padding.left - padding.right;
+  const innerHeight = height - padding.top - padding.bottom;
+  const barGap = 5;
+  const barWidth = Math.max(5, (innerWidth - Math.max(0, chartData.length - 1) * barGap) / Math.max(1, chartData.length));
+  const x = (index: number) => padding.left + index * (barWidth + barGap);
+  const y = (value: number) => padding.top + innerHeight - (value / maximumValue) * innerHeight;
+  const formatDate = (value: string) => new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit' })
+    .format(new Date(`${value}T00:00:00`));
+
+  return (
+    <div className="h-[260px] overflow-x-auto">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-full min-w-[680px] w-full" role="img" aria-label="GMV trend for paid bookings in the last 30 days">
+        {[0, 0.5, 1].map((ratio) => {
+          const value = maximumValue * ratio;
+          const axisY = y(value);
+          return (
+            <g key={ratio}>
+              <line x1={padding.left} x2={width - padding.right} y1={axisY} y2={axisY} stroke="#e9e0f3" strokeDasharray="4 5" />
+              <text x={padding.left - 8} y={axisY + 4} textAnchor="end" fill="#9a89ac" fontSize="10" fontWeight="700">
+                {formatCompactVnd(value)}
+              </text>
+            </g>
+          );
+        })}
+        {chartData.map((item, index) => {
+          const barHeight = item.value > 0 ? Math.max(3, (item.value / maximumValue) * innerHeight) : 0;
+          const shouldShowLabel = index === 0 || index === chartData.length - 1 || index % 7 === 0 || item.value > 0;
+          return (
+            <g key={item.date}>
+              {barHeight > 0 && (
+                <>
+                  <rect x={x(index)} y={y(item.value)} width={barWidth} height={barHeight} rx="4" fill="url(#gmvGradient)">
+                    <title>{`${formatDate(item.date)}: ${formatVnd(item.value)}`}</title>
+                  </rect>
+                  <text x={x(index) + barWidth / 2} y={Math.max(12, y(item.value) - 6)} textAnchor="middle" fill="#7c3aed" fontSize="10" fontWeight="800">
+                    {formatCompactVnd(item.value)}
+                  </text>
+                </>
+              )}
+              {shouldShowLabel && (
+                <text x={x(index) + barWidth / 2} y={height - 9} textAnchor="middle" fill="#9a89ac" fontSize="10" fontWeight="700">
+                  {formatDate(item.date)}
+                </text>
+              )}
+            </g>
+          );
+        })}
+        <defs>
+          <linearGradient id="gmvGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#a855f7" />
+            <stop offset="100%" stopColor="#fb7185" />
+          </linearGradient>
+        </defs>
+      </svg>
+      {!hasData && <div className="-mt-32 text-center text-sm font-bold text-text-light">No paid booking GMV in the last 30 days.</div>}
+    </div>
+  );
+};
+
+export const FinancialTrendChart = ({ data }: { data: AdminDashboardFinancialDailyMetric[] }) => {
   const chartData = data.slice(-30);
   const values = chartData.flatMap((item) => [
     item.platformRevenue,
