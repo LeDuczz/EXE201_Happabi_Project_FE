@@ -26,6 +26,9 @@ export interface AdminDashboardBookingOperations {
 
 export interface AdminDashboardFinancialControl {
   adminWalletBalance: number;
+  todayGrossMerchandiseValue: number;
+  last7DaysGrossMerchandiseValue: number;
+  last30DaysGrossMerchandiseValue: number;
   todayAppPayments: number;
   last7DaysAppPayments: number;
   last30DaysAppPayments: number;
@@ -33,7 +36,7 @@ export interface AdminDashboardFinancialControl {
   last30DaysPlatformRevenue: number;
   last30DaysPaymentGatewayFees: number;
   last30DaysNursePayouts: number;
-  last30DaysNetPlatformRevenue: number;
+  last30DaysNetCashContribution: number;
   pendingWithdrawalAmount: number;
   pendingRefundAmount: number;
   pendingWithdrawals: number;
@@ -100,8 +103,7 @@ export interface AdminOperationsDashboard {
   nurseSupplyHealth: AdminDashboardNurseSupplyHealth;
   feedbackInsight: AdminDashboardFeedbackInsight;
   riskAlerts: AdminDashboardRiskAlert[];
-  appPaymentTrend: AdminDashboardDailyMetric[];
-  financialTrend: AdminDashboardFinancialDailyMetric[];
+  gmvTrend: AdminDashboardDailyMetric[];
   generatedAt: string;
 }
 
@@ -114,6 +116,9 @@ const normalizeDashboard = (data: AdminOperationsDashboard): AdminOperationsDash
   financialControl: {
     ...data.financialControl,
     adminWalletBalance: toNumber(data.financialControl?.adminWalletBalance),
+    todayGrossMerchandiseValue: toNumber(data.financialControl?.todayGrossMerchandiseValue),
+    last7DaysGrossMerchandiseValue: toNumber(data.financialControl?.last7DaysGrossMerchandiseValue),
+    last30DaysGrossMerchandiseValue: toNumber(data.financialControl?.last30DaysGrossMerchandiseValue),
     todayAppPayments: toNumber(data.financialControl?.todayAppPayments),
     last7DaysAppPayments: toNumber(data.financialControl?.last7DaysAppPayments),
     last30DaysAppPayments: toNumber(data.financialControl?.last30DaysAppPayments),
@@ -121,7 +126,7 @@ const normalizeDashboard = (data: AdminOperationsDashboard): AdminOperationsDash
     last30DaysPlatformRevenue: toNumber(data.financialControl?.last30DaysPlatformRevenue),
     last30DaysPaymentGatewayFees: toNumber(data.financialControl?.last30DaysPaymentGatewayFees),
     last30DaysNursePayouts: toNumber(data.financialControl?.last30DaysNursePayouts),
-    last30DaysNetPlatformRevenue: toNumber(data.financialControl?.last30DaysNetPlatformRevenue),
+    last30DaysNetCashContribution: toNumber(data.financialControl?.last30DaysNetCashContribution),
     pendingWithdrawalAmount: toNumber(data.financialControl?.pendingWithdrawalAmount),
     pendingRefundAmount: toNumber(data.financialControl?.pendingRefundAmount),
   },
@@ -131,15 +136,9 @@ const normalizeDashboard = (data: AdminOperationsDashboard): AdminOperationsDash
     latestFeedbacks: data.feedbackInsight?.latestFeedbacks ?? [],
   },
   riskAlerts: data.riskAlerts ?? [],
-  appPaymentTrend: (data.appPaymentTrend ?? []).map((item) => ({
+  gmvTrend: (data.gmvTrend ?? []).map((item) => ({
     ...item,
     value: toNumber(item.value),
-  })),
-  financialTrend: (data.financialTrend ?? []).map((item) => ({
-    ...item,
-    platformRevenue: toNumber(item.platformRevenue),
-    paymentGatewayFee: toNumber(item.paymentGatewayFee),
-    netPlatformRevenue: toNumber(item.netPlatformRevenue),
   })),
 });
 
