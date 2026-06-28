@@ -37,18 +37,6 @@ export interface BookingPaymentLink {
     paymentExpiresAt: string;
 }
 
-export interface Booking {
-    id: string;
-    motherName: string;
-    service: string;
-    dateTime: string;
-    status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
-    price: number;
-    address: string;
-    nurseId?: string;
-    motherAvatar?: string;
-}
-
 const bookingService = {
     createBooking: async (payload: CreateBookingPayload) => {
         const response = await axiosClient.post('/api/v1/bookings', payload);
@@ -64,19 +52,6 @@ const bookingService = {
         const response = await axiosClient.get('/api/v1/bookings/me/pending-payments');
         return response.data?.data as BookingSummary[];
     },
-
-    getMyBookings: () => axiosClient.get('/api/v1/bookings/me'),
-
-    getNurseSchedule: () => axiosClient.get('/api/v1/nurses/me/bookings'),
-
-    updateBookingStatus: (id: string, status: string) =>
-        axiosClient.patch(`/api/v1/bookings/${id}/status`, { status }),
-
-    acceptBooking: (id: string) =>
-        axiosClient.post(`/api/v1/bookings/${id}/accept`),
-
-    rejectBooking: (id: string) =>
-        axiosClient.post(`/api/v1/bookings/${id}/reject`),
 
     cancelByMother: async (id: string, reason: string) => {
         const response = await axiosClient.post(`/api/v1/bookings/${id}/cancel-by-mother`, { reason });
