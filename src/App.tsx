@@ -1,42 +1,43 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import axiosClient from './api/axiosClient';
 import { AuthProvider, useAuth, type UserRole } from './contexts/AuthContext';
-import LandingPage from './pages/LandingPage';
-import Home from './pages/Home';
-import Profile from './pages/Profile';
-import Feedback from './pages/Feedback';
-import NurseOnboarding from './pages/NurseOnboarding';
-import DoctorNurseReview from './pages/DoctorNurseReview';
-import DoctorNurseReviewDetail from './pages/DoctorNurseReviewDetail';
-import DoctorProfile from './pages/doctor/Profile';
-import ChatPage from './pages/ChatPage';
-import NurseBookings from './pages/nurse/Bookings';
-import NurseChecklist from './pages/nurse/Checklist';
-import NurseProfile from './pages/nurse/Profile';
-import NurseRevenue from './pages/nurse/Revenue';
-import MotherNursePublicProfile from './pages/mother/NursePublicProfile';
-import MotherNurseSearch from './pages/mother/NurseSearch';
-import MotherNurseCompare from './pages/mother/NurseCompare';
-import MotherBookings from './pages/mother/Bookings';
-import MotherCreateBooking from './pages/mother/CreateBooking';
-import AdminDashboard from './pages/admin/Dashboard';
-import AdminUserManagement from './pages/admin/UserManagement';
-import AdminSystemConfig from './pages/admin/SystemConfig';
-import AdminAuditLogs from './pages/admin/AuditLogs';
-import AdminDoctorAccounts from './pages/admin/DoctorAccounts';
-import AdminWallet from './pages/admin/Wallet';
-import AdminWorkSessionIncidents from './pages/admin/WorkSessionIncidents';
-import AdminFeedbacks from './pages/admin/Feedbacks';
-import AdminKnowledgeBase from './pages/admin/KnowledgeBase';
-import AdminProfile from './pages/admin/Profile';
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import VerifyOtp from './pages/auth/VerifyOtp';
-import SocialCallback from './pages/auth/SocialCallback';
-import ForgotPassword from './pages/auth/ForgotPassword';
 import MainLayout from './components/layout/MainLayout';
+
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const Home = lazy(() => import('./pages/Home'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Feedback = lazy(() => import('./pages/Feedback'));
+const NurseOnboarding = lazy(() => import('./pages/NurseOnboarding'));
+const DoctorNurseReview = lazy(() => import('./pages/DoctorNurseReview'));
+const DoctorNurseReviewDetail = lazy(() => import('./pages/DoctorNurseReviewDetail'));
+const DoctorProfile = lazy(() => import('./pages/doctor/Profile'));
+const ChatPage = lazy(() => import('./pages/ChatPage'));
+const NurseBookings = lazy(() => import('./pages/nurse/Bookings'));
+const NurseChecklist = lazy(() => import('./pages/nurse/Checklist'));
+const NurseProfile = lazy(() => import('./pages/nurse/Profile'));
+const NurseRevenue = lazy(() => import('./pages/nurse/Revenue'));
+const MotherNursePublicProfile = lazy(() => import('./pages/mother/NursePublicProfile'));
+const MotherNurseSearch = lazy(() => import('./pages/mother/NurseSearch'));
+const MotherNurseCompare = lazy(() => import('./pages/mother/NurseCompare'));
+const MotherBookings = lazy(() => import('./pages/mother/Bookings'));
+const MotherCreateBooking = lazy(() => import('./pages/mother/CreateBooking'));
+const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
+const AdminUserManagement = lazy(() => import('./pages/admin/UserManagement'));
+const AdminSystemConfig = lazy(() => import('./pages/admin/SystemConfig'));
+const AdminAuditLogs = lazy(() => import('./pages/admin/AuditLogs'));
+const AdminDoctorAccounts = lazy(() => import('./pages/admin/DoctorAccounts'));
+const AdminWallet = lazy(() => import('./pages/admin/Wallet'));
+const AdminWorkSessionIncidents = lazy(() => import('./pages/admin/WorkSessionIncidents'));
+const AdminFeedbacks = lazy(() => import('./pages/admin/Feedbacks'));
+const AdminKnowledgeBase = lazy(() => import('./pages/admin/KnowledgeBase'));
+const AdminProfile = lazy(() => import('./pages/admin/Profile'));
+const Login = lazy(() => import('./pages/auth/Login'));
+const Register = lazy(() => import('./pages/auth/Register'));
+const VerifyOtp = lazy(() => import('./pages/auth/VerifyOtp'));
+const SocialCallback = lazy(() => import('./pages/auth/SocialCallback'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
 
 const LoadingScreen = () => (
   <div className="flex min-h-screen items-center justify-center bg-[#f7f0ff]">
@@ -230,7 +231,9 @@ const AppRoutes = () => (
 const App = () => (
   <AuthProvider>
     <BrowserRouter>
-      <AppRoutes />
+      <Suspense fallback={<LoadingScreen />}>
+        <AppRoutes />
+      </Suspense>
     </BrowserRouter>
   </AuthProvider>
 );
