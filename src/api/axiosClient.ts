@@ -90,6 +90,9 @@ const notifyAuthExpired = () => {
 const isUnsafeMethod = (method?: string) =>
   ['post', 'put', 'patch', 'delete'].includes((method ?? 'get').toLowerCase());
 
+const isAuthEndpoint = (url?: string) =>
+  Boolean(url?.includes('/api/v1/auth/'));
+
 const readCsrfToken = (response: { headers?: Record<string, unknown>; data?: unknown }) => {
   const headerValue = response.headers?.[CSRF_HEADER.toLowerCase()] ?? response.headers?.[CSRF_HEADER];
   if (typeof headerValue === 'string' && headerValue) {
@@ -157,7 +160,7 @@ axiosClient.interceptors.request.use(async (config) => {
   }
 
   const token = localStorage.getItem(TOKEN_KEY);
-  if (token) {
+  if (token && !isAuthEndpoint(config.url)) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -172,12 +175,11 @@ axiosClient.interceptors.response.use(
     const originalRequest = error.config as RetryableRequestConfig | undefined;
     const status = error.response?.status;
     const url = originalRequest?.url ?? '';
-    const isAuthEndpoint = url.includes('/api/v1/auth/');
     const shouldRefresh =
       status === 401 &&
       originalRequest &&
       !originalRequest._retry &&
-      !isAuthEndpoint &&
+      !isAuthEndpoint(url) &&
       Boolean(localStorage.getItem(TOKEN_KEY)) &&
       isAuthenticationFailure(error);
 
