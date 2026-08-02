@@ -78,6 +78,12 @@ const getSocialUrl = (provider: 'Google' | 'Facebook') => {
   return `${domain.replace(/\/$/, '')}/oauth2/authorize?${params.toString()}`;
 };
 
+const clearStaleAuthBeforeLogin = () => {
+  localStorage.removeItem('happabi_access_token');
+  localStorage.removeItem('happabi_user');
+  localStorage.removeItem('happabi_active_role');
+};
+
 const Login = ({ portalRole }: LoginProps) => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -114,6 +120,7 @@ const Login = ({ portalRole }: LoginProps) => {
     setIsLoading(true);
 
     try {
+      clearStaleAuthBeforeLogin();
       const response = await axiosClient.post('/api/v1/auth/login', {
         phone: normalizeVietnamPhone(phone),
         password,
