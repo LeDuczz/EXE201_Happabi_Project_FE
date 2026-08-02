@@ -20,8 +20,12 @@ const ChatPage = () => {
           activeConversationId={chat.activeConversationId}
           isLoading={chat.isLoadingConversations}
           isCreating={chat.isCreating}
+          keyword={chat.conversationKeyword}
+          pageInfo={chat.conversationPageInfo}
           onCreate={(title) => chat.createConversation(title)}
           onSelect={chat.setActiveConversationId}
+          onKeywordChange={chat.setConversationKeyword}
+          onPageChange={chat.setConversationPage}
         />
 
         <Card className="flex min-h-0 flex-col overflow-hidden p-0">

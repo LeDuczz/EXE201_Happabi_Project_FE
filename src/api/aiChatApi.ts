@@ -1,12 +1,24 @@
 import axiosClient from './axiosClient';
-import type { AiChatResponse, ChatMessage, Conversation } from '../types/aiChat';
+import type { AiChatResponse, ChatMessage, Conversation, ConversationPage } from '../types/aiChat';
 
 const AI_CHAT_BASE_URL = '/api/v1/ai-chat';
 
 export const aiChatApi = {
-  async getConversations() {
-    const response = await axiosClient.get(`${AI_CHAT_BASE_URL}/conversations`);
-    return (response.data?.data ?? []) as Conversation[];
+  async getConversations(keyword = '', page = 0, size = 20) {
+    const response = await axiosClient.get(`${AI_CHAT_BASE_URL}/conversations`, {
+      params: {
+        keyword: keyword.trim() || undefined,
+        page,
+        size,
+      },
+    });
+    return (response.data?.data ?? {
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      number: page,
+      size,
+    }) as ConversationPage;
   },
 
   async createConversation(title: string) {

@@ -12,9 +12,9 @@ interface PageResponse<T> {
 export type WorkSessionIncidentStatus = 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED';
 
 export const adminIncidentApi = {
-  getIncidents: async (status?: WorkSessionIncidentStatus) => {
+  getIncidents: async (status?: WorkSessionIncidentStatus, page = 0, size = 20) => {
     const response = await axiosClient.get('/api/v1/admin/work-session-incidents', {
-      params: { page: 0, size: 20, status: status || undefined },
+      params: { page, size, status: status || undefined },
     });
     return response.data?.data as PageResponse<WorkSessionIncident>;
   },

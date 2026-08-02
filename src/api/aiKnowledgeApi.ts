@@ -17,6 +17,14 @@ export interface KnowledgeItem {
   updatedAt: string;
 }
 
+export interface KnowledgePage {
+  content: KnowledgeItem[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
 export interface UpsertKnowledgeChunkPayload {
   title: string;
   question: string;
@@ -31,11 +39,22 @@ export interface UpsertKnowledgeChunkPayload {
 const unwrap = <T>(response: { data?: { data?: T } }) => response.data?.data as T;
 
 export const aiKnowledgeApi = {
-  getItems: async (status?: KnowledgeStatus | 'ALL') => {
+  getItems: async (status?: KnowledgeStatus | 'ALL', keyword = '', page = 0, size = 20) => {
     const response = await axiosClient.get('/api/v1/ai-chat/knowledge-chunks/items', {
-      params: status && status !== 'ALL' ? { status } : undefined,
+      params: {
+        page,
+        size,
+        status: status && status !== 'ALL' ? status : undefined,
+        keyword: keyword.trim() || undefined,
+      },
     });
-    return unwrap<KnowledgeItem[]>(response) ?? [];
+    return unwrap<KnowledgePage>(response) ?? {
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      number: page,
+      size,
+    };
   },
 
   createChunk: async (payload: UpsertKnowledgeChunkPayload) => {

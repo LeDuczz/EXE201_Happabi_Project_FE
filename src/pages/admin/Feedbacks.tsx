@@ -8,6 +8,7 @@ import {
 } from '../../api/feedbackApi';
 import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
+import Pagination from '../../components/common/Pagination';
 import Topbar from '../../components/layout/Topbar';
 import { getApiErrorMessage } from '../../utils/apiError';
 
@@ -56,6 +57,8 @@ const AdminFeedbacks = () => {
   const [feedbacks, setFeedbacks] = useState<UserFeedback[]>([]);
   const [activeStatus, setActiveStatus] = useState<UserFeedbackStatus | 'ALL'>('NEW');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [pageNumber, setPageNumber] = useState(0);
+  const [pageInfo, setPageInfo] = useState({ totalElements: 0, totalPages: 0, number: 0, size: 20 });
   const [nextStatus, setNextStatus] = useState<Exclude<UserFeedbackStatus, 'NEW'>>('REVIEWING');
   const [adminNote, setAdminNote] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -63,13 +66,19 @@ const AdminFeedbacks = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const loadFeedbacks = async () => {
+  const loadFeedbacks = async (pageNumberToLoad = pageNumber) => {
     setIsLoading(true);
     setError('');
     try {
-      const page = await feedbackApi.getAdminFeedbacks(activeStatus);
+      const page = await feedbackApi.getAdminFeedbacks(activeStatus, pageNumberToLoad, pageInfo.size);
       const content = page.content ?? [];
       setFeedbacks(content);
+      setPageInfo({
+        totalElements: page.totalElements ?? 0,
+        totalPages: page.totalPages ?? 0,
+        number: page.number ?? pageNumberToLoad,
+        size: page.size ?? pageInfo.size,
+      });
       setSelectedId((current) => current && content.some((item) => item.id === current) ? current : content[0]?.id ?? null);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không tải được danh sách góp ý.'));
@@ -79,8 +88,8 @@ const AdminFeedbacks = () => {
   };
 
   useEffect(() => {
-    void loadFeedbacks();
-  }, [activeStatus]);
+    void loadFeedbacks(pageNumber);
+  }, [activeStatus, pageNumber]);
 
   const selectedFeedback = useMemo(
     () => feedbacks.find((item) => item.id === selectedId) ?? feedbacks[0] ?? null,
@@ -104,7 +113,7 @@ const AdminFeedbacks = () => {
         adminNote: adminNote.trim() || undefined,
       });
       setSuccess('Đã cập nhật trạng thái góp ý.');
-      await loadFeedbacks();
+      await loadFeedbacks(pageNumber);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không cập nhật được góp ý.'));
     } finally {
@@ -112,7 +121,7 @@ const AdminFeedbacks = () => {
     }
   };
 
-  const newCount = feedbacks.filter((item) => item.status === 'NEW').length;
+  const newCount = activeStatus === 'NEW' ? pageInfo.totalElements : feedbacks.filter((item) => item.status === 'NEW').length;
 
   return (
     <div className="pb-10">
@@ -147,7 +156,10 @@ const AdminFeedbacks = () => {
             <button
               key={status}
               type="button"
-              onClick={() => setActiveStatus(status)}
+              onClick={() => {
+                setPageNumber(0);
+                setActiveStatus(status);
+              }}
               className={`whitespace-nowrap rounded-full px-5 py-2 text-xs font-black transition ${
                 activeStatus === status
                   ? 'bg-lav-acc text-white shadow-[0_8px_22px_rgba(192,132,252,.25)]'
@@ -158,7 +170,7 @@ const AdminFeedbacks = () => {
             </button>
           ))}
         </div>
-        <Btn variant="soft" size="sm" onClick={loadFeedbacks} disabled={isLoading}>
+        <Btn variant="soft" size="sm" onClick={() => loadFeedbacks(pageNumber)} disabled={isLoading}>
           <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
           Làm mới
         </Btn>
@@ -204,6 +216,17 @@ const AdminFeedbacks = () => {
               })}
             </div>
           )}
+          <div className="border-t border-lav-100 px-5 pb-5 pt-2">
+            <div className="mb-2 text-center text-xs font-bold text-text-light">
+              Tổng {pageInfo.totalElements} góp ý phù hợp
+            </div>
+            <Pagination
+              currentPage={pageInfo.number}
+              totalPages={pageInfo.totalPages}
+              onPageChange={setPageNumber}
+              isLoading={isLoading}
+            />
+          </div>
         </Card>
 
         <Card className="min-h-[560px]">

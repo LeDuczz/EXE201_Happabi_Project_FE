@@ -10,6 +10,9 @@ interface CreateConversationOptions {
 
 export const useAiChat = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversationKeyword, setConversationKeyword] = useState('');
+  const [conversationPage, setConversationPage] = useState(0);
+  const [conversationPageInfo, setConversationPageInfo] = useState({ totalElements: 0, totalPages: 0, number: 0, size: 20 });
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
@@ -24,20 +27,27 @@ export const useAiChat = () => {
     [activeConversationId, conversations],
   );
 
-  const loadConversations = useCallback(async () => {
+  const loadConversations = useCallback(async (pageNumberToLoad = conversationPage) => {
     setIsLoadingConversations(true);
     setError('');
 
     try {
-      const items = await aiChatApi.getConversations();
+      const page = await aiChatApi.getConversations(conversationKeyword, pageNumberToLoad, conversationPageInfo.size);
+      const items = page.content ?? [];
       setConversations(items);
-      setActiveConversationId((current) => current ?? items[0]?.id ?? null);
+      setConversationPageInfo({
+        totalElements: page.totalElements ?? 0,
+        totalPages: page.totalPages ?? 0,
+        number: page.number ?? pageNumberToLoad,
+        size: page.size ?? conversationPageInfo.size,
+      });
+      setActiveConversationId((current) => current && items.some((item) => item.id === current) ? current : items[0]?.id ?? null);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không tải được danh sách hội thoại AI.'));
     } finally {
       setIsLoadingConversations(false);
     }
-  }, []);
+  }, [conversationKeyword, conversationPage, conversationPageInfo.size]);
 
   const loadMessages = useCallback(async (conversationId: string) => {
     setIsLoadingMessages(true);
@@ -63,6 +73,7 @@ export const useAiChat = () => {
     try {
       const conversation = await aiChatApi.createConversation(title);
       setConversations((current) => [conversation, ...current.filter((item) => item.id !== conversation.id)]);
+      setConversationPage(0);
 
       if (options.select !== false) {
         setActiveConversationId(conversation.id);
@@ -116,7 +127,7 @@ export const useAiChat = () => {
           ...(payload.assistantMessage ? [payload.assistantMessage] : []),
         ];
       });
-      await loadConversations();
+      await loadConversations(conversationPage);
       setActiveConversationId(conversationId);
       return true;
     } catch (err) {
@@ -129,8 +140,8 @@ export const useAiChat = () => {
   }, [activeConversationId, createConversation, isSending, loadConversations]);
 
   useEffect(() => {
-    void Promise.resolve().then(loadConversations);
-  }, [loadConversations]);
+    void Promise.resolve().then(() => loadConversations(conversationPage));
+  }, [conversationPage, loadConversations]);
 
   useEffect(() => {
     if (activeConversationId) {
@@ -142,6 +153,8 @@ export const useAiChat = () => {
 
   return {
     conversations,
+    conversationKeyword,
+    conversationPageInfo,
     activeConversation,
     activeConversationId,
     messages,
@@ -152,6 +165,11 @@ export const useAiChat = () => {
     lastReplyMeta,
     error,
     setActiveConversationId,
+    setConversationKeyword: (keyword: string) => {
+      setConversationPage(0);
+      setConversationKeyword(keyword);
+    },
+    setConversationPage,
     createConversation,
     loadConversations,
     sendMessage,
