@@ -1,8 +1,9 @@
 import { ArrowDownLeft, ArrowUpRight, CheckCircle2, Loader2, RefreshCw, Upload, Wallet as WalletIcon, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { getAdminWallet, type AdminWallet } from '../../api/adminWalletApi';
+import { getAdminWallet, type AdminWallet, type AdminWalletFilters, type AdminWalletTransactionType } from '../../api/adminWalletApi';
 import { withdrawalApi, type WithdrawalRequest } from '../../api/withdrawalApi';
 import Card from '../../components/common/Card';
+import Pagination from '../../components/common/Pagination';
 import Topbar from '../../components/layout/Topbar';
 import { getApiErrorMessage } from '../../utils/apiError';
 
@@ -13,6 +14,14 @@ const transactionLabel: Record<string, string> = {
   BOOKING_REFUND: 'Hoàn tiền mother',
   WITHDRAWAL_PAYOUT: 'Chi rút tiền nurse',
 };
+
+const transactionTypeOptions: Array<{ value: AdminWalletTransactionType; label: string }> = [
+  { value: 'BOOKING_PAYMENT_RECEIVED', label: 'Nhận tiền booking' },
+  { value: 'PAYMENT_GATEWAY_FEE', label: 'Phí cổng thanh toán' },
+  { value: 'NURSE_PAYOUT', label: 'Chi trả nurse' },
+  { value: 'BOOKING_REFUND', label: 'Hoàn tiền mother' },
+  { value: 'WITHDRAWAL_PAYOUT', label: 'Chi rút tiền nurse' },
+];
 
 const statusLabel: Record<string, string> = {
   PENDING: 'Chờ duyệt',
@@ -40,13 +49,20 @@ const AdminWalletPage = () => {
   const [adminNote, setAdminNote] = useState('');
   const [rejectReason, setRejectReason] = useState('');
   const [evidence, setEvidence] = useState<File | null>(null);
+  const [walletPage, setWalletPage] = useState(0);
+  const [walletFilters, setWalletFilters] = useState<AdminWalletFilters>({
+    transactionType: '',
+    direction: '',
+    fromDate: '',
+    toDate: '',
+  });
 
-  const loadData = async () => {
+  const loadData = async (page = walletPage, filters = walletFilters) => {
     setIsLoading(true);
     setError('');
     try {
       const [walletData, withdrawalPage] = await Promise.all([
-        getAdminWallet(),
+        getAdminWallet(page, 20, filters),
         withdrawalApi.getAdminRequests(),
       ]);
       setWallet(walletData);
@@ -59,8 +75,18 @@ const AdminWalletPage = () => {
   };
 
   useEffect(() => {
-    void loadData();
-  }, []);
+    void loadData(walletPage, walletFilters);
+  }, [walletPage, walletFilters]);
+
+  const updateWalletFilter = (key: keyof AdminWalletFilters, value: string) => {
+    setWalletPage(0);
+    setWalletFilters((current) => ({ ...current, [key]: value }));
+  };
+
+  const resetWalletFilters = () => {
+    setWalletPage(0);
+    setWalletFilters({ transactionType: '', direction: '', fromDate: '', toDate: '' });
+  };
 
   const approveWithdrawal = async (requestId: string) => {
     setIsProcessing(true);
@@ -72,7 +98,7 @@ const AdminWalletPage = () => {
       setAdminNote('');
       setEvidence(null);
       setSuccess('Đã duyệt yêu cầu rút tiền.');
-      await loadData();
+      await loadData(walletPage, walletFilters);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể duyệt yêu cầu rút tiền.'));
     } finally {
@@ -88,7 +114,7 @@ const AdminWalletPage = () => {
       await withdrawalApi.reject(requestId, rejectReason);
       setRejectReason('');
       setSuccess('Đã từ chối yêu cầu rút tiền và hoàn tiền cho nurse.');
-      await loadData();
+      await loadData(walletPage, walletFilters);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể từ chối yêu cầu rút tiền.'));
     } finally {
@@ -113,7 +139,7 @@ const AdminWalletPage = () => {
       ) : error ? (
         <div className="rounded-2xl border border-red-100 bg-red-50 p-8 text-center">
           <div className="font-black text-red-600">{error}</div>
-          <button onClick={loadData} className="mt-4 text-sm font-bold text-red-700 underline">Thử lại</button>
+          <button onClick={() => loadData(walletPage, walletFilters)} className="mt-4 text-sm font-bold text-red-700 underline">Thử lại</button>
         </div>
       ) : (
         <div className="space-y-6">
@@ -131,7 +157,7 @@ const AdminWalletPage = () => {
                 </div>
                 <button
                   type="button"
-                  onClick={loadData}
+                  onClick={() => loadData(walletPage, walletFilters)}
                   className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-white transition hover:bg-white/25"
                   aria-label="Làm mới ví nền tảng"
                 >
@@ -153,7 +179,7 @@ const AdminWalletPage = () => {
                 <div className="font-sans text-xl font-black text-text-dark">Yêu cầu rút tiền của nurse</div>
                 <div className="mt-1 text-sm font-semibold text-text-light">Duyệt sau khi đã chuyển khoản ngân hàng thực tế.</div>
               </div>
-              <button onClick={loadData} className="text-sm font-black text-lav-acc">Làm mới</button>
+              <button onClick={() => loadData(walletPage, walletFilters)} className="text-sm font-black text-lav-acc">Làm mới</button>
             </div>
 
             <div className="space-y-4">
@@ -207,6 +233,61 @@ const AdminWalletPage = () => {
               <div className="mt-1 text-sm font-semibold text-text-light">Dòng dương là tiền app nhận, dòng âm là tiền chi trả cho nurse.</div>
             </div>
 
+            <div className="grid gap-3 border-b border-lav-100 bg-white px-6 py-4 md:grid-cols-2 xl:grid-cols-[1.2fr_0.9fr_0.9fr_0.9fr_auto]">
+              <label className="block">
+                <span className="mb-1 block text-[11px] font-black uppercase tracking-wider text-text-light">Loại giao dịch</span>
+                <select
+                  value={walletFilters.transactionType}
+                  onChange={(event) => updateWalletFilter('transactionType', event.target.value)}
+                  className="h-11 w-full rounded-xl border border-lav-100 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-acc"
+                >
+                  <option value="">Tất cả loại</option>
+                  {transactionTypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[11px] font-black uppercase tracking-wider text-text-light">Chiều tiền</span>
+                <select
+                  value={walletFilters.direction}
+                  onChange={(event) => updateWalletFilter('direction', event.target.value)}
+                  className="h-11 w-full rounded-xl border border-lav-100 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-acc"
+                >
+                  <option value="">Tất cả</option>
+                  <option value="IN">Tiền vào</option>
+                  <option value="OUT">Tiền ra</option>
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[11px] font-black uppercase tracking-wider text-text-light">Từ ngày</span>
+                <input
+                  type="date"
+                  value={walletFilters.fromDate}
+                  onChange={(event) => updateWalletFilter('fromDate', event.target.value)}
+                  className="h-11 w-full rounded-xl border border-lav-100 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-acc"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[11px] font-black uppercase tracking-wider text-text-light">Đến ngày</span>
+                <input
+                  type="date"
+                  value={walletFilters.toDate}
+                  onChange={(event) => updateWalletFilter('toDate', event.target.value)}
+                  className="h-11 w-full rounded-xl border border-lav-100 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-acc"
+                />
+              </label>
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={resetWalletFilters}
+                  className="h-11 rounded-xl border border-lav-100 px-4 text-sm font-black text-lav-dark transition hover:bg-lav-50"
+                >
+                  Xóa lọc
+                </button>
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
@@ -248,6 +329,19 @@ const AdminWalletPage = () => {
                 </tbody>
               </table>
             </div>
+            {wallet?.transactions && (
+              <div className="border-t border-lav-100 px-6 pb-6 pt-2">
+                <div className="mb-2 text-center text-xs font-bold text-text-light">
+                  Tổng {wallet.transactions.totalElements} giao dịch
+                </div>
+                <Pagination
+                  currentPage={wallet.transactions.number}
+                  totalPages={wallet.transactions.totalPages}
+                  onPageChange={setWalletPage}
+                  isLoading={isLoading}
+                />
+              </div>
+            )}
           </Card>
         </div>
       )}
