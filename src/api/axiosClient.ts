@@ -90,8 +90,20 @@ const notifyAuthExpired = () => {
 const isUnsafeMethod = (method?: string) =>
   ['post', 'put', 'patch', 'delete'].includes((method ?? 'get').toLowerCase());
 
-const isAuthEndpoint = (url?: string) =>
-  Boolean(url?.includes('/api/v1/auth/'));
+const PUBLIC_AUTH_ENDPOINTS = [
+  '/api/v1/auth/register',
+  '/api/v1/auth/verify-otp',
+  '/api/v1/auth/resend-otp',
+  '/api/v1/auth/login',
+  '/api/v1/auth/refresh',
+  '/api/v1/auth/social/sync',
+  '/api/v1/auth/forgot-password',
+  '/api/v1/auth/reset-password',
+  '/api/v1/auth/csrf',
+];
+
+const isPublicAuthEndpoint = (url?: string) =>
+  Boolean(url && PUBLIC_AUTH_ENDPOINTS.some((endpoint) => url.includes(endpoint)));
 
 const readCsrfToken = (response: { headers?: Record<string, unknown>; data?: unknown }) => {
   const headerValue = response.headers?.[CSRF_HEADER.toLowerCase()] ?? response.headers?.[CSRF_HEADER];
@@ -160,7 +172,7 @@ axiosClient.interceptors.request.use(async (config) => {
   }
 
   const token = localStorage.getItem(TOKEN_KEY);
-  if (token && !isAuthEndpoint(config.url)) {
+  if (token && !isPublicAuthEndpoint(config.url)) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -179,7 +191,7 @@ axiosClient.interceptors.response.use(
       status === 401 &&
       originalRequest &&
       !originalRequest._retry &&
-      !isAuthEndpoint(url) &&
+      !isPublicAuthEndpoint(url) &&
       Boolean(localStorage.getItem(TOKEN_KEY)) &&
       isAuthenticationFailure(error);
 
