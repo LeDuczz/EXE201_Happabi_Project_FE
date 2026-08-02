@@ -34,9 +34,23 @@ export interface AdminWallet {
   transactions: AdminWalletTransactionPage;
 }
 
-export const getAdminWallet = async (page = 0, size = 20) => {
+export interface AdminWalletFilters {
+  transactionType?: AdminWalletTransactionType | '';
+  direction?: 'IN' | 'OUT' | '';
+  fromDate?: string;
+  toDate?: string;
+}
+
+export const getAdminWallet = async (page = 0, size = 20, filters: AdminWalletFilters = {}) => {
   const response = await axiosClient.get('/api/v1/admin/wallet', {
-    params: { page, size },
+    params: {
+      page,
+      size,
+      transactionType: filters.transactionType || undefined,
+      direction: filters.direction || undefined,
+      fromDate: filters.fromDate || undefined,
+      toDate: filters.toDate || undefined,
+    },
   });
   return response.data?.data as AdminWallet;
 };
