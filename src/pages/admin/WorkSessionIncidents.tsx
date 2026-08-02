@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { adminIncidentApi, type WorkSessionIncidentStatus } from '../../api/adminIncidentApi';
 import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
+import Pagination from '../../components/common/Pagination';
 import Topbar from '../../components/layout/Topbar';
 import type { WorkSessionIncident } from '../../types/workSession';
 import { getApiErrorMessage } from '../../utils/apiError';
@@ -35,6 +36,8 @@ const AdminWorkSessionIncidents = () => {
   const [incidents, setIncidents] = useState<WorkSessionIncident[]>([]);
   const [activeStatus, setActiveStatus] = useState<WorkSessionIncidentStatus | 'ALL'>('PENDING_REVIEW');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [pageNumber, setPageNumber] = useState(0);
+  const [pageInfo, setPageInfo] = useState({ totalElements: 0, totalPages: 0, number: 0, size: 20 });
   const [adminNote, setAdminNote] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
@@ -43,13 +46,23 @@ const AdminWorkSessionIncidents = () => {
   const [noShowWorkSessionId, setNoShowWorkSessionId] = useState('');
   const [noShowNote, setNoShowNote] = useState('');
 
-  const loadIncidents = async () => {
+  const loadIncidents = async (pageNumberToLoad = pageNumber) => {
     setIsLoading(true);
     setError('');
     try {
-      const page = await adminIncidentApi.getIncidents(activeStatus === 'ALL' ? undefined : activeStatus);
+      const page = await adminIncidentApi.getIncidents(
+        activeStatus === 'ALL' ? undefined : activeStatus,
+        pageNumberToLoad,
+        pageInfo.size,
+      );
       const content = page.content ?? [];
       setIncidents(content);
+      setPageInfo({
+        totalElements: page.totalElements ?? 0,
+        totalPages: page.totalPages ?? 0,
+        number: page.number ?? pageNumberToLoad,
+        size: page.size ?? pageInfo.size,
+      });
       setSelectedId((current) => current && content.some((item) => item.id === current) ? current : content[0]?.id ?? null);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không tải được danh sách sự cố ca làm.'));
@@ -59,8 +72,8 @@ const AdminWorkSessionIncidents = () => {
   };
 
   useEffect(() => {
-    void loadIncidents();
-  }, [activeStatus]);
+    void loadIncidents(pageNumber);
+  }, [activeStatus, pageNumber]);
 
   const selectedIncident = useMemo(
     () => incidents.find((item) => item.id === selectedId) ?? incidents[0] ?? null,
@@ -81,7 +94,7 @@ const AdminWorkSessionIncidents = () => {
         setSuccess('Đã từ chối báo cáo sự cố.');
       }
       setAdminNote('');
-      await loadIncidents();
+      await loadIncidents(pageNumber);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không xử lý được sự cố.'));
     } finally {
@@ -103,14 +116,14 @@ const AdminWorkSessionIncidents = () => {
       setSuccess('Đã ghi nhận nurse bỏ ca và áp dụng chính sách phạt.');
       setNoShowWorkSessionId('');
       setNoShowNote('');
-      await loadIncidents();
+      await loadIncidents(pageNumber);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không xử lý được ca nurse bỏ ca.'));
     } finally {
       setActionId(null);
     }
   };
-  const pendingCount = incidents.filter((item) => item.status === 'PENDING_REVIEW').length;
+  const pendingCount = activeStatus === 'PENDING_REVIEW' ? pageInfo.totalElements : incidents.filter((item) => item.status === 'PENDING_REVIEW').length;
 
   return (
     <div className="pb-10">
@@ -128,7 +141,10 @@ const AdminWorkSessionIncidents = () => {
             <button
               key={status}
               type="button"
-              onClick={() => setActiveStatus(status)}
+              onClick={() => {
+                setPageNumber(0);
+                setActiveStatus(status);
+              }}
               className={`whitespace-nowrap rounded-full px-5 py-2 text-xs font-black transition ${
                 activeStatus === status
                   ? 'bg-lav-acc text-white shadow-[0_8px_22px_rgba(192,132,252,.25)]'
@@ -140,7 +156,7 @@ const AdminWorkSessionIncidents = () => {
           ))}
         </div>
 
-        <Btn variant="soft" size="sm" onClick={loadIncidents} disabled={isLoading}>
+        <Btn variant="soft" size="sm" onClick={() => loadIncidents(pageNumber)} disabled={isLoading}>
           <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
           Làm mới
         </Btn>
@@ -230,6 +246,17 @@ const AdminWorkSessionIncidents = () => {
               })}
             </div>
           )}
+          <div className="border-t border-lav-100 px-5 pb-5 pt-2">
+            <div className="mb-2 text-center text-xs font-bold text-text-light">
+              Tổng {pageInfo.totalElements} sự cố phù hợp
+            </div>
+            <Pagination
+              currentPage={pageInfo.number}
+              totalPages={pageInfo.totalPages}
+              onPageChange={setPageNumber}
+              isLoading={isLoading}
+            />
+          </div>
         </Card>
 
         <Card className="min-h-[560px]">

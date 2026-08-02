@@ -1,8 +1,9 @@
-import { Clock3, Loader2, MessageCircle, Plus } from 'lucide-react';
+import { Clock3, Loader2, MessageCircle, Plus, Search } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import Btn from '../common/Btn';
 import Card from '../common/Card';
 import Input from '../common/Input';
+import Pagination from '../common/Pagination';
 import type { Conversation } from '../../types/aiChat';
 import { formatChatDateTime } from '../../utils/aiChatFormat';
 
@@ -11,8 +12,12 @@ interface ConversationListProps {
   activeConversationId: string | null;
   isLoading: boolean;
   isCreating: boolean;
+  keyword: string;
+  pageInfo: { totalElements: number; totalPages: number; number: number; size: number };
   onCreate: (title?: string) => void;
   onSelect: (conversationId: string) => void;
+  onKeywordChange: (keyword: string) => void;
+  onPageChange: (page: number) => void;
 }
 
 const ConversationList = ({
@@ -20,8 +25,12 @@ const ConversationList = ({
   activeConversationId,
   isLoading,
   isCreating,
+  keyword,
+  pageInfo,
   onCreate,
   onSelect,
+  onKeywordChange,
+  onPageChange,
 }: ConversationListProps) => {
   const [isNaming, setIsNaming] = useState(false);
   const [title, setTitle] = useState('');
@@ -39,7 +48,7 @@ const ConversationList = ({
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-heading text-xl font-semibold text-text-dark">Hội thoại</div>
-            <div className="mt-1 text-xs font-bold text-text-light">{conversations.length} cuộc trò chuyện</div>
+            <div className="mt-1 text-xs font-bold text-text-light">{pageInfo.totalElements} cuộc trò chuyện</div>
           </div>
           <Btn
             type="button"
@@ -73,6 +82,16 @@ const ConversationList = ({
             </div>
           </form>
         )}
+
+        <div className="mt-4 flex items-center gap-2 rounded-xl border border-lav-100 bg-white px-3 py-2">
+          <Search size={15} className="text-text-light" />
+          <input
+            value={keyword}
+            onChange={(event) => onKeywordChange(event.target.value)}
+            placeholder="Tìm hội thoại..."
+            className="min-w-0 flex-1 bg-transparent text-sm font-bold text-text-dark outline-none"
+          />
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
@@ -117,6 +136,14 @@ const ConversationList = ({
             })}
           </div>
         )}
+      </div>
+      <div className="border-t border-lav-100 px-3 pb-4 pt-1">
+        <Pagination
+          currentPage={pageInfo.number}
+          totalPages={pageInfo.totalPages}
+          onPageChange={onPageChange}
+          isLoading={isLoading}
+        />
       </div>
     </Card>
   );

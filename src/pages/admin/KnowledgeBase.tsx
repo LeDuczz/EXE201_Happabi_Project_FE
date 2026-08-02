@@ -18,6 +18,7 @@ import {
 } from '../../api/aiKnowledgeApi';
 import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
+import Pagination from '../../components/common/Pagination';
 import Topbar from '../../components/layout/Topbar';
 import { getApiErrorMessage } from '../../utils/apiError';
 
@@ -57,6 +58,9 @@ const AdminKnowledgeBase = () => {
   const [activeStatus, setActiveStatus] = useState<KnowledgeFilter>('PENDING_REVIEW');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [keyword, setKeyword] = useState('');
+  const [pageNumber, setPageNumber] = useState(0);
+  const [pageInfo, setPageInfo] = useState({ totalElements: 0, totalPages: 0, number: 0, size: 20 });
+  const [statusCounts, setStatusCounts] = useState({ PENDING_REVIEW: 0, VERIFIED: 0, REJECTED: 0 });
   const [form, setForm] = useState<UpsertKnowledgeChunkPayload>(emptyForm);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -64,13 +68,30 @@ const AdminKnowledgeBase = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const loadItems = async () => {
+  const loadItems = async (page = pageNumber) => {
     setIsLoading(true);
     setError('');
     try {
-      const data = await aiKnowledgeApi.getItems('ALL');
-      setItems(data);
-      setSelectedId((current) => current && data.some((item) => item.id === current) ? current : data[0]?.id ?? null);
+      const [data, pendingPage, verifiedPage, rejectedPage] = await Promise.all([
+        aiKnowledgeApi.getItems(activeStatus, keyword, page, pageInfo.size),
+        aiKnowledgeApi.getItems('PENDING_REVIEW', '', 0, 1),
+        aiKnowledgeApi.getItems('VERIFIED', '', 0, 1),
+        aiKnowledgeApi.getItems('REJECTED', '', 0, 1),
+      ]);
+      const content = data.content ?? [];
+      setItems(content);
+      setPageInfo({
+        totalElements: data.totalElements ?? 0,
+        totalPages: data.totalPages ?? 0,
+        number: data.number ?? page,
+        size: data.size ?? pageInfo.size,
+      });
+      setStatusCounts({
+        PENDING_REVIEW: pendingPage.totalElements ?? 0,
+        VERIFIED: verifiedPage.totalElements ?? 0,
+        REJECTED: rejectedPage.totalElements ?? 0,
+      });
+      setSelectedId((current) => current && content.some((item) => item.id === current) ? current : content[0]?.id ?? null);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không tải được danh sách tri thức AI.'));
     } finally {
@@ -79,31 +100,13 @@ const AdminKnowledgeBase = () => {
   };
 
   useEffect(() => {
-    void loadItems();
-  }, []);
-
-  const filteredItems = useMemo(() => {
-    const normalizedKeyword = keyword.trim().toLowerCase();
-    return items.filter((item) => {
-      const matchesStatus = activeStatus === 'ALL' || item.status === activeStatus;
-      const matchesKeyword = !normalizedKeyword ||
-        item.title.toLowerCase().includes(normalizedKeyword) ||
-        item.question.toLowerCase().includes(normalizedKeyword) ||
-        item.answer.toLowerCase().includes(normalizedKeyword);
-      return matchesStatus && matchesKeyword;
-    });
-  }, [activeStatus, items, keyword]);
+    void loadItems(pageNumber);
+  }, [activeStatus, keyword, pageNumber]);
 
   const selectedItem = useMemo(
-    () => filteredItems.find((item) => item.id === selectedId) ?? filteredItems[0] ?? null,
-    [filteredItems, selectedId],
+    () => items.find((item) => item.id === selectedId) ?? items[0] ?? null,
+    [items, selectedId],
   );
-
-  const statusCounts = useMemo(() => ({
-    PENDING_REVIEW: items.filter((item) => item.status === 'PENDING_REVIEW').length,
-    VERIFIED: items.filter((item) => item.status === 'VERIFIED').length,
-    REJECTED: items.filter((item) => item.status === 'REJECTED').length,
-  }), [items]);
 
   const createKnowledge = async () => {
     setIsSaving(true);
@@ -122,7 +125,8 @@ const AdminKnowledgeBase = () => {
       });
       setForm(emptyForm);
       setSuccess(form.verified ? 'Đã thêm và index tri thức AI.' : 'Đã thêm tri thức AI vào hàng đợi duyệt.');
-      await loadItems();
+      setPageNumber(0);
+      await loadItems(0);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không tạo được tri thức AI.'));
     } finally {
@@ -138,7 +142,7 @@ const AdminKnowledgeBase = () => {
     try {
       await aiKnowledgeApi.reviewItem(selectedItem.id, approved);
       setSuccess(approved ? 'Đã duyệt và index tri thức AI.' : 'Đã từ chối tri thức AI.');
-      await loadItems();
+      await loadItems(pageNumber);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không cập nhật được trạng thái tri thức AI.'));
     } finally {
@@ -154,7 +158,7 @@ const AdminKnowledgeBase = () => {
     try {
       await aiKnowledgeApi.reindexItem(selectedItem.id);
       setSuccess('Đã reindex tri thức AI.');
-      await loadItems();
+      await loadItems(pageNumber);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không reindex được tri thức AI.'));
     } finally {
@@ -169,7 +173,7 @@ const AdminKnowledgeBase = () => {
     try {
       const result = await aiKnowledgeApi.reindexVerifiedItems();
       setSuccess(`Đã reindex ${result.length} tri thức đã duyệt chưa indexed.`);
-      await loadItems();
+      await loadItems(pageNumber);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không reindex được danh sách tri thức AI.'));
     } finally {
@@ -210,7 +214,7 @@ const AdminKnowledgeBase = () => {
                 <BookOpenCheck size={20} className="text-lav-dark" />
                 <h2 className="text-lg font-black text-text-dark">Danh sách tri thức</h2>
               </div>
-              <button onClick={loadItems} className="text-lav-dark" aria-label="Làm mới tri thức">
+              <button onClick={() => loadItems(pageNumber)} className="text-lav-dark" aria-label="Làm mới tri thức">
                 <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
               </button>
             </div>
@@ -220,7 +224,10 @@ const AdminKnowledgeBase = () => {
                 <button
                   key={status}
                   type="button"
-                  onClick={() => setActiveStatus(status)}
+                  onClick={() => {
+                    setPageNumber(0);
+                    setActiveStatus(status);
+                  }}
                   className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-black transition ${
                     activeStatus === status
                       ? 'bg-lav-acc text-white shadow-[0_8px_22px_rgba(192,132,252,.25)]'
@@ -236,7 +243,10 @@ const AdminKnowledgeBase = () => {
               <Search size={16} className="text-text-light" />
               <input
                 value={keyword}
-                onChange={(event) => setKeyword(event.target.value)}
+                onChange={(event) => {
+                  setPageNumber(0);
+                  setKeyword(event.target.value);
+                }}
                 placeholder="Tìm theo tiêu đề, câu hỏi, câu trả lời..."
                 className="min-w-0 flex-1 bg-transparent text-sm font-bold text-text-dark outline-none"
               />
@@ -247,11 +257,11 @@ const AdminKnowledgeBase = () => {
             <div className="flex h-[480px] items-center justify-center">
               <Loader2 className="animate-spin text-lav-dark" size={32} />
             </div>
-          ) : filteredItems.length === 0 ? (
+          ) : items.length === 0 ? (
             <div className="p-8 text-center text-sm font-bold text-text-light">Chưa có tri thức phù hợp.</div>
           ) : (
             <div className="max-h-[640px] divide-y divide-lav-100 overflow-y-auto">
-              {filteredItems.map((item) => (
+              {items.map((item) => (
                 <button
                   key={item.id}
                   type="button"
@@ -275,6 +285,17 @@ const AdminKnowledgeBase = () => {
               ))}
             </div>
           )}
+          <div className="border-t border-lav-100 px-5 pb-5 pt-2">
+            <div className="mb-2 text-center text-xs font-bold text-text-light">
+              Tổng {pageInfo.totalElements} tri thức phù hợp
+            </div>
+            <Pagination
+              currentPage={pageInfo.number}
+              totalPages={pageInfo.totalPages}
+              onPageChange={setPageNumber}
+              isLoading={isLoading}
+            />
+          </div>
         </Card>
 
         <div className="space-y-5">

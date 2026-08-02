@@ -8,6 +8,14 @@ export interface Conversation {
   updatedAt?: string;
 }
 
+export interface ConversationPage {
+  content: Conversation[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
 export interface ChatMessage {
   id: string;
   role: ChatRole;
