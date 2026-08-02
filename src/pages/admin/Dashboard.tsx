@@ -560,17 +560,19 @@ const FinancialBreakdownChart = ({
 };
 
 const GmvTrendChart = ({ data }: { data: AdminDashboardDailyMetric[] }) => {
-  const chartData = data.slice(-30);
+  const recentData = data.slice(-30);
+  const paidBookingDays = recentData.filter((item) => item.value > 0);
+  const chartData = paidBookingDays.length ? paidBookingDays : recentData;
   const maximumValue = Math.max(1, ...chartData.map((item) => item.value));
   const hasData = chartData.some((item) => item.value > 0);
   const width = 1080;
   const height = 320;
-  const padding = { top: 34, right: 24, bottom: 64, left: 72 };
+  const padding = { top: 34, right: 34, bottom: 64, left: 72 };
   const innerWidth = width - padding.left - padding.right;
   const innerHeight = height - padding.top - padding.bottom;
-  const barGap = 8;
-  const barWidth = Math.max(8, (innerWidth - Math.max(0, chartData.length - 1) * barGap) / Math.max(1, chartData.length));
-  const x = (index: number) => padding.left + index * (barWidth + barGap);
+  const slotWidth = innerWidth / Math.max(1, chartData.length);
+  const barWidth = Math.min(52, Math.max(18, slotWidth * 0.62));
+  const x = (index: number) => padding.left + index * slotWidth + (slotWidth - barWidth) / 2;
   const y = (value: number) => padding.top + innerHeight - (value / maximumValue) * innerHeight;
   const formatDate = (value: string) => new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit' })
     .format(new Date(`${value}T00:00:00`));
@@ -606,7 +608,7 @@ const GmvTrendChart = ({ data }: { data: AdminDashboardDailyMetric[] }) => {
             index === lastPositiveIndex ||
             positiveIndexes.indexOf(index) % 2 === 0
           );
-          const showDateLabel = index === 0 || index === chartData.length - 1 || item.value > 0;
+          const showDateLabel = hasData || index === 0 || index === chartData.length - 1;
           return (
             <g key={item.date}>
               {barHeight > 0 && (
