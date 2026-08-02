@@ -12,7 +12,7 @@ const USER_KEY = 'happabi_user';
 const ACTIVE_ROLE_KEY = 'happabi_active_role';
 const REFRESH_URL = '/api/v1/auth/refresh';
 const CSRF_URL = '/api/v1/auth/csrf';
-const CSRF_HEADER = 'X-XSRF-TOKEN';
+const CSRF_HEADER = 'X-HAPPABI-CSRF';
 
 type RetryableRequestConfig = InternalAxiosRequestConfig & {
   _retry?: boolean;
@@ -102,8 +102,13 @@ const PUBLIC_AUTH_ENDPOINTS = [
   '/api/v1/auth/csrf',
 ];
 
+const CSRF_FRESH_AUTH_ENDPOINTS = PUBLIC_AUTH_ENDPOINTS.filter((endpoint) => endpoint !== CSRF_URL);
+
 const isPublicAuthEndpoint = (url?: string) =>
   Boolean(url && PUBLIC_AUTH_ENDPOINTS.some((endpoint) => url.includes(endpoint)));
+
+const needsFreshCsrf = (url?: string) =>
+  Boolean(url && CSRF_FRESH_AUTH_ENDPOINTS.some((endpoint) => url.includes(endpoint)));
 
 const readCsrfToken = (response: { headers?: Record<string, unknown>; data?: unknown }) => {
   const headerValue = response.headers?.[CSRF_HEADER.toLowerCase()] ?? response.headers?.[CSRF_HEADER];
@@ -168,7 +173,7 @@ const requestNewAccessToken = async () => {
 
 axiosClient.interceptors.request.use(async (config) => {
   if (isUnsafeMethod(config.method) && !config.url?.includes(CSRF_URL)) {
-    config.headers[CSRF_HEADER] = await requestCsrfToken();
+    config.headers[CSRF_HEADER] = await requestCsrfToken(needsFreshCsrf(config.url));
   }
 
   const token = localStorage.getItem(TOKEN_KEY);
