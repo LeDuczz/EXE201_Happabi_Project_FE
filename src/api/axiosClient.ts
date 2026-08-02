@@ -115,8 +115,8 @@ const readCsrfToken = (response: { headers?: Record<string, unknown>; data?: unk
   return typeof data?.data === 'string' ? data.data : '';
 };
 
-const requestCsrfToken = async () => {
-  if (csrfToken) {
+const requestCsrfToken = async (force = false) => {
+  if (!force && csrfToken) {
     return csrfToken;
   }
   if (!csrfPromise) {
@@ -138,7 +138,7 @@ const requestCsrfToken = async () => {
 
 const requestNewAccessToken = async () => {
   if (!refreshPromise) {
-    const token = await requestCsrfToken();
+    const token = await requestCsrfToken(true);
     refreshPromise = refreshClient
       .post(REFRESH_URL, null, { headers: { [CSRF_HEADER]: token } })
       .then((response) => {
