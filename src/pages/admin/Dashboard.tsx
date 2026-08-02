@@ -313,14 +313,14 @@ const AdminDashboard = () => {
             />
           </Card>
 
-          <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+          <div className="grid gap-6">
             <Card className="p-6">
-              <div className="mb-6 flex items-center justify-between [&>span]:hidden">
+              <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <SectionHeader icon={<BarChart3 size={18} />} title="GMV Trend (30D)" />
                   <p className="mt-1 text-xs font-semibold text-text-light">Theo giá trị booking đã thanh toán, không lấy từ ví admin.</p>
                 </div>
-                <span className="text-xs font-black text-text-light">Theo ví admin</span>
+                <span className="rounded-full bg-lav-50 px-3 py-1 text-xs font-black text-lav-dark">30 ngày gần nhất</span>
               </div>
               <GmvTrendChart data={dashboard.gmvTrend} />
               {!dashboard.gmvTrend.some((item) => item.value > 0) && (
@@ -329,21 +329,24 @@ const AdminDashboard = () => {
             </Card>
 
             <Card className="p-6">
-              <div className="mb-5 flex items-center justify-between gap-3">
-                <SectionHeader icon={<MessageSquareText size={18} />} title="Voice of Customer" />
+              <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <SectionHeader icon={<MessageSquareText size={18} />} title="Voice of Customer" />
+                  <p className="mt-1 text-sm font-semibold text-text-light">Tổng hợp CSAT, trạng thái xử lý feedback và các nhận xét mới nhất.</p>
+                </div>
                 <Link to="/admin/feedbacks" className="text-sm font-black text-lav-acc">Xem tất cả</Link>
               </div>
 
-              <div className="mb-4 grid grid-cols-2 gap-3">
+              <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <MiniBox label="Mới" value={dashboard.feedbackInsight.newFeedbacks} />
                 <MiniBox label="Đang xem xét" value={dashboard.feedbackInsight.reviewingFeedbacks} />
                 <MiniBox label="Đã lên kế hoạch" value={dashboard.feedbackInsight.plannedFeedbacks} />
                 <MiniBox label="CSAT" value={`${Number(dashboard.feedbackInsight.averageRating).toFixed(1)}/5`} />
               </div>
 
-              <div className="space-y-3">
+              <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
                 {dashboard.feedbackInsight.latestFeedbacks.map((feedback) => (
-                  <div key={feedback.id} className="rounded-2xl border border-lav-100 p-4">
+                  <div key={feedback.id} className="rounded-2xl border border-lav-100 bg-white p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="truncate font-black text-text-dark">{feedback.title}</div>
@@ -560,50 +563,74 @@ const GmvTrendChart = ({ data }: { data: AdminDashboardDailyMetric[] }) => {
   const chartData = data.slice(-30);
   const maximumValue = Math.max(1, ...chartData.map((item) => item.value));
   const hasData = chartData.some((item) => item.value > 0);
-  const width = 760;
-  const height = 240;
-  const padding = { top: 18, right: 16, bottom: 34, left: 52 };
+  const width = 1080;
+  const height = 320;
+  const padding = { top: 34, right: 24, bottom: 64, left: 72 };
   const innerWidth = width - padding.left - padding.right;
   const innerHeight = height - padding.top - padding.bottom;
-  const barGap = 5;
-  const barWidth = Math.max(5, (innerWidth - Math.max(0, chartData.length - 1) * barGap) / Math.max(1, chartData.length));
+  const barGap = 8;
+  const barWidth = Math.max(8, (innerWidth - Math.max(0, chartData.length - 1) * barGap) / Math.max(1, chartData.length));
   const x = (index: number) => padding.left + index * (barWidth + barGap);
   const y = (value: number) => padding.top + innerHeight - (value / maximumValue) * innerHeight;
   const formatDate = (value: string) => new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit' })
     .format(new Date(`${value}T00:00:00`));
+  const firstPositiveIndex = chartData.findIndex((item) => item.value > 0);
+  const lastPositiveIndex = chartData.length - 1 - [...chartData].reverse().findIndex((item) => item.value > 0);
+  const positiveIndexes = chartData
+    .map((item, index) => (item.value > 0 ? index : -1))
+    .filter((index) => index >= 0);
 
   return (
-    <div className="h-[260px] overflow-x-auto">
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-full min-w-[680px] w-full" role="img" aria-label="GMV trend for paid bookings in the last 30 days">
-        {[0, 0.5, 1].map((ratio) => {
+    <div className="rounded-2xl border border-lav-100 bg-white px-3 pb-3 pt-4">
+      <div className="h-[340px] overflow-x-auto">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-full min-w-[960px] w-full" role="img" aria-label="GMV trend for paid bookings in the last 30 days">
+        <rect x={padding.left} y={padding.top} width={innerWidth} height={innerHeight} rx="14" fill="#fff8fd" />
+        {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
           const value = maximumValue * ratio;
           const axisY = y(value);
           return (
             <g key={ratio}>
-              <line x1={padding.left} x2={width - padding.right} y1={axisY} y2={axisY} stroke="#e9e0f3" strokeDasharray="4 5" />
-              <text x={padding.left - 8} y={axisY + 4} textAnchor="end" fill="#9a89ac" fontSize="10" fontWeight="700">
+              <line x1={padding.left} x2={width - padding.right} y1={axisY} y2={axisY} stroke="#eadff3" strokeDasharray="6 8" />
+              <text x={padding.left - 12} y={axisY + 4} textAnchor="end" fill="#8f7aa5" fontSize="12" fontWeight="800">
                 {formatCompactVnd(value)}
               </text>
             </g>
           );
         })}
+        <line x1={padding.left} x2={width - padding.right} y1={padding.top + innerHeight} y2={padding.top + innerHeight} stroke="#dccfe8" />
         {chartData.map((item, index) => {
           const barHeight = item.value > 0 ? Math.max(3, (item.value / maximumValue) * innerHeight) : 0;
-          const shouldShowLabel = index === 0 || index === chartData.length - 1 || index % 7 === 0 || item.value > 0;
+          const showValueLabel = item.value > 0 && (
+            positiveIndexes.length <= 14 ||
+            index === firstPositiveIndex ||
+            index === lastPositiveIndex ||
+            positiveIndexes.indexOf(index) % 2 === 0
+          );
+          const showDateLabel = index === 0 || index === chartData.length - 1 || item.value > 0;
           return (
             <g key={item.date}>
               {barHeight > 0 && (
                 <>
-                  <rect x={x(index)} y={y(item.value)} width={barWidth} height={barHeight} rx="4" fill="url(#gmvGradient)">
+                  <rect x={x(index)} y={y(item.value)} width={barWidth} height={barHeight} rx="8" fill="url(#gmvGradient)">
                     <title>{`${formatDate(item.date)}: ${formatVnd(item.value)}`}</title>
                   </rect>
-                  <text x={x(index) + barWidth / 2} y={Math.max(12, y(item.value) - 6)} textAnchor="middle" fill="#7c3aed" fontSize="10" fontWeight="800">
-                    {formatCompactVnd(item.value)}
-                  </text>
+                  {showValueLabel && (
+                    <text x={x(index) + barWidth / 2} y={Math.max(16, y(item.value) - 8)} textAnchor="middle" fill="#6d28d9" fontSize="11" fontWeight="900">
+                      {formatCompactVnd(item.value)}
+                    </text>
+                  )}
                 </>
               )}
-              {shouldShowLabel && (
-                <text x={x(index) + barWidth / 2} y={height - 9} textAnchor="middle" fill="#9a89ac" fontSize="10" fontWeight="700">
+              {showDateLabel && (
+                <text
+                  x={x(index) + barWidth / 2}
+                  y={height - 28}
+                  textAnchor="end"
+                  fill={item.value > 0 ? '#6b5b7b' : '#a99ab8'}
+                  fontSize="11"
+                  fontWeight="800"
+                  transform={`rotate(-38 ${x(index) + barWidth / 2} ${height - 28})`}
+                >
                   {formatDate(item.date)}
                 </text>
               )}
@@ -618,6 +645,7 @@ const GmvTrendChart = ({ data }: { data: AdminDashboardDailyMetric[] }) => {
         </defs>
       </svg>
       {!hasData && <div className="-mt-32 text-center text-sm font-bold text-text-light">No paid booking GMV in the last 30 days.</div>}
+      </div>
     </div>
   );
 };
