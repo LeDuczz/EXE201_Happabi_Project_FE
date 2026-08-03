@@ -104,6 +104,11 @@ export interface AdminOperationsDashboard {
   feedbackInsight: AdminDashboardFeedbackInsight;
   riskAlerts: AdminDashboardRiskAlert[];
   gmvTrend: AdminDashboardDailyMetric[];
+  period?: {
+    from: string;
+    to: string;
+    days: number;
+  };
   generatedAt: string;
 }
 
@@ -142,7 +147,7 @@ const normalizeDashboard = (data: AdminOperationsDashboard): AdminOperationsDash
   })),
 });
 
-export const getAdminOperationsDashboard = async () => {
-  const response = await axiosClient.get('/api/v1/admin/dashboard/overview');
+export const getAdminOperationsDashboard = async (params?: { from?: string; to?: string }) => {
+  const response = await axiosClient.get('/api/v1/admin/dashboard/overview', { params });
   return normalizeDashboard(unwrap<AdminOperationsDashboard>(response));
 };
