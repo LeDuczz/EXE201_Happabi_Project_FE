@@ -44,6 +44,32 @@ const formatDateTime = (value?: string) => {
   return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
 };
 
+const toDateInputValue = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+const todayInputValue = () => toDateInputValue(new Date());
+const daysAgoInputValue = (days: number) => {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return toDateInputValue(date);
+};
+const formatPeriodDate = (value?: string) => {
+  if (!value) return '--';
+  return new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    .format(new Date(`${value}T00:00:00`));
+};
+const periodLabel = (dashboard: AdminOperationsDashboard | null) => {
+  const period = dashboard?.period;
+  if (!period?.from || !period?.to) return '30 ngày gần nhất';
+  if (period.from === period.to) return `Ngày ${formatPeriodDate(period.from)}`;
+  if (period.days === 7) return '7 ngày gần nhất';
+  if (period.days === 30) return '30 ngày gần nhất';
+  return `${formatPeriodDate(period.from)} - ${formatPeriodDate(period.to)}`;
+};
+
 const categoryLabel: Record<string, string> = {
   APP_EXPERIENCE: 'Trải nghiệm app',
   BOOKING: 'Đặt lịch',
@@ -91,12 +117,29 @@ const AdminDashboard = () => {
   const [dashboard, setDashboard] = useState<AdminOperationsDashboard | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [rangeMode, setRangeMode] = useState<'7d' | '30d' | 'single' | 'custom'>('30d');
+  const [singleDate, setSingleDate] = useState(todayInputValue());
+  const [customFrom, setCustomFrom] = useState(daysAgoInputValue(29));
+  const [customTo, setCustomTo] = useState(todayInputValue());
+
+  const dashboardRange = () => {
+    if (rangeMode === '7d') {
+      return { from: daysAgoInputValue(6), to: todayInputValue() };
+    }
+    if (rangeMode === 'single') {
+      return { from: singleDate, to: singleDate };
+    }
+    if (rangeMode === 'custom') {
+      return { from: customFrom, to: customTo };
+    }
+    return { from: daysAgoInputValue(29), to: todayInputValue() };
+  };
 
   const loadDashboard = async () => {
     setIsLoading(true);
     setError('');
     try {
-      setDashboard(await getAdminOperationsDashboard());
+      setDashboard(await getAdminOperationsDashboard(dashboardRange()));
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không tải được dữ liệu tổng quan vận hành.'));
     } finally {
@@ -106,7 +149,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     void loadDashboard();
-  }, []);
+  }, [rangeMode, singleDate, customFrom, customTo]);
 
   return (
     <>
@@ -126,6 +169,63 @@ const AdminDashboard = () => {
         </div>
       ) : dashboard ? (
         <div className="space-y-6">
+          <Card className="p-4">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div>
+                <div className="text-sm font-black text-text-dark">Kỳ báo cáo</div>
+                <div className="mt-1 text-xs font-bold text-text-light">{periodLabel(dashboard)}</div>
+              </div>
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                <div className="grid grid-cols-2 gap-2 sm:flex">
+                  {([
+                    ['7d', '7 ngày'],
+                    ['30d', '30 ngày'],
+                    ['single', 'Một ngày'],
+                    ['custom', 'Khoảng ngày'],
+                  ] as Array<[typeof rangeMode, string]>).map(([mode, label]) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setRangeMode(mode)}
+                      className={`rounded-xl px-3 py-2 text-xs font-black transition ${
+                        rangeMode === mode
+                          ? 'bg-lav-dark text-white shadow-sm'
+                          : 'bg-lav-50 text-lav-dark hover:bg-lav-100'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {rangeMode === 'single' && (
+                  <input
+                    type="date"
+                    value={singleDate}
+                    onChange={(event) => setSingleDate(event.target.value)}
+                    className="h-10 rounded-xl border border-lav-200 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-dark"
+                  />
+                )}
+                {rangeMode === 'custom' && (
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <input
+                      type="date"
+                      value={customFrom}
+                      onChange={(event) => setCustomFrom(event.target.value)}
+                      className="h-10 rounded-xl border border-lav-200 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-dark"
+                    />
+                    <span className="hidden text-xs font-black text-text-light sm:inline">đến</span>
+                    <input
+                      type="date"
+                      value={customTo}
+                      onChange={(event) => setCustomTo(event.target.value)}
+                      className="h-10 rounded-xl border border-lav-200 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-dark"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
+
           <div className="grid gap-4 xl:grid-cols-4">
             <MetricCard
               icon={<BellRing size={20} />}
@@ -230,10 +330,10 @@ const AdminDashboard = () => {
                 rows={[
                   ['GMV Today', dashboard.financialControl.todayGrossMerchandiseValue],
                   ['GMV 7D', dashboard.financialControl.last7DaysGrossMerchandiseValue],
-                  ['GMV 30D', dashboard.financialControl.last30DaysGrossMerchandiseValue],
-                  ['Payment Volume 30D', dashboard.financialControl.last30DaysAppPayments],
-                  ['Platform Revenue 30D', dashboard.financialControl.last30DaysPlatformRevenue],
-                  ['Payment Processing Fees 30D', dashboard.financialControl.last30DaysPaymentGatewayFees],
+                  ['GMV kỳ chọn', dashboard.financialControl.last30DaysGrossMerchandiseValue],
+                  ['Payment Volume kỳ chọn', dashboard.financialControl.last30DaysAppPayments],
+                  ['Platform Revenue kỳ chọn', dashboard.financialControl.last30DaysPlatformRevenue],
+                  ['Payment Processing Fees kỳ chọn', dashboard.financialControl.last30DaysPaymentGatewayFees],
                   ['Pending Payout', dashboard.financialControl.pendingWithdrawalAmount],
                   ['Refund Exposure', dashboard.financialControl.pendingRefundAmount],
                 ]}
@@ -261,10 +361,10 @@ const AdminDashboard = () => {
               <div>
                 <SectionHeader icon={<TrendingUp size={18} />} title="Financial Performance" />
                 <p className="mt-1 text-sm font-semibold text-text-light">
-                  Theo dõi GMV, doanh thu nền tảng, phí xử lý thanh toán và phần doanh thu ròng trong 30 ngày.
+                  Theo dõi GMV, doanh thu nền tảng, phí xử lý thanh toán và phần doanh thu ròng trong kỳ.
                 </p>
               </div>
-              <span className="text-xs font-black uppercase tracking-wider text-text-light">30 ngày gần nhất</span>
+              <span className="text-xs font-black uppercase tracking-wider text-text-light">{periodLabel(dashboard)}</span>
             </div>
 
             <div className="grid divide-y divide-lav-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-6">
@@ -317,14 +417,14 @@ const AdminDashboard = () => {
             <Card className="p-6">
               <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <SectionHeader icon={<BarChart3 size={18} />} title="GMV Trend (30D)" />
+                  <SectionHeader icon={<BarChart3 size={18} />} title="GMV Trend" />
                   <p className="mt-1 text-xs font-semibold text-text-light">Theo giá trị booking đã thanh toán, không lấy từ ví admin.</p>
                 </div>
-                <span className="rounded-full bg-lav-50 px-3 py-1 text-xs font-black text-lav-dark">30 ngày gần nhất</span>
+                <span className="rounded-full bg-lav-50 px-3 py-1 text-xs font-black text-lav-dark">{periodLabel(dashboard)}</span>
               </div>
               <GmvTrendChart data={dashboard.gmvTrend} />
               {!dashboard.gmvTrend.some((item) => item.value > 0) && (
-                <div className="mt-4 text-center text-sm font-bold text-text-light">Chưa có GMV booking trong 30 ngày qua.</div>
+                <div className="mt-4 text-center text-sm font-bold text-text-light">Chưa có GMV booking trong kỳ đã chọn.</div>
               )}
             </Card>
 
@@ -560,12 +660,12 @@ const FinancialBreakdownChart = ({
 };
 
 const GmvTrendChart = ({ data }: { data: AdminDashboardDailyMetric[] }) => {
-  const recentData = data.slice(-30);
+  const recentData = data;
   const paidBookingDays = recentData.filter((item) => item.value > 0);
   const chartData = paidBookingDays.length ? paidBookingDays : recentData;
   const maximumValue = Math.max(1, ...chartData.map((item) => item.value));
   const hasData = chartData.some((item) => item.value > 0);
-  const width = 1080;
+  const width = Math.max(1080, chartData.length * 72);
   const height = 320;
   const padding = { top: 34, right: 34, bottom: 64, left: 72 };
   const innerWidth = width - padding.left - padding.right;
@@ -585,7 +685,7 @@ const GmvTrendChart = ({ data }: { data: AdminDashboardDailyMetric[] }) => {
   return (
     <div className="rounded-2xl border border-lav-100 bg-white px-3 pb-3 pt-4">
       <div className="h-[340px] overflow-x-auto">
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-full min-w-[960px] w-full" role="img" aria-label="GMV trend for paid bookings in the last 30 days">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-full min-w-[960px] w-full" role="img" aria-label="GMV trend for paid bookings in the selected period">
         <rect x={padding.left} y={padding.top} width={innerWidth} height={innerHeight} rx="14" fill="#fff8fd" />
         {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
           const value = maximumValue * ratio;
@@ -646,7 +746,7 @@ const GmvTrendChart = ({ data }: { data: AdminDashboardDailyMetric[] }) => {
           </linearGradient>
         </defs>
       </svg>
-      {!hasData && <div className="-mt-32 text-center text-sm font-bold text-text-light">No paid booking GMV in the last 30 days.</div>}
+      {!hasData && <div className="-mt-32 text-center text-sm font-bold text-text-light">No paid booking GMV in the selected period.</div>}
       </div>
     </div>
   );
