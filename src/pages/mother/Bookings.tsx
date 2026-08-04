@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useState } from 'react';
 import {
   AlertCircle,
   CalendarDays,
@@ -21,6 +21,7 @@ import nurseReviewApi from '../../api/nurseReviewApi';
 import workSessionApi from '../../api/workSessionApi';
 import Btn from '../../components/common/Btn';
 import Card from '../../components/common/Card';
+import Pagination from '../../components/common/Pagination';
 import Topbar from '../../components/layout/Topbar';
 import { getApiErrorMessage } from '../../utils/apiError';
 import type { NurseReview, NurseReviewTag } from '../../types/nurseReview';
@@ -99,6 +100,8 @@ const MotherBookings = () => {
   const [pendingPayments, setPendingPayments] = useState<BookingSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeBucket, setActiveBucket] = useState<SessionBucket>('UPCOMING');
+  const [page, setPage] = useState(0);
+  const [pageInfo, setPageInfo] = useState({ totalElements: 0, totalPages: 0, number: 0, size: 6 });
   const [reviewsBySession, setReviewsBySession] = useState<Record<string, NurseReview | null>>({});
   const [reportReason, setReportReason] = useState('');
   const [cancelReason, setCancelReason] = useState('');
@@ -113,18 +116,24 @@ const MotherBookings = () => {
     setError('');
     try {
       const [data, pending] = await Promise.all([
-        workSessionApi.getMotherSessions(),
+        workSessionApi.getMotherSessions(activeBucket, page, pageInfo.size),
         bookingService.getPendingPayments(),
       ]);
-      setSessions(data);
+      setSessions(data.content ?? []);
+      setPageInfo({
+        totalElements: data.totalElements ?? 0,
+        totalPages: data.totalPages ?? 0,
+        number: data.number ?? page,
+        size: data.size ?? pageInfo.size,
+      });
       setPendingPayments(pending);
-      setSelectedId((current) => current ?? data[0]?.id ?? null);
+      setSelectedId((current) => current ?? data.content?.[0]?.id ?? null);
     } catch (err) {
       setError(getApiErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [activeBucket, page, pageInfo.size]);
 
   const payPendingBooking = async (booking: BookingSummary) => {
     const bookingId = booking.bookingId;
@@ -157,19 +166,7 @@ const MotherBookings = () => {
     return () => window.removeEventListener('happabi:notification-received', handleRealtimeNotification);
   }, [loadSessions]);
 
-  const sessionsByBucket = useMemo(
-    () =>
-      bucketOptions.reduce<Record<SessionBucket, WorkSession[]>>(
-        (groups, bucket) => {
-          groups[bucket.key] = sessions.filter((session) => bucketOf(session.status) === bucket.key);
-          return groups;
-        },
-        { UPCOMING: [], ACTION_NEEDED: [], HISTORY: [] },
-      ),
-    [sessions],
-  );
-
-  const visibleSessions = sessionsByBucket[activeBucket];
+  const visibleSessions = sessions;
   const selectedSession =
     sessions.find((session) => session.id === selectedId) ??
     visibleSessions[0] ??
@@ -289,7 +286,7 @@ const MotherBookings = () => {
         <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
           <div className="mb-3 flex items-center gap-2 text-[14px] font-black text-amber-800">
             <CreditCard size={17} />
-            ??n ch? thanh to?n
+            Đơn chờ thanh toán
           </div>
           <div className="grid gap-3">
             {pendingPayments.map((booking) => {
@@ -305,7 +302,7 @@ const MotherBookings = () => {
                       {booking.nurseName} ? {formatDateTime(booking.startAt)}
                     </div>
                     <div className="mt-1 text-[12px] font-bold text-amber-700">
-                      Thanh to?n {formatCurrency(booking.appPaymentAmount)} tr??c {new Date(booking.paymentExpiresAt).toLocaleTimeString('vi-VN')}
+                      Thanh toán {formatCurrency(booking.appPaymentAmount)} trước {new Date(booking.paymentExpiresAt).toLocaleTimeString('vi-VN')}
                     </div>
                   </div>
                   <Btn
@@ -314,7 +311,7 @@ const MotherBookings = () => {
                     onClick={() => payPendingBooking(booking)}
                   >
                     {paymentActionId === bookingId ? <Loader2 className="animate-spin" size={15} /> : <ExternalLink size={15} />}
-                    Thanh to?n
+                    Thanh toán
                   </Btn>
                 </div>
               );
@@ -329,7 +326,11 @@ const MotherBookings = () => {
             <button
               key={bucket.key}
               type="button"
-              onClick={() => setActiveBucket(bucket.key)}
+              onClick={() => {
+                setActiveBucket(bucket.key);
+                setPage(0);
+                setSelectedId(null);
+              }}
               className={`rounded-xl border px-3 py-2 text-left transition ${
                 activeBucket === bucket.key
                   ? 'border-lav-300 bg-white text-lav-dark shadow-sm'
@@ -337,7 +338,9 @@ const MotherBookings = () => {
               }`}
             >
               <div className="text-[12px] font-semibold">{bucket.label}</div>
-              <div className="mt-0.5 text-[18px] font-semibold text-text-dark">{sessionsByBucket[bucket.key].length}</div>
+              <div className="mt-0.5 text-[18px] font-semibold text-text-dark">
+                {activeBucket === bucket.key ? pageInfo.totalElements : '--'}
+              </div>
             </button>
           ))}
         </div>
@@ -404,6 +407,17 @@ const MotherBookings = () => {
               })}
             </div>
           )}
+          <div className="border-t border-lav-100 px-4 py-3">
+            <Pagination
+              currentPage={pageInfo.number}
+              totalPages={pageInfo.totalPages}
+              onPageChange={(nextPage) => {
+                setPage(nextPage);
+                setSelectedId(null);
+              }}
+              isLoading={isLoading}
+            />
+          </div>
         </Card>
 
         <Card className="min-h-[520px]">

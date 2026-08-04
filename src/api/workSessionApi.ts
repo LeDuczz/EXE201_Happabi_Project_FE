@@ -55,9 +55,17 @@ const workSessionApi = {
     return unwrap<WorkSession>(response);
   },
 
-  getMotherSessions: async () => {
-    const response = await axiosClient.get('/api/v1/mothers/me/work-sessions');
-    return unwrap<WorkSession[]>(response);
+  getMotherSessions: async (bucket?: string, page = 0, size = 10) => {
+    const response = await axiosClient.get('/api/v1/mothers/me/work-sessions', {
+      params: { bucket, page, size },
+    });
+    return unwrap<{
+      content: WorkSession[];
+      totalElements: number;
+      totalPages: number;
+      number: number;
+      size: number;
+    }>(response);
   },
 
   getMotherSession: async (id: string) => {

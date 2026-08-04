@@ -13,7 +13,8 @@ export type NotificationType =
   | 'NURSE_BOOKING_ASSIGNED'
   | 'NURSE_AVAILABILITY_WINDOW_OPENED'
   | 'NURSE_AVAILABILITY_WINDOW_CANCELLED'
-  | 'WORK_SESSION_UPDATED';
+  | 'WORK_SESSION_UPDATED'
+  | 'PLATFORM_COMMISSION_UPDATED';
 
 export interface AppNotification {
   id: string;

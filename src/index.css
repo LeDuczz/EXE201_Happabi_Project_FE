@@ -43,6 +43,31 @@
     margin: 0;
     min-width: 320px;
     min-height: 100vh;
+    scrollbar-color: var(--color-lav-acc) #fff7fd;
+    scrollbar-width: thin;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background:
+      linear-gradient(180deg, rgba(255, 240, 248, 0.86), rgba(243, 232, 255, 0.9));
+    border-left: 1px solid rgba(233, 213, 255, 0.75);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background:
+      linear-gradient(180deg, var(--color-lav-acc), var(--color-pink-dark));
+    border: 2px solid rgba(255, 249, 251, 0.94);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background:
+      linear-gradient(180deg, var(--color-lav-dark), var(--color-pink-dark));
   }
 
   * {
@@ -159,5 +184,203 @@
     font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1.15;
+  }
+
+  .landing-reveal {
+    opacity: 0;
+    transform: translateY(22px);
+    transition:
+      opacity 700ms ease,
+      transform 700ms ease;
+    will-change: opacity, transform;
+  }
+
+  .landing-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .landing-hero-copy > * {
+    animation: landing-fade-up 720ms ease both;
+  }
+
+  .landing-hero-copy > *:nth-child(1) {
+    animation-delay: 80ms;
+  }
+
+  .landing-hero-copy > *:nth-child(2) {
+    animation-delay: 180ms;
+  }
+
+  .landing-hero-copy > *:nth-child(3) {
+    animation-delay: 280ms;
+  }
+
+  .landing-hero-copy > *:nth-child(4) {
+    animation-delay: 380ms;
+  }
+
+  .landing-float-soft {
+    animation: landing-float-soft 6s ease-in-out infinite;
+  }
+
+  .landing-float-slow {
+    animation: landing-float-slow 8s ease-in-out infinite;
+  }
+
+  .landing-breathe {
+    animation: landing-breathe 12s ease-in-out infinite;
+  }
+
+  .landing-hover-lift {
+    transition:
+      transform 260ms ease,
+      box-shadow 260ms ease,
+      border-color 260ms ease;
+  }
+
+  .landing-hover-lift:hover {
+    transform: translateY(-6px);
+    border-color: rgba(192, 132, 252, 0.48);
+    box-shadow: 0 22px 60px rgba(168, 85, 247, 0.14);
+  }
+
+  .landing-icon-pop {
+    transition: transform 260ms ease;
+  }
+
+  .landing-hover-lift:hover .landing-icon-pop {
+    transform: scale(1.08) rotate(-3deg);
+  }
+
+  .landing-flow-line {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .landing-flow-line::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(251, 113, 133, 0.28), transparent);
+    transform: translateX(-100%);
+    animation: landing-line-sweep 4.5s ease-in-out infinite;
+  }
+
+  .landing-timeline-progress {
+    background: linear-gradient(180deg, var(--color-lav-dark), var(--color-pink-dark), var(--color-lav-acc));
+    box-shadow: 0 0 18px rgba(168, 85, 247, 0.36);
+    transition: height 180ms ease-out;
+  }
+
+  .landing-timeline-dot {
+    transform: translate(-50%, -50%);
+    transition:
+      border-color 240ms ease,
+      box-shadow 240ms ease,
+      transform 240ms ease;
+  }
+
+  .landing-timeline-dot.is-active {
+    animation: landing-dot-pop 420ms ease both;
+    transform: translate(-50%, -50%) scale(1.16);
+  }
+
+  @keyframes landing-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes landing-float-soft {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  @keyframes landing-float-slow {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-2deg);
+    }
+
+    50% {
+      transform: translateY(10px) rotate(1deg);
+    }
+  }
+
+  @keyframes landing-breathe {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.035);
+    }
+  }
+
+  @keyframes landing-line-sweep {
+    0%,
+    35% {
+      transform: translateX(-100%);
+    }
+
+    70%,
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes landing-dot-pop {
+    0% {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    58% {
+      transform: translate(-50%, -50%) scale(1.34);
+    }
+
+    100% {
+      transform: translate(-50%, -50%) scale(1.16);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .landing-reveal,
+    .landing-reveal.is-visible,
+    .landing-hero-copy > *,
+    .landing-float-soft,
+    .landing-float-slow,
+    .landing-breathe,
+    .landing-flow-line::after,
+    .landing-timeline-progress {
+      animation: none;
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    .landing-timeline-dot {
+      animation: none;
+      opacity: 1;
+      transition: none;
+    }
+
+    .landing-hover-lift:hover,
+    .landing-hover-lift:hover .landing-icon-pop {
+      transform: none;
+    }
   }
 }
