@@ -1,5 +1,6 @@
-import { ArrowRight, Baby, CalendarCheck, HeartHandshake, Menu, MessageCircleHeart, ShieldCheck, Sparkles, Stethoscope, X } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { ArrowRight, Baby, CalendarCheck, ChevronLeft, ChevronRight, HeartHandshake, Menu, MessageCircleHeart, ShieldCheck, Sparkles, Stethoscope, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ElementType, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 import Avatar from '../components/common/Avatar';
@@ -57,6 +58,67 @@ const memories = [
   },
 ];
 
+const TIMELINE_NODE_OFFSET_PX = 170;
+const WEEKDAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+
+type CalendarDay = {
+  date: Date;
+  isCurrentMonth: boolean;
+};
+
+const toLocalDateValue = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseLocalDate = (value: string) => {
+  if (!value) return null;
+  const [year, month, day] = value.split('-').map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+};
+
+const formatDisplayDate = (value: string) => {
+  const date = parseLocalDate(value);
+  if (!date) return 'Chọn ngày sinh của bé';
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date);
+};
+
+const formatCalendarMonth = (date: Date) =>
+  new Intl.DateTimeFormat('vi-VN', {
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+
+const isSameCalendarDay = (left: Date | null, right: Date) =>
+  Boolean(left)
+  && left?.getFullYear() === right.getFullYear()
+  && left.getMonth() === right.getMonth()
+  && left.getDate() === right.getDate();
+
+const buildCalendarDays = (monthDate: Date): CalendarDay[] => {
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  const firstOfMonth = new Date(year, month, 1);
+  const mondayOffset = (firstOfMonth.getDay() + 6) % 7;
+  const startDate = new Date(year, month, 1 - mondayOffset);
+
+  return Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(startDate);
+    date.setDate(startDate.getDate() + index);
+    return {
+      date,
+      isCurrentMonth: date.getMonth() === month,
+    };
+  });
+};
+
 const initials = (name?: string) => {
   if (!name) return 'HB';
   const parts = name.trim().split(/\s+/);
@@ -79,21 +141,82 @@ const profilePath = (role: string | null) => {
   return '/profile';
 };
 
+type RevealProps = {
+  as?: ElementType;
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+};
+
+const Reveal = ({ as: Component = 'div', children, className = '', delay = 0 }: RevealProps) => {
+  const ref = useRef<HTMLElement | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { rootMargin: '0px 0px -12% 0px', threshold: 0.16 },
+    );
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <Component
+      ref={ref}
+      className={`landing-reveal ${isVisible ? 'is-visible' : ''} ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </Component>
+  );
+};
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, primaryRole, logout } = useAuth();
+  const timelineRef = useRef<HTMLDivElement | null>(null);
+  const babyDatePickerRef = useRef<HTMLDivElement | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [babyBirth, setBabyBirth] = useState('');
+  const [babyDatePickerOpen, setBabyDatePickerOpen] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), 1);
+  });
+  const [timelineProgress, setTimelineProgress] = useState(0);
 
+  const today = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
+  const selectedBabyDate = useMemo(() => parseLocalDate(babyBirth), [babyBirth]);
+  const babyCalendarDays = useMemo(() => buildCalendarDays(calendarMonth), [calendarMonth]);
   const babyDays = useMemo(() => {
-    if (!babyBirth) return null;
-    const start = new Date(babyBirth);
+    const start = parseLocalDate(babyBirth);
+    if (!start) return null;
     const today = new Date();
     start.setHours(0, 0, 0, 0);
     today.setHours(0, 0, 0, 0);
     return Math.max(0, Math.floor((today.getTime() - start.getTime()) / 86400000));
-  }, [babyBirth]);
+  }, [babyBirth, today]);
 
   useEffect(() => {
     if (!isAuthenticated || primaryRole !== 'MOTHER') {
@@ -122,7 +245,59 @@ const LandingPage = () => {
     };
   }, [isAuthenticated, primaryRole, user?.id]);
 
+  useEffect(() => {
+    const selectedDate = parseLocalDate(babyBirth);
+    if (!selectedDate) return;
+    setCalendarMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
+  }, [babyBirth]);
+
+  useEffect(() => {
+    if (!babyDatePickerOpen) return;
+
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!babyDatePickerRef.current?.contains(event.target as Node)) {
+        setBabyDatePickerOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', closeOnOutsideClick);
+
+    return () => document.removeEventListener('mousedown', closeOnOutsideClick);
+  }, [babyDatePickerOpen]);
+
+  useEffect(() => {
+    const updateTimelineProgress = () => {
+      const timeline = timelineRef.current;
+      if (!timeline) return;
+
+      const rect = timeline.getBoundingClientRect();
+      const viewportAnchor = window.innerHeight * 0.58;
+      const drawableHeight = Math.max(rect.height - TIMELINE_NODE_OFFSET_PX * 2, 1);
+      const progress = (viewportAnchor - rect.top - TIMELINE_NODE_OFFSET_PX) / drawableHeight;
+      setTimelineProgress(Math.min(Math.max(progress, 0), 1));
+    };
+
+    updateTimelineProgress();
+    window.addEventListener('scroll', updateTimelineProgress, { passive: true });
+    window.addEventListener('resize', updateTimelineProgress);
+
+    return () => {
+      window.removeEventListener('scroll', updateTimelineProgress);
+      window.removeEventListener('resize', updateTimelineProgress);
+    };
+  }, []);
+
   const goHome = () => navigate(dashboardPath(primaryRole));
+
+  const changeCalendarMonth = (offset: number) => {
+    setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1));
+  };
+
+  const selectBabyBirthDate = (date: Date) => {
+    if (date > today) return;
+    setBabyBirth(toLocalDateValue(date));
+    setBabyDatePickerOpen(false);
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -209,7 +384,7 @@ const LandingPage = () => {
         <section className="relative min-h-[calc(100vh-76px)] overflow-hidden bg-[#f7f0ff]">
           <div className="absolute inset-x-0 top-0 h-2/3 bg-[radial-gradient(circle_at_20%_20%,rgba(252,231,243,.95),transparent_34%),radial-gradient(circle_at_80%_5%,rgba(216,180,254,.8),transparent_28%)]" />
           <div className="relative mx-auto grid max-w-7xl gap-9 px-4 pb-12 pt-10 md:grid-cols-[1.02fr_0.98fr] md:items-center md:px-6 md:pt-16">
-            <div>
+            <div className="landing-hero-copy">
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-pink-200 bg-white/85 px-4 py-2 text-overline text-pink-dark shadow-sm">
                 <Sparkles size={15} /> Nền tảng chăm sóc mẹ và bé tại nhà
               </div>
@@ -238,18 +413,18 @@ const LandingPage = () => {
             </div>
 
             <div className="relative min-h-[520px]">
-              <div className="absolute left-2 top-4 h-[430px] w-[72%] overflow-hidden rounded-[38px] border-[8px] border-white bg-white shadow-[0_30px_90px_rgba(168,85,247,.24)] md:left-8">
+              <div className="landing-float-slow absolute left-2 top-4 h-[430px] w-[72%] overflow-hidden rounded-[38px] border-[8px] border-white bg-white shadow-[0_30px_90px_rgba(168,85,247,.24)] md:left-8">
                 <img src="/image/1.webp" alt="Mẹ và bé" className="h-full w-full object-cover" />
               </div>
-              <div className="absolute bottom-0 right-0 h-[330px] w-[54%] overflow-hidden rounded-[34px] border-[8px] border-white bg-white shadow-[0_24px_70px_rgba(251,113,133,.22)]">
+              <div className="landing-float-soft absolute bottom-0 right-0 h-[330px] w-[54%] overflow-hidden rounded-[34px] border-[8px] border-white bg-white shadow-[0_24px_70px_rgba(251,113,133,.22)]">
                 <img src="/image/5.webp" alt="Chăm sóc bé" className="h-full w-full object-cover" />
               </div>
-              <div className="absolute right-4 top-8 rounded-3xl border border-lav-200 bg-white/92 p-4 shadow-xl backdrop-blur">
+              <div className="landing-float-soft absolute right-4 top-8 rounded-3xl border border-lav-200 bg-white/92 p-4 shadow-xl backdrop-blur">
                 <div className="text-overline text-text-light">Hôm nay</div>
                 <div className="mt-1 text-heading text-2xl font-semibold text-grad">3 điều dưỡng</div>
                 <div className="text-caption text-text-mid">phù hợp gần bạn</div>
               </div>
-              <div className="absolute bottom-10 left-0 rounded-3xl border border-pink-100 bg-white/92 p-4 shadow-xl backdrop-blur">
+              <div className="landing-float-slow absolute bottom-10 left-0 rounded-3xl border border-pink-100 bg-white/92 p-4 shadow-xl backdrop-blur">
                 <div className="flex items-center gap-3">
                   <Baby className="text-pink-dark" size={28} />
                   <div>
@@ -264,50 +439,123 @@ const LandingPage = () => {
 
         <section id="roles" className="bg-dark-200 px-4 py-16 text-white md:px-6">
           <div className="mx-auto max-w-7xl">
-            <div className="mx-auto max-w-2xl text-center">
+            <Reveal className="mx-auto max-w-2xl text-center">
               <p className="text-overline text-lav-acc">Ai dùng Happabi?</p>
               <h2 className="mt-3 text-heading text-4xl font-semibold">Một app · Hai vai trò</h2>
-            </div>
+            </Reveal>
             <div className="mt-9 grid gap-5 md:grid-cols-2">
-              <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-7">
-                <HeartHandshake className="text-pink-acc" size={34} />
+              <Reveal as="article" className="landing-hover-lift rounded-[28px] border border-white/10 bg-white/[0.06] p-7">
+                <HeartHandshake className="landing-icon-pop text-pink-acc" size={34} />
                 <h3 className="mt-5 text-heading text-2xl font-semibold">Mẹ bỉm sữa</h3>
                 <p className="mt-3 leading-7 text-white/58">Đăng nhập bằng Google, Facebook hoặc số điện thoại và mật khẩu. Sau khi đăng nhập, mẹ quay về landing page, thấy avatar ở góc phải và bấm vào homepage khi cần đặt lịch.</p>
                 {!isAuthenticated && <div className="mt-6 text-sm font-bold text-white/50">Đăng nhập hoặc đăng ký ở thanh trên cùng.</div>}
-              </article>
-              <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-7">
-                <Stethoscope className="text-lav-acc" size={34} />
+              </Reveal>
+              <Reveal as="article" delay={120} className="landing-hover-lift rounded-[28px] border border-white/10 bg-white/[0.06] p-7">
+                <Stethoscope className="landing-icon-pop text-lav-acc" size={34} />
                 <h3 className="mt-5 text-heading text-2xl font-semibold">Điều dưỡng</h3>
                 <p className="mt-3 leading-7 text-white/58">Nurse đăng nhập bằng số điện thoại và mật khẩu. Khi đăng nhập thành công, hệ thống đưa vào thẳng homepage dành cho nurse để quản lý lịch làm.</p>
                 {!isAuthenticated && <div className="mt-6 text-sm font-bold text-white/50">Nurse chọn đăng nhập rồi chuyển tab Nurse trong form.</div>}
-              </article>
+              </Reveal>
             </div>
           </div>
         </section>
 
         <section id="features" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-          <div className="text-center">
+          <Reveal className="text-center">
             <p className="text-overline text-pink-dark">Tính năng nổi bật</p>
             <h2 className="mt-3 text-heading text-4xl font-semibold text-dark-200">Mọi thứ mẹ cần sau sinh</h2>
-          </div>
+          </Reveal>
           <div className="mt-9 grid gap-5 md:grid-cols-4">
-            {features.map(({ icon: Icon, title, desc }) => (
-              <article key={title} className="rounded-[24px] border border-lav-100 bg-white p-6 shadow-[0_10px_36px_rgba(168,85,247,.08)]">
-                <Icon className="text-lav-dark" size={30} />
+            {features.map(({ icon: Icon, title, desc }, index) => (
+              <Reveal
+                as="article"
+                key={title}
+                delay={index * 90}
+                className="landing-hover-lift rounded-[24px] border border-lav-100 bg-white p-6 shadow-[0_10px_36px_rgba(168,85,247,.08)]"
+              >
+                <Icon className="landing-icon-pop text-lav-dark" size={30} />
                 <h3 className="mt-4 text-heading text-xl font-semibold">{title}</h3>
                 <p className="mt-2 text-sm leading-6 text-text-mid">{desc}</p>
-              </article>
+              </Reveal>
             ))}
           </div>
         </section>
 
         <section className="border-y border-lav-100 bg-white px-4 py-16 md:px-6">
-          <div className="mx-auto max-w-4xl text-center">
+          <Reveal className="mx-auto max-w-4xl text-center">
             <p className="text-overline text-lav-dark">Hành trình của bé</p>
             <h2 className="mt-3 text-heading text-4xl font-semibold">Đếm từng ngày yêu thương</h2>
-            <div className="mx-auto mt-8 max-w-md rounded-[28px] border border-pink-100 bg-[#fff9fb] p-5 shadow-sm">
-              <label className="text-subheading text-text-mid" htmlFor="babyBirth">Nhập ngày sinh của bé</label>
-              <input id="babyBirth" type="date" value={babyBirth} onChange={(event) => setBabyBirth(event.target.value)} max={new Date().toISOString().split('T')[0]} className="mt-3 w-full rounded-2xl border border-lav-200 bg-white px-4 py-3 text-body text-text-dark outline-none focus:border-lav-acc" />
+            <div ref={babyDatePickerRef} className="landing-hover-lift relative mx-auto mt-8 max-w-md rounded-[28px] border border-pink-100 bg-[#fff9fb] p-5 shadow-sm">
+              <label className="text-subheading text-text-mid" htmlFor="babyBirthButton">Nhập ngày sinh của bé</label>
+              <button
+                id="babyBirthButton"
+                type="button"
+                onClick={() => setBabyDatePickerOpen((open) => !open)}
+                className="mt-3 flex w-full items-center justify-between rounded-2xl border border-lav-200 bg-white px-4 py-3 text-left text-body text-text-dark shadow-[0_12px_30px_rgba(168,85,247,.08)] outline-none transition hover:border-lav-acc hover:shadow-[0_16px_38px_rgba(168,85,247,.12)] focus:border-lav-dark"
+              >
+                <span className={babyBirth ? 'font-semibold text-text-dark' : 'font-medium text-text-light'}>
+                  {formatDisplayDate(babyBirth)}
+                </span>
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-grad text-white shadow-[0_10px_24px_rgba(168,85,247,.22)]">
+                  <CalendarCheck size={18} />
+                </span>
+              </button>
+              {babyDatePickerOpen && (
+                <div className="mt-4 rounded-[26px] border border-lav-100 bg-white p-4 text-left shadow-[0_24px_60px_rgba(45,27,78,.14)]">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-overline text-text-light">Tháng</div>
+                      <div className="text-subheading capitalize text-text-dark">{formatCalendarMonth(calendarMonth)}</div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => changeCalendarMonth(-1)} className="flex h-10 w-10 items-center justify-center rounded-2xl border border-lav-100 bg-lav-50 text-lav-dark transition hover:bg-lav-100" aria-label="Tháng trước">
+                        <ChevronLeft size={18} />
+                      </button>
+                      <button type="button" onClick={() => changeCalendarMonth(1)} className="flex h-10 w-10 items-center justify-center rounded-2xl border border-lav-100 bg-lav-50 text-lav-dark transition hover:bg-lav-100" aria-label="Tháng sau">
+                        <ChevronRight size={18} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid grid-cols-7 gap-1 text-center">
+                    {WEEKDAY_LABELS.map((label) => (
+                      <div key={label} className="py-2 text-[11px] font-black uppercase text-text-light">{label}</div>
+                    ))}
+                    {babyCalendarDays.map(({ date, isCurrentMonth }) => {
+                      const isSelected = isSameCalendarDay(selectedBabyDate, date);
+                      const isToday = isSameCalendarDay(today, date);
+                      const isFuture = date > today;
+
+                      return (
+                        <button
+                          key={toLocalDateValue(date)}
+                          type="button"
+                          disabled={isFuture}
+                          onClick={() => selectBabyBirthDate(date)}
+                          className={`flex h-10 items-center justify-center rounded-2xl text-sm font-bold transition ${
+                            isSelected
+                              ? 'bg-grad text-white shadow-[0_10px_22px_rgba(168,85,247,.24)]'
+                              : isToday
+                                ? 'border border-pink-200 bg-pink-50 text-pink-dark'
+                                : isCurrentMonth
+                                  ? 'text-text-dark hover:bg-lav-50 hover:text-lav-dark'
+                                  : 'text-text-light/45'
+                          } ${isFuture ? 'cursor-not-allowed opacity-35' : ''}`}
+                        >
+                          {date.getDate()}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-4 flex items-center justify-between border-t border-lav-100 pt-3">
+                    <button type="button" onClick={() => setBabyBirth('')} className="rounded-xl px-3 py-2 text-sm font-bold text-text-light transition hover:bg-lav-50 hover:text-text-mid">
+                      Xóa
+                    </button>
+                    <button type="button" onClick={() => selectBabyBirthDate(today)} className="rounded-xl bg-pink-50 px-3 py-2 text-sm font-bold text-pink-dark transition hover:bg-pink-100">
+                      Hôm nay
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="mt-4 grid grid-cols-3 gap-3">
                 <div className="rounded-2xl bg-white p-4">
                   <div className="text-heading text-2xl font-semibold text-grad">{babyDays ?? '-'}</div>
@@ -323,7 +571,7 @@ const LandingPage = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </Reveal>
         </section>
 
         <section id="reviews" className="overflow-hidden bg-[#f7f0ff] py-16">
@@ -331,8 +579,13 @@ const LandingPage = () => {
             <p className="text-center text-overline text-pink-dark">Mẹ bỉm nói gì</p>
             <h2 className="mt-3 text-center text-heading text-4xl font-semibold">Gia đình tin tưởng Happabi</h2>
             <div className="mt-9 grid gap-5 md:grid-cols-3">
-              {reviews.map((review) => (
-                <article key={review.name} className="rounded-[24px] border border-lav-100 bg-white p-6 shadow-sm">
+              {reviews.map((review, index) => (
+                <Reveal
+                  as="article"
+                  key={review.name}
+                  delay={index * 110}
+                  className="landing-hover-lift rounded-[24px] border border-lav-100 bg-white p-6 shadow-sm"
+                >
                   <div className="text-lg text-[#f59e0b]">★★★★★</div>
                   <p className="mt-4 leading-7 text-text-mid">"{review.text}"</p>
                   <div className="mt-5 flex items-center gap-3">
@@ -342,32 +595,54 @@ const LandingPage = () => {
                       <div className="text-caption text-text-light">{review.role}</div>
                     </div>
                   </div>
-                </article>
+                </Reveal>
               ))}
             </div>
           </div>
         </section>
 
         <section id="gallery" className="overflow-hidden bg-[linear-gradient(to_bottom,#ffffff,#f3e8ff,#ffffff)] px-4 py-24 md:px-6">
-          <div className="text-center">
+          <Reveal className="text-center">
             <p className="mx-auto flex items-center justify-center gap-3 text-overline text-text-light before:h-px before:w-9 before:bg-lav-300 after:h-px after:w-9 after:bg-lav-300">
               Khoảnh khắc của mẹ và bé
             </p>
             <h2 className="mt-3 text-heading text-4xl font-semibold leading-tight text-lav-dark md:text-5xl">Kỷ niệm cùng bé</h2>
-          </div>
+          </Reveal>
 
-          <div className="relative mx-auto mt-14 flex w-full max-w-[860px] flex-col gap-20">
-            <div className="absolute bottom-0 left-1/2 top-0 hidden w-px -translate-x-1/2 bg-[linear-gradient(to_bottom,transparent,#c084fc,#e9d5ff,#c084fc,transparent)] md:block" />
+          <div ref={timelineRef} className="relative mx-auto mt-14 flex w-full max-w-[860px] flex-col gap-20">
+            <div className="absolute bottom-[170px] left-1/2 top-[170px] hidden w-[3px] -translate-x-1/2 overflow-hidden rounded-full bg-lav-200/90 md:block">
+              <div
+                className="landing-timeline-progress absolute left-0 top-0 w-full rounded-full"
+                style={{ height: `${timelineProgress * 100}%` }}
+              />
+            </div>
+            <div className="pointer-events-none absolute inset-0 hidden md:block">
+              {memories.map((memory, index) => {
+                const markerProgress = index / Math.max(memories.length - 1, 1);
+                return (
+                  <div
+                    key={memory.title}
+                    className={`landing-timeline-dot absolute left-1/2 z-10 h-5 w-5 rounded-full border-[3px] ${
+                      timelineProgress >= markerProgress
+                        ? 'is-active border-lav-dark bg-lav-dark shadow-[0_0_0_8px_rgba(216,180,254,.58),0_0_22px_rgba(168,85,247,.38)]'
+                        : 'border-lav-acc bg-white shadow-[0_0_0_6px_#e9d5ff]'
+                    }`}
+                    style={{
+                      top: `calc(${TIMELINE_NODE_OFFSET_PX}px + ${markerProgress} * (100% - ${TIMELINE_NODE_OFFSET_PX * 2}px))`,
+                    }}
+                  />
+                );
+              })}
+            </div>
 
             {memories.map((memory, index) => {
               const isRight = index % 2 === 1;
               return (
-                <div
-                  key={memory.title}
-                  className={`relative grid items-center gap-12 md:grid-cols-[1fr_1fr] ${isRight ? 'md:[&_.memory-image]:col-start-2 md:[&_.memory-copy]:col-start-1 md:[&_.memory-copy]:row-start-1' : ''}`}
-                >
-                  <div className="absolute left-1/2 top-1/2 z-10 hidden h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-lav-acc bg-white shadow-[0_0_0_6px_#e9d5ff] md:block" />
-
+                <div key={memory.title} className="relative">
+                  <Reveal
+                    delay={index * 80}
+                    className={`relative grid items-center gap-12 md:grid-cols-[1fr_1fr] ${isRight ? 'md:[&_.memory-image]:col-start-2 md:[&_.memory-copy]:col-start-1 md:[&_.memory-copy]:row-start-1' : ''}`}
+                  >
                   <div className={`memory-image flex ${isRight ? 'md:justify-start' : 'md:justify-end'}`}>
                     <div className={`h-[340px] w-[280px] overflow-hidden rounded-[20px] border-[3px] border-white bg-lav-100 shadow-[0_20px_60px_rgba(168,85,247,.18)] transition-transform duration-500 hover:translate-y-[-8px] hover:rotate-0 hover:scale-105 hover:shadow-[0_40px_80px_rgba(168,85,247,.28)] ${isRight ? 'rotate-2' : '-rotate-2'}`}>
                       <img src={memory.src} alt={memory.title} className="h-full w-full object-cover" />
@@ -380,6 +655,7 @@ const LandingPage = () => {
                     <p className="max-w-[240px] text-body leading-relaxed text-text-mid">{memory.desc}</p>
                     <div className="mt-1 text-xl">{memory.heart}</div>
                   </div>
+                  </Reveal>
                 </div>
               );
             })}
