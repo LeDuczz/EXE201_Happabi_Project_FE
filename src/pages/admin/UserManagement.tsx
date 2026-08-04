@@ -18,6 +18,23 @@ interface UserData {
     createdAt: string;
 }
 
+type RoleFilter = 'ALL' | 'MOTHER' | 'NURSE' | 'DOCTOR' | 'ADMIN';
+type StatusFilter = 'ALL' | 'ACTIVE' | 'LOCKED';
+
+const roleOptions: Array<{ value: RoleFilter; label: string }> = [
+    { value: 'ALL', label: 'Tất cả vai trò' },
+    { value: 'MOTHER', label: 'Mother' },
+    { value: 'NURSE', label: 'Nurse' },
+    { value: 'DOCTOR', label: 'Doctor' },
+    { value: 'ADMIN', label: 'Admin' },
+];
+
+const statusOptions: Array<{ value: StatusFilter; label: string }> = [
+    { value: 'ALL', label: 'Tất cả trạng thái' },
+    { value: 'ACTIVE', label: 'Đang hoạt động' },
+    { value: 'LOCKED', label: 'Đã khóa' },
+];
+
 const AdminUserManagement = () => {
     const [users, setUsers] = useState<UserData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -26,18 +43,26 @@ const AdminUserManagement = () => {
 
     // Search & Pagination state
     const [query, setQuery] = useState('');
+    const [roleFilter, setRoleFilter] = useState<RoleFilter>('ALL');
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
     const pageSize = 10;
 
-    const loadUsers = useCallback(async (search?: string, pageNumber = 0) => {
+    const loadUsers = useCallback(async (search?: string, pageNumber = 0, role: RoleFilter = 'ALL', status: StatusFilter = 'ALL') => {
         setIsLoading(true);
         setError('');
         try {
             let url = `/api/v1/admin/users?page=${pageNumber}&size=${pageSize}`;
             if (search) {
                 url += `&query=${encodeURIComponent(search)}`;
+            }
+            if (role !== 'ALL') {
+                url += `&role=${role}`;
+            }
+            if (status !== 'ALL') {
+                url += `&status=${status}`;
             }
             const response = await axiosClient.get(url);
             const data = response.data?.data;
@@ -57,18 +82,18 @@ const AdminUserManagement = () => {
         if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
         searchTimeoutRef.current = setTimeout(() => {
             setPage(0);
-            void loadUsers(query, 0);
+            void loadUsers(query, 0, roleFilter, statusFilter);
         }, 400);
         return () => {
             if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
         };
-    }, [query, loadUsers]);
+    }, [query, roleFilter, statusFilter, loadUsers]);
 
     const handleToggleStatus = async (userId: string) => {
         setIsProcessing(userId);
         try {
             await axiosClient.post(`/api/v1/admin/users/${userId}/toggle-status`);
-            setUsers(prev => prev.map(u => u.id === userId ? { ...u, isActive: !u.isActive } : u));
+            void loadUsers(query, page, roleFilter, statusFilter);
         } catch (err: any) {
             alert(getApiErrorMessage(err, 'Không thể thay đổi trạng thái người dùng.'));
         } finally {
@@ -78,7 +103,7 @@ const AdminUserManagement = () => {
 
     const onPageChange = (newPage: number) => {
         setPage(newPage);
-        void loadUsers(query, newPage);
+        void loadUsers(query, newPage, roleFilter, statusFilter);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -86,16 +111,40 @@ const AdminUserManagement = () => {
         <>
             <Topbar title="Quản lý người dùng" subtitle="Kiểm soát tài khoản, phân quyền và trạng thái hoạt động của người dùng Happabi." />
 
-            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                <div className="w-full max-w-md">
+            <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+                <div className="grid w-full gap-3 md:grid-cols-[minmax(280px,1fr)_220px_220px]">
                     <Input
                         placeholder="Tìm kiếm theo tên, email, số điện thoại..."
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         icon={<Search size={18} />}
                     />
+                    <select
+                        value={roleFilter}
+                        onChange={(event) => {
+                            setRoleFilter(event.target.value as RoleFilter);
+                            setPage(0);
+                        }}
+                        className="h-12 rounded-2xl border border-lav-100 bg-white px-4 text-sm font-bold text-text-dark outline-none transition focus:border-lav-dark"
+                    >
+                        {roleOptions.map((option) => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                    </select>
+                    <select
+                        value={statusFilter}
+                        onChange={(event) => {
+                            setStatusFilter(event.target.value as StatusFilter);
+                            setPage(0);
+                        }}
+                        className="h-12 rounded-2xl border border-lav-100 bg-white px-4 text-sm font-bold text-text-dark outline-none transition focus:border-lav-dark"
+                    >
+                        {statusOptions.map((option) => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                    </select>
                 </div>
-                <div className="text-sm font-bold text-text-light">
+                <div className="shrink-0 text-sm font-bold text-text-light">
                     Tổng số: <span className="text-lav-dark">{totalElements}</span> người dùng
                 </div>
             </div>

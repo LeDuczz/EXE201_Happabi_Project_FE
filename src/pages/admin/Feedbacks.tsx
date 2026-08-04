@@ -1,5 +1,6 @@
 import { CheckCircle2, Loader2, MessageSquareText, RefreshCw } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   feedbackApi,
   type UserFeedback,
@@ -48,15 +49,29 @@ const roleLabel: Record<string, string> = {
 
 const reviewStatuses: Exclude<UserFeedbackStatus, 'NEW'>[] = ['REVIEWING', 'PLANNED', 'RESOLVED', 'CLOSED'];
 
+type FeedbackLocationState = {
+  selectedFeedbackId?: string;
+  status?: UserFeedbackStatus | 'ALL';
+};
+
+const resolveInitialStatus = (status?: string): UserFeedbackStatus | 'ALL' => {
+  if (status === 'NEW' || status === 'REVIEWING' || status === 'PLANNED' || status === 'RESOLVED' || status === 'CLOSED' || status === 'ALL') {
+    return status;
+  }
+  return 'ALL';
+};
+
 const formatDateTime = (value?: string) => {
   if (!value) return '--';
   return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 };
 
 const AdminFeedbacks = () => {
+  const location = useLocation();
+  const locationState = location.state as FeedbackLocationState | null;
   const [feedbacks, setFeedbacks] = useState<UserFeedback[]>([]);
-  const [activeStatus, setActiveStatus] = useState<UserFeedbackStatus | 'ALL'>('NEW');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [activeStatus, setActiveStatus] = useState<UserFeedbackStatus | 'ALL'>(resolveInitialStatus(locationState?.status));
+  const [selectedId, setSelectedId] = useState<string | null>(locationState?.selectedFeedbackId ?? null);
   const [pageNumber, setPageNumber] = useState(0);
   const [pageInfo, setPageInfo] = useState({ totalElements: 0, totalPages: 0, number: 0, size: 20 });
   const [nextStatus, setNextStatus] = useState<Exclude<UserFeedbackStatus, 'NEW'>>('REVIEWING');
@@ -151,7 +166,7 @@ const AdminFeedbacks = () => {
       </div>
 
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex gap-2 overflow-x-auto px-1 pb-1 pt-1">
           {(['NEW', 'REVIEWING', 'PLANNED', 'RESOLVED', 'CLOSED', 'ALL'] as Array<UserFeedbackStatus | 'ALL'>).map((status) => (
             <button
               key={status}

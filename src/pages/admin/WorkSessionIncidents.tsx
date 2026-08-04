@@ -136,7 +136,7 @@ const AdminWorkSessionIncidents = () => {
       {success && <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">{success}</div>}
 
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex gap-2 overflow-x-auto px-1 pb-1 pt-1">
           {(['PENDING_REVIEW', 'APPROVED', 'REJECTED', 'ALL'] as Array<WorkSessionIncidentStatus | 'ALL'>).map((status) => (
             <button
               key={status}

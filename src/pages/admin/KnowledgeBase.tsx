@@ -219,7 +219,7 @@ const AdminKnowledgeBase = () => {
               </button>
             </div>
 
-            <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+            <div className="mb-3 flex gap-2 overflow-x-auto px-1 pb-1 pt-1">
               {(['PENDING_REVIEW', 'VERIFIED', 'REJECTED', 'ALL'] as KnowledgeFilter[]).map((status) => (
                 <button
                   key={status}

@@ -2,7 +2,6 @@ import {
   BarChart3,
   BellRing,
   CalendarClock,
-  CreditCard,
   Loader2,
   MessageSquareText,
   RefreshCw,
@@ -11,7 +10,7 @@ import {
   TrendingUp,
   UserCheck,
   Users,
-  Wallet,
+  WalletCards,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -39,10 +38,7 @@ const formatCompactVnd = (value: number) => {
   return `${Math.round(value)}`;
 };
 
-const formatDateTime = (value?: string) => {
-  if (!value) return '--';
-  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
-};
+const formatCompactCurrency = (value: number) => `${formatCompactVnd(value)} đ`;
 
 const toDateInputValue = (date: Date) => {
   const year = date.getFullYear();
@@ -155,7 +151,7 @@ const AdminDashboard = () => {
     <>
       <Topbar
         title="Operations Dashboard"
-        subtitle="Theo dõi GMV, booking, payout, nguồn cung nurse và các việc admin cần xử lý."
+        subtitle="Theo dõi vận hành, dòng tiền, nguồn cung nurse và các việc cần xử lý."
       />
 
       {isLoading ? (
@@ -169,14 +165,19 @@ const AdminDashboard = () => {
         </div>
       ) : dashboard ? (
         <div className="space-y-6">
-          <Card className="p-4">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-              <div>
+          <Card className="border-lav-100 bg-white/90 p-3 shadow-sm">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-lav-50 text-lav-dark">
+                  <CalendarClock size={18} />
+                </div>
+                <div>
                 <div className="text-sm font-black text-text-dark">Kỳ báo cáo</div>
-                <div className="mt-1 text-xs font-bold text-text-light">{periodLabel(dashboard)}</div>
+                <div className="mt-0.5 text-xs font-bold text-text-light">{periodLabel(dashboard)}</div>
+                </div>
               </div>
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                <div className="grid grid-cols-2 gap-2 sm:flex">
+              <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+                <div className="grid grid-cols-2 gap-1.5 rounded-2xl bg-lav-50 p-1 sm:flex">
                   {([
                     ['7d', '7 ngày'],
                     ['30d', '30 ngày'],
@@ -187,10 +188,10 @@ const AdminDashboard = () => {
                       key={mode}
                       type="button"
                       onClick={() => setRangeMode(mode)}
-                      className={`rounded-xl px-3 py-2 text-xs font-black transition ${
+                      className={`rounded-xl px-3 py-1.5 text-xs font-black transition ${
                         rangeMode === mode
-                          ? 'bg-lav-dark text-white shadow-sm'
-                          : 'bg-lav-50 text-lav-dark hover:bg-lav-100'
+                          ? 'bg-white text-lav-dark shadow-sm ring-1 ring-lav-100'
+                          : 'text-text-mid hover:bg-white/70 hover:text-lav-dark'
                       }`}
                     >
                       {label}
@@ -202,7 +203,7 @@ const AdminDashboard = () => {
                     type="date"
                     value={singleDate}
                     onChange={(event) => setSingleDate(event.target.value)}
-                    className="h-10 rounded-xl border border-lav-200 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-dark"
+                    className="h-9 rounded-xl border border-lav-200 bg-white px-3 text-xs font-bold text-text-dark outline-none focus:border-lav-dark"
                   />
                 )}
                 {rangeMode === 'custom' && (
@@ -211,14 +212,14 @@ const AdminDashboard = () => {
                       type="date"
                       value={customFrom}
                       onChange={(event) => setCustomFrom(event.target.value)}
-                      className="h-10 rounded-xl border border-lav-200 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-dark"
+                      className="h-9 rounded-xl border border-lav-200 bg-white px-3 text-xs font-bold text-text-dark outline-none focus:border-lav-dark"
                     />
                     <span className="hidden text-xs font-black text-text-light sm:inline">đến</span>
                     <input
                       type="date"
                       value={customTo}
                       onChange={(event) => setCustomTo(event.target.value)}
-                      className="h-10 rounded-xl border border-lav-200 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-dark"
+                      className="h-9 rounded-xl border border-lav-200 bg-white px-3 text-xs font-bold text-text-dark outline-none focus:border-lav-dark"
                     />
                   </div>
                 )}
@@ -226,43 +227,103 @@ const AdminDashboard = () => {
             </div>
           </Card>
 
-          <div className="grid gap-4 xl:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-12">
             <MetricCard
-              icon={<BellRing size={20} />}
+              icon={<BellRing size={22} />}
               label="Action Queue"
               value={formatNumber(totalActionItems(dashboard))}
-              helper="Hồ sơ, payout, refund, sự cố và feedback"
               tone="lavender"
+              className="xl:col-span-2"
             />
             <MetricCard
-              icon={<Wallet size={20} />}
-              label="Admin Wallet"
-              value={formatVnd(dashboard.financialControl.adminWalletBalance)}
-              helper={`Cập nhật ${formatDateTime(dashboard.generatedAt)}`}
+              icon={<TrendingUp size={22} />}
+              label="GMV"
+              value={formatCompactCurrency(dashboard.financialControl.last30DaysGrossMerchandiseValue)}
+              helper={formatVnd(dashboard.financialControl.last30DaysGrossMerchandiseValue)}
               tone="pink"
+              className="xl:col-span-3"
             />
             <MetricCard
-              icon={<CalendarClock size={20} />}
-              label="Bookings Today"
-              value={formatNumber(dashboard.bookingOperations.todayBookings)}
-              helper={`${formatNumber(dashboard.bookingOperations.upcoming24hBookings)} ca trong 24 giờ tới`}
+              icon={<WalletCards size={22} />}
+              label="Payment"
+              value={formatCompactCurrency(dashboard.financialControl.last30DaysAppPayments)}
+              helper={formatVnd(dashboard.financialControl.last30DaysAppPayments)}
               tone="blue"
+              className="xl:col-span-3"
             />
             <MetricCard
-              icon={<UserCheck size={20} />}
-              label="Active Supply"
+              icon={<CalendarClock size={22} />}
+              label="Bookings"
+              value={formatNumber(dashboard.bookingOperations.todayBookings)}
+              helper={`${formatNumber(dashboard.bookingOperations.upcoming24hBookings)} trong 24h`}
+              tone="blue"
+              className="xl:col-span-2"
+            />
+            <MetricCard
+              icon={<UserCheck size={22} />}
+              label="Supply"
               value={formatNumber(dashboard.nurseSupplyHealth.availableNurses)}
-              helper={`${formatNumber(dashboard.nurseSupplyHealth.activeNurses)} nurse đang hoạt động`}
+              helper={`${formatNumber(dashboard.nurseSupplyHealth.activeNurses)} active`}
               tone="green"
+              className="xl:col-span-2"
+            />
+          </div>
+
+          <div className="grid gap-5 xl:grid-cols-3">
+            <OperationsPanel
+              icon={<CalendarClock size={18} />}
+              title="Booking Operations"
+              tone="lavender"
+              primaryLabel="Paid today"
+              actionTo="/admin/incidents"
+              metrics={[
+                { label: 'Đã thanh toán hôm nay', value: dashboard.bookingOperations.paidBookingsToday, emphasis: true },
+                { label: 'Chờ check-in', value: dashboard.bookingOperations.waitingCheckInSessions, tone: 'blue' },
+                { label: 'Chờ thanh toán', value: dashboard.bookingOperations.pendingPaymentBookings, tone: 'amber' },
+                { label: 'Đang diễn ra', value: dashboard.bookingOperations.inProgressSessions, tone: 'green' },
+                { label: 'Ca bị report', value: dashboard.bookingOperations.reportedSessions, tone: 'rose' },
+                { label: 'Đã hủy hôm nay', value: dashboard.bookingOperations.cancelledBookingsToday, tone: 'muted' },
+              ]}
+            />
+
+            <OperationsPanel
+              icon={<WalletCards size={18} />}
+              title="Revenue Operations"
+              tone="pink"
+              primaryLabel="GMV kỳ chọn"
+              actionTo="/admin/wallet"
+              metrics={[
+                { label: 'GMV kỳ chọn', value: dashboard.financialControl.last30DaysGrossMerchandiseValue, money: true, emphasis: true },
+                { label: 'Payment Volume', value: dashboard.financialControl.last30DaysAppPayments, money: true, tone: 'blue' },
+                { label: 'Platform Revenue', value: dashboard.financialControl.last30DaysPlatformRevenue, money: true, tone: 'green' },
+                { label: 'PayOS Fees', value: dashboard.financialControl.last30DaysPaymentGatewayFees, money: true, tone: 'rose' },
+                { label: 'Pending Payout', value: dashboard.financialControl.pendingWithdrawalAmount, money: true, tone: 'amber' },
+                { label: 'Refund Exposure', value: dashboard.financialControl.pendingRefundAmount, money: true, tone: 'muted' },
+              ]}
+            />
+
+            <OperationsPanel
+              icon={<Users size={18} />}
+              title="Supply Health"
+              tone="green"
+              primaryLabel="Active nurses"
+              actionTo="/admin/users"
+              metrics={[
+                { label: 'Đang hoạt động', value: dashboard.nurseSupplyHealth.activeNurses, emphasis: true, suffix: `/${formatNumber(dashboard.nurseSupplyHealth.totalNurses)}` },
+                { label: 'Đang bận', value: dashboard.nurseSupplyHealth.busyNurses, tone: 'blue' },
+                { label: 'Tạm nghỉ', value: dashboard.nurseSupplyHealth.offlineNurses, tone: 'muted' },
+                { label: 'Chờ ký hợp đồng', value: dashboard.nurseSupplyHealth.pendingContractNurses, tone: 'amber' },
+                { label: 'Chờ ký quỹ', value: dashboard.nurseSupplyHealth.pendingDepositNurses, tone: 'amber' },
+                { label: 'Đang bị phạt', value: dashboard.nurseSupplyHealth.penalizedNurses, tone: 'rose' },
+              ]}
             />
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr]">
-            <Card className="p-6">
+            <Card className="p-5">
               <div className="mb-5 flex items-center justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-black text-text-dark">Hàng đợi vận hành</h2>
-                  <p className="mt-1 text-sm font-semibold text-text-light">Các mục admin nên xử lý trước để flow không bị nghẽn.</p>
                 </div>
                 <button
                   type="button"
@@ -285,7 +346,7 @@ const AdminDashboard = () => {
               </div>
             </Card>
 
-            <Card className="p-6">
+            <Card className="p-5">
               <div className="mb-5 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <ShieldAlert size={20} className="text-rose-500" />
@@ -305,54 +366,6 @@ const AdminDashboard = () => {
                   </div>
                 )}
               </div>
-            </Card>
-          </div>
-
-          <div className="grid gap-6 xl:grid-cols-3">
-            <Card className="p-6">
-              <SectionHeader icon={<CalendarClock size={18} />} title="Booking Operations" />
-              <StatRows
-                rows={[
-                  ['Đã thanh toán hôm nay', dashboard.bookingOperations.paidBookingsToday],
-                  ['Chờ thanh toán', dashboard.bookingOperations.pendingPaymentBookings],
-                  ['Đang diễn ra', dashboard.bookingOperations.inProgressSessions],
-                  ['Chờ check-in', dashboard.bookingOperations.waitingCheckInSessions],
-                  ['Ca bị report', dashboard.bookingOperations.reportedSessions],
-                  ['Đã hủy hôm nay', dashboard.bookingOperations.cancelledBookingsToday],
-                ]}
-              />
-            </Card>
-
-            <Card className="p-6">
-              <SectionHeader icon={<CreditCard size={18} />} title="Revenue Operations" />
-              <StatRows
-                money
-                rows={[
-                  ['GMV Today', dashboard.financialControl.todayGrossMerchandiseValue],
-                  ['GMV 7D', dashboard.financialControl.last7DaysGrossMerchandiseValue],
-                  ['GMV kỳ chọn', dashboard.financialControl.last30DaysGrossMerchandiseValue],
-                  ['Payment Volume kỳ chọn', dashboard.financialControl.last30DaysAppPayments],
-                  ['Platform Revenue kỳ chọn', dashboard.financialControl.last30DaysPlatformRevenue],
-                  ['Payment Processing Fees kỳ chọn', dashboard.financialControl.last30DaysPaymentGatewayFees],
-                  ['Pending Payout', dashboard.financialControl.pendingWithdrawalAmount],
-                  ['Refund Exposure', dashboard.financialControl.pendingRefundAmount],
-                ]}
-              />
-            </Card>
-
-            <Card className="p-6">
-              <SectionHeader icon={<Users size={18} />} title="Supply Health" />
-              <StatRows
-                rows={[
-                  ['Tổng nurse', dashboard.nurseSupplyHealth.totalNurses],
-                  ['Đang hoạt động', dashboard.nurseSupplyHealth.activeNurses],
-                  ['Đang bận', dashboard.nurseSupplyHealth.busyNurses],
-                  ['Tạm nghỉ', dashboard.nurseSupplyHealth.offlineNurses],
-                  ['Chờ ký hợp đồng', dashboard.nurseSupplyHealth.pendingContractNurses],
-                  ['Chờ ký quỹ', dashboard.nurseSupplyHealth.pendingDepositNurses],
-                  ['Đang bị phạt', dashboard.nurseSupplyHealth.penalizedNurses],
-                ]}
-              />
             </Card>
           </div>
 
@@ -446,10 +459,15 @@ const AdminDashboard = () => {
 
               <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
                 {dashboard.feedbackInsight.latestFeedbacks.map((feedback) => (
-                  <div key={feedback.id} className="rounded-2xl border border-lav-100 bg-white p-4">
+                  <Link
+                    key={feedback.id}
+                    to="/admin/feedbacks"
+                    state={{ selectedFeedbackId: feedback.id, status: feedback.status }}
+                    className="group rounded-2xl border border-lav-100 bg-white p-4 transition hover:-translate-y-0.5 hover:border-lav-300 hover:bg-lav-50 hover:shadow-sm"
+                  >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="truncate font-black text-text-dark">{feedback.title}</div>
+                        <div className="truncate font-black text-text-dark group-hover:text-lav-dark">{feedback.title}</div>
                         <div className="mt-1 text-xs font-bold text-text-light">
                           {feedback.submittedByName} · {categoryLabel[feedback.category] ?? feedback.category}
                         </div>
@@ -460,7 +478,7 @@ const AdminDashboard = () => {
                         </span>
                       )}
                     </div>
-                  </div>
+                  </Link>
                 ))}
                 {!dashboard.feedbackInsight.latestFeedbacks.length && (
                   <div className="rounded-2xl border border-lav-100 p-5 text-center text-sm font-bold text-text-light">
@@ -491,12 +509,14 @@ const MetricCard = ({
   value,
   helper,
   tone,
+  className = '',
 }: {
   icon: ReactNode;
   label: string;
   value: string | number;
-  helper: string;
+  helper?: string;
   tone: 'lavender' | 'pink' | 'blue' | 'green';
+  className?: string;
 }) => {
   const toneClass = {
     lavender: 'bg-lav-50 text-lav-dark',
@@ -506,13 +526,13 @@ const MetricCard = ({
   }[tone];
 
   return (
-    <Card className="p-5">
-      <div className="flex items-start gap-4">
-        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${toneClass}`}>{icon}</div>
-        <div className="min-w-0">
-          <div className="text-xs font-black uppercase tracking-wider text-text-light">{label}</div>
-          <div className="mt-1 truncate text-2xl font-black text-text-dark">{value}</div>
-          <div className="mt-1 text-xs font-bold text-text-mid">{helper}</div>
+    <Card className={`p-4 ${className}`}>
+      <div className="flex h-full items-center gap-3">
+        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${toneClass}`}>{icon}</div>
+        <div className="min-w-0 flex-1">
+          <div className="text-xs font-black uppercase tracking-wide text-text-light">{label}</div>
+          <div className="mt-1 whitespace-nowrap text-2xl font-black leading-tight text-text-dark">{value}</div>
+          {helper && <div className="mt-1 whitespace-nowrap text-xs font-bold leading-4 text-text-mid">{helper}</div>}
         </div>
       </div>
     </Card>
@@ -561,20 +581,132 @@ const RiskAlertItem = ({ alert }: { alert: AdminDashboardRiskAlert }) => {
 const SectionHeader = ({ icon, title }: { icon: ReactNode; title: string }) => (
   <div className="flex items-center gap-2">
     <div className="text-lav-dark">{icon}</div>
-    <h2 className="font-black text-text-dark">{title}</h2>
+    <h2 className="text-lg font-black leading-tight text-text-dark">{title}</h2>
   </div>
 );
 
-const StatRows = ({ rows, money = false }: { rows: Array<[string, number]>; money?: boolean }) => (
-  <div className="mt-5 space-y-3">
-    {rows.map(([label, value]) => (
-      <div key={label} className="flex items-center justify-between gap-4 rounded-xl bg-lav-50 px-4 py-3">
-        <span className="text-sm font-bold text-text-mid">{label}</span>
-        <span className="text-sm font-black text-text-dark">{money ? formatVnd(value) : formatNumber(value)}</span>
+type OperationsMetricTone = 'lavender' | 'pink' | 'blue' | 'green' | 'amber' | 'rose' | 'muted';
+
+type OperationsMetric = {
+  label: string;
+  value: number;
+  money?: boolean;
+  emphasis?: boolean;
+  suffix?: string;
+  tone?: OperationsMetricTone;
+};
+
+const operationsPanelTone: Record<
+  Exclude<OperationsMetricTone, 'blue' | 'amber' | 'rose' | 'muted'>,
+  { accent: string; icon: string; glow: string }
+> = {
+  lavender: {
+    accent: 'from-lav-dark to-lav-acc',
+    icon: 'bg-lav-50 text-lav-dark ring-lav-100',
+    glow: 'bg-lav-100/50',
+  },
+  pink: {
+    accent: 'from-pink-dark to-lav-acc',
+    icon: 'bg-pink-50 text-pink-dark ring-pink-100',
+    glow: 'bg-pink-100/50',
+  },
+  green: {
+    accent: 'from-emerald-500 to-teal-400',
+    icon: 'bg-emerald-50 text-emerald-600 ring-emerald-100',
+    glow: 'bg-emerald-100/60',
+  },
+};
+
+const OperationsPanel = ({
+  icon,
+  title,
+  tone,
+  primaryLabel,
+  actionTo,
+  metrics,
+}: {
+  icon: ReactNode;
+  title: string;
+  tone: 'lavender' | 'pink' | 'green';
+  primaryLabel: string;
+  actionTo: string;
+  metrics: OperationsMetric[];
+}) => {
+  const primaryMetric = metrics.find((metric) => metric.emphasis) ?? metrics[0];
+  const maxValue = Math.max(1, ...metrics.map((metric) => Math.abs(metric.value)));
+  const primaryValue = primaryMetric.money ? formatVnd(primaryMetric.value) : formatNumber(primaryMetric.value);
+  const panelTone = operationsPanelTone[tone];
+  const nonPrimaryMetrics = metrics.filter((metric) => metric !== primaryMetric);
+
+  return (
+    <Card className="relative overflow-hidden p-0">
+      <div className={`pointer-events-none absolute -right-12 -top-16 h-36 w-36 rounded-full blur-3xl ${panelTone.glow}`} />
+      <div className="relative">
+        <div className="border-b border-lav-100 px-4 py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl shadow-sm ring-1 ${panelTone.icon}`}>
+                {icon}
+              </div>
+              <h2 className="text-lg font-black leading-tight text-text-dark">{title}</h2>
+            </div>
+            <Link to={actionTo} className="shrink-0 rounded-full bg-lav-50 px-3.5 py-1.5 text-xs font-black text-lav-dark transition hover:bg-lav-100">
+              Xem
+            </Link>
+          </div>
+
+          <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 rounded-2xl bg-white/70 px-3.5 py-3 ring-1 ring-lav-100">
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-wider text-text-light">{primaryLabel}</div>
+              <div className="mt-1 break-words text-3xl font-black leading-none text-text-dark">
+                {primaryValue}{primaryMetric.suffix && <span className="text-xs text-text-light">{primaryMetric.suffix}</span>}
+              </div>
+            </div>
+            <div className={`h-9 w-1.5 rounded-full bg-gradient-to-b ${panelTone.accent}`} />
+          </div>
+        </div>
+
+        <div className="space-y-2.5 p-4">
+            {nonPrimaryMetrics.map((metric) => (
+              <OperationsBar key={metric.label} metric={metric} maxValue={maxValue} />
+            ))}
+        </div>
       </div>
-    ))}
-  </div>
-);
+    </Card>
+  );
+};
+
+const OperationsBar = ({ metric, maxValue }: { metric: OperationsMetric; maxValue: number }) => {
+  const tone = metric.tone ?? (metric.emphasis ? 'lavender' : 'muted');
+  const fillClass: Record<OperationsMetricTone, string> = {
+    lavender: 'from-lav-dark to-lav-acc',
+    pink: 'from-pink-dark to-lav-acc',
+    blue: 'from-sky-500 to-cyan-400',
+    green: 'from-emerald-500 to-teal-400',
+    amber: 'from-amber-500 to-orange-300',
+    rose: 'from-rose-500 to-pink-dark',
+    muted: 'from-slate-400 to-slate-300',
+  };
+  const valueText = metric.money ? formatVnd(metric.value) : formatNumber(metric.value);
+  const widthPercent = metric.value <= 0 ? 0 : Math.max(4, (Math.abs(metric.value) / maxValue) * 100);
+
+  return (
+    <div className="group rounded-2xl border border-lav-100 bg-white/75 px-3 py-2.5 transition hover:border-lav-200 hover:bg-lav-50/60">
+      <div className="mb-1.5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <span className="text-xs font-black leading-4 text-text-mid">{metric.label}</span>
+        <span className="shrink-0 text-right text-xs font-black text-text-dark">
+          {valueText}{metric.suffix && <span className="text-text-light">{metric.suffix}</span>}
+        </span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-lav-50 ring-1 ring-lav-100">
+        <div
+          className={`h-full rounded-full bg-gradient-to-r ${fillClass[tone]} transition-all duration-500 group-hover:brightness-105`}
+          style={{ width: `${widthPercent}%` }}
+        />
+      </div>
+    </div>
+  );
+};
 
 const MiniBox = ({ label, value }: { label: string; value: string | number }) => (
   <div className="rounded-2xl border border-lav-100 bg-lav-50 p-3">
