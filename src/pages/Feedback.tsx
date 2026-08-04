@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { feedbackApi, type UserFeedback, type UserFeedbackCategory } from '../api/feedbackApi';
 import Btn from '../components/common/Btn';
 import Card from '../components/common/Card';
+import Pagination from '../components/common/Pagination';
 import Topbar from '../components/layout/Topbar';
 import { useAuth } from '../contexts/AuthContext';
 import { getApiErrorMessage } from '../utils/apiError';
@@ -56,6 +57,7 @@ const FeedbackPage = () => {
   const [rating, setRating] = useState<number | undefined>(5);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
+  const [pageInfo, setPageInfo] = useState({ totalElements: 0, totalPages: 0, number: 0, size: 10 });
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -67,12 +69,18 @@ const FeedbackPage = () => {
     return 'Góp ý của mẹ';
   }, [primaryRole]);
 
-  const loadFeedbacks = async () => {
+  const loadFeedbacks = async (pageNumber = pageInfo.number) => {
     setIsLoading(true);
     setError('');
     try {
-      const page = await feedbackApi.getMine();
+      const page = await feedbackApi.getMine(pageNumber, pageInfo.size);
       setFeedbacks(page.content ?? []);
+      setPageInfo({
+        totalElements: page.totalElements ?? 0,
+        totalPages: page.totalPages ?? 0,
+        number: page.number ?? pageNumber,
+        size: page.size ?? pageInfo.size,
+      });
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không tải được danh sách góp ý.'));
     } finally {
@@ -81,7 +89,8 @@ const FeedbackPage = () => {
   };
 
   useEffect(() => {
-    void loadFeedbacks();
+    void loadFeedbacks(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const submitFeedback = async () => {
@@ -99,7 +108,7 @@ const FeedbackPage = () => {
       setMessage('');
       setRating(5);
       setSuccess('Cảm ơn bạn. Góp ý đã được gửi tới đội ngũ Happabi.');
-      await loadFeedbacks();
+      await loadFeedbacks(0);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không gửi được góp ý. Vui lòng kiểm tra nội dung.'));
     } finally {
@@ -214,9 +223,11 @@ const FeedbackPage = () => {
                 <Sparkles size={18} className="text-lav-dark" />
                 <h2 className="text-lg font-black text-text-dark">Góp ý gần đây</h2>
               </div>
-              <p className="mt-1 text-xs font-bold text-text-light">Theo dõi phản hồi từ admin.</p>
+              <p className="mt-1 text-xs font-bold text-text-light">
+                Tổng {pageInfo.totalElements} góp ý, theo dõi phản hồi từ admin.
+              </p>
             </div>
-            <Btn variant="soft" size="sm" onClick={loadFeedbacks} disabled={isLoading}>
+            <Btn variant="soft" size="sm" onClick={() => loadFeedbacks(pageInfo.number)} disabled={isLoading}>
               <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
               Làm mới
             </Btn>
@@ -231,27 +242,37 @@ const FeedbackPage = () => {
               Bạn chưa gửi góp ý nào.
             </div>
           ) : (
-            <div className="max-h-[720px] divide-y divide-lav-100 overflow-y-auto">
-              {feedbacks.map((item) => (
-                <div key={item.id} className="px-5 py-4">
-                  <div className="mb-2 flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-black text-text-dark">{item.title}</div>
-                      <div className="mt-1 text-xs font-bold text-text-light">{categoryLabel[item.category]} · {formatDateTime(item.createdAt)}</div>
+            <>
+              <div className="max-h-[650px] divide-y divide-lav-100 overflow-y-auto">
+                {feedbacks.map((item) => (
+                  <div key={item.id} className="px-5 py-4">
+                    <div className="mb-2 flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-black text-text-dark">{item.title}</div>
+                        <div className="mt-1 text-xs font-bold text-text-light">{categoryLabel[item.category]} · {formatDateTime(item.createdAt)}</div>
+                      </div>
+                      <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-black ${statusClass[item.status]}`}>
+                        {statusLabel[item.status]}
+                      </span>
                     </div>
-                    <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-black ${statusClass[item.status]}`}>
-                      {statusLabel[item.status]}
-                    </span>
+                    <p className="line-clamp-3 text-sm font-semibold leading-6 text-text-mid">{item.message}</p>
+                    {item.adminNote && (
+                      <div className="mt-3 rounded-xl border border-lav-100 bg-lav-50 px-3 py-2 text-xs font-bold text-text-mid">
+                        Admin: {item.adminNote}
+                      </div>
+                    )}
                   </div>
-                  <p className="line-clamp-3 text-sm font-semibold leading-6 text-text-mid">{item.message}</p>
-                  {item.adminNote && (
-                    <div className="mt-3 rounded-xl border border-lav-100 bg-lav-50 px-3 py-2 text-xs font-bold text-text-mid">
-                      Admin: {item.adminNote}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              <div className="border-t border-lav-100 px-4 py-3">
+                <Pagination
+                  currentPage={pageInfo.number}
+                  totalPages={pageInfo.totalPages}
+                  onPageChange={(nextPage) => loadFeedbacks(nextPage)}
+                  isLoading={isLoading}
+                />
+              </div>
+            </>
           )}
         </Card>
       </div>
