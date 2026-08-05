@@ -195,8 +195,8 @@ const AdminBookings = () => {
                 className="h-10 w-full rounded-xl border border-lav-100 bg-white pl-10 pr-4 text-sm font-bold text-text-dark outline-none transition placeholder:text-text-light focus:border-lav-acc focus:ring-4 focus:ring-lav-50"
               />
             </div>
-            <DateInput label="Từ ngày" value={filters.serviceFrom} onChange={(value) => updateFilter('serviceFrom', value)} />
-            <DateInput label="Đến ngày" value={filters.serviceTo} onChange={(value) => updateFilter('serviceTo', value)} />
+            <DateInput value={filters.serviceFrom} onChange={(value) => updateFilter('serviceFrom', value)} />
+            <DateInput value={filters.serviceTo} onChange={(value) => updateFilter('serviceTo', value)} />
             <button onClick={resetFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-lav-100 bg-lav-50 px-4 text-sm font-black text-lav-dark transition hover:bg-lav-100">
               <X size={15} /> Xóa lọc
             </button>
@@ -365,9 +365,8 @@ const AdminBookings = () => {
   );
 };
 
-const DateInput = ({ label, value, onChange }: { label: string; value?: string; onChange: (value: string) => void }) => (
+const DateInput = ({ value, onChange }: { value?: string; onChange: (value: string) => void }) => (
   <label className="block">
-    <span className="mb-1 block text-[10px] font-black uppercase tracking-wide text-text-light">{label}</span>
     <input
       type="date"
       value={value}
