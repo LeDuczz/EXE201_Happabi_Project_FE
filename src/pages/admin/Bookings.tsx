@@ -315,6 +315,7 @@ const AdminBookings = () => {
               <div>
                 <div className="text-xs font-black uppercase tracking-wider text-lav-dark">Chi tiết booking</div>
                 <h2 className="mt-1 font-sans text-2xl font-black text-text-dark">{selectedBooking.bookingKey}</h2>
+                <div className="mt-1 text-xs font-bold text-text-light">ID {selectedBooking.id}</div>
               </div>
               <button onClick={() => setSelectedBooking(null)} className="flex h-10 w-10 items-center justify-center rounded-2xl bg-lav-50 text-lav-dark">
                 <X size={18} />
@@ -332,8 +333,8 @@ const AdminBookings = () => {
                     {statusLabel[selectedBooking.status]}
                   </span>
                 </DetailSection>
-                <DetailSection title="Khách hàng"><PersonBlock person={selectedBooking.mother} large /></DetailSection>
-                <DetailSection title="Nurse"><PersonBlock person={selectedBooking.nurse} large /></DetailSection>
+                <DetailSection title="Khách hàng"><PersonBlock person={selectedBooking.mother} large showId /></DetailSection>
+                <DetailSection title="Nurse"><PersonBlock person={selectedBooking.nurse} large showId /></DetailSection>
                 <DetailSection title="Dịch vụ">
                   <div className="font-black text-text-dark">{selectedBooking.service?.serviceName ?? '--'}</div>
                   <div className="mt-1 text-sm font-semibold text-text-light">{selectedBooking.service?.groupName ?? '--'}</div>
@@ -365,13 +366,13 @@ const AdminBookings = () => {
 };
 
 const DateInput = ({ label, value, onChange }: { label: string; value?: string; onChange: (value: string) => void }) => (
-  <label className="relative block">
-    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-wide text-text-light">{label}</span>
+  <label className="block">
+    <span className="mb-1 block text-[10px] font-black uppercase tracking-wide text-text-light">{label}</span>
     <input
       type="date"
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className="h-10 w-full rounded-xl border border-lav-100 bg-white px-3 pb-1 pt-4 text-sm font-black text-text-dark outline-none transition focus:border-lav-acc focus:ring-4 focus:ring-lav-50"
+      className="h-10 w-full rounded-xl border border-lav-100 bg-white px-3 text-sm font-black text-text-dark outline-none transition focus:border-lav-acc focus:ring-4 focus:ring-lav-50"
     />
   </label>
 );
@@ -384,7 +385,15 @@ const SummaryCard = ({ label, value, detail }: { label: string; value: string; d
   </div>
 );
 
-const PersonBlock = ({ person, large = false }: { person?: { fullName?: string; phone?: string; email?: string }; large?: boolean }) => (
+const PersonBlock = ({
+  person,
+  large = false,
+  showId = false,
+}: {
+  person?: { id?: string; fullName?: string; phone?: string; email?: string };
+  large?: boolean;
+  showId?: boolean;
+}) => (
   <div className="min-w-0">
     <div className={`${large ? 'text-base' : 'text-sm'} truncate font-black text-text-dark`} title={person?.fullName || '--'}>
       {person?.fullName || '--'}
@@ -392,6 +401,9 @@ const PersonBlock = ({ person, large = false }: { person?: { fullName?: string; 
     <div className="mt-1 truncate text-xs font-semibold text-text-light" title={person?.phone || person?.email || '--'}>
       {person?.phone || person?.email || '--'}
     </div>
+    {showId && person?.id && (
+      <div className="mt-1 break-all text-[11px] font-bold text-text-light">ID {person.id}</div>
+    )}
   </div>
 );
 
