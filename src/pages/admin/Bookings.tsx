@@ -1,4 +1,4 @@
-import { CalendarDays, Eye, Loader2, RefreshCw, Search, SlidersHorizontal, X } from 'lucide-react';
+import { CalendarDays, CalendarRange, Eye, Loader2, RefreshCw, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -38,24 +38,21 @@ const statusTone: Record<AdminBookingStatus, string> = {
   COMPLETED: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
 };
 
-const statusOptions: Array<{ value: AdminBookingStatus | ''; label: string }> = [
-  { value: '', label: 'Tất cả trạng thái' },
-  { value: 'PENDING_PAYMENT', label: 'Chờ thanh toán' },
-  { value: 'PENDING_NURSE_ACCEPTANCE', label: 'Chờ nurse nhận' },
-  { value: 'ACCEPTED', label: 'Đã nhận' },
-  { value: 'COMPLETED', label: 'Hoàn thành' },
-  { value: 'CANCELLED', label: 'Đã hủy' },
-  { value: 'REJECTED', label: 'Đã từ chối' },
-];
-
-const paymentOptions: Array<{ value: AdminBookingPaymentOption | ''; label: string }> = [
-  { value: '', label: 'Tất cả thanh toán' },
-  { value: 'DEPOSIT_30_PERCENT', label: 'Cọc 30%' },
-  { value: 'FULL_APP_PAYMENT', label: 'Thanh toán 100%' },
-];
+const pageSize = 12;
 
 const formatVnd = (value?: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(value ?? 0));
+
+const compactVnd = (value?: number) => {
+  const amount = Number(value ?? 0);
+  if (amount >= 1_000_000) {
+    return `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(amount / 1_000_000)}M đ`;
+  }
+  if (amount >= 1_000) {
+    return `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(amount / 1_000)}K đ`;
+  }
+  return formatVnd(amount);
+};
 
 const formatDate = (value?: string) => {
   if (!value) return '--';
@@ -84,13 +81,7 @@ const AdminBookings = () => {
     serviceFrom: '',
     serviceTo: '',
   });
-  const pageSize = 12;
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    setFilters((current) => current.query === urlQuery ? current : { ...current, query: urlQuery });
-    setPage(0);
-  }, [urlQuery]);
 
   const loadBookings = useCallback(async (nextPage: number, nextFilters: AdminBookingFilters) => {
     setIsLoading(true);
@@ -108,11 +99,17 @@ const AdminBookings = () => {
   }, []);
 
   useEffect(() => {
+    setFilters((current) => current.query === urlQuery ? current : { ...current, query: urlQuery });
+    setPage(0);
+  }, [urlQuery]);
+
+  useEffect(() => {
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     searchTimeoutRef.current = setTimeout(() => {
       setPage(0);
       void loadBookings(0, filters);
     }, 350);
+
     return () => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     };
@@ -166,40 +163,50 @@ const AdminBookings = () => {
     <>
       <Topbar
         title="Quản lý booking"
-        subtitle="Theo dõi booking theo trạng thái, lịch dịch vụ, khách hàng, nurse và dòng tiền."
+        subtitle="Theo dõi lịch dịch vụ, khách hàng, nurse và dòng tiền booking."
       />
 
       <div className="space-y-5">
         <Card className="p-5">
-          <div className="grid gap-3 xl:grid-cols-[minmax(260px,1.4fr)_170px_170px_150px_150px_150px_150px_auto]">
+          <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-lav-dark">
+                <CalendarRange size={15} /> Bộ lọc booking
+              </div>
+              <p className="mt-1 text-sm font-semibold text-text-light">
+                Lọc theo khoảng ngày lịch hẹn, có thể tìm nhanh theo booking, khách, nurse hoặc dịch vụ.
+              </p>
+            </div>
+            <button
+              onClick={() => loadBookings(page, filters)}
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-lav-100 bg-white px-3 text-xs font-black text-lav-dark shadow-sm transition hover:bg-lav-50"
+            >
+              <RefreshCw size={15} /> Làm mới
+            </button>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-[minmax(280px,1fr)_170px_170px_auto]">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-light" size={18} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-light" size={17} />
               <input
                 value={filters.query}
                 onChange={(event) => updateFilter('query', event.target.value)}
                 placeholder="Tìm booking, khách, nurse, dịch vụ..."
-                className="h-11 w-full rounded-2xl border border-lav-100 bg-white pl-11 pr-4 text-sm font-bold text-text-dark outline-none transition focus:border-lav-acc"
+                className="h-10 w-full rounded-xl border border-lav-100 bg-white pl-10 pr-4 text-sm font-bold text-text-dark outline-none transition placeholder:text-text-light focus:border-lav-acc focus:ring-4 focus:ring-lav-50"
               />
             </div>
-            <select value={filters.status} onChange={(event) => updateFilter('status', event.target.value)} className="h-11 rounded-2xl border border-lav-100 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-acc">
-              {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-            </select>
-            <select value={filters.paymentOption} onChange={(event) => updateFilter('paymentOption', event.target.value)} className="h-11 rounded-2xl border border-lav-100 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-acc">
-              {paymentOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-            </select>
-            <input type="date" value={filters.createdFrom} onChange={(event) => updateFilter('createdFrom', event.target.value)} className="h-11 rounded-2xl border border-lav-100 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-acc" />
-            <input type="date" value={filters.createdTo} onChange={(event) => updateFilter('createdTo', event.target.value)} className="h-11 rounded-2xl border border-lav-100 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-acc" />
-            <input type="date" value={filters.serviceFrom} onChange={(event) => updateFilter('serviceFrom', event.target.value)} className="h-11 rounded-2xl border border-lav-100 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-acc" />
-            <input type="date" value={filters.serviceTo} onChange={(event) => updateFilter('serviceTo', event.target.value)} className="h-11 rounded-2xl border border-lav-100 bg-white px-3 text-sm font-bold text-text-dark outline-none focus:border-lav-acc" />
-            <button onClick={resetFilters} className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-lav-100 bg-lav-50 px-4 text-sm font-black text-lav-dark transition hover:bg-lav-100">
-              <SlidersHorizontal size={16} /> Xóa lọc
+            <DateInput label="Từ ngày" value={filters.serviceFrom} onChange={(value) => updateFilter('serviceFrom', value)} />
+            <DateInput label="Đến ngày" value={filters.serviceTo} onChange={(value) => updateFilter('serviceTo', value)} />
+            <button onClick={resetFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-lav-100 bg-lav-50 px-4 text-sm font-black text-lav-dark transition hover:bg-lav-100">
+              <X size={15} /> Xóa lọc
             </button>
           </div>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <SummaryCard label="Tổng kết quả" value={totalElements.toLocaleString('vi-VN')} />
             <SummaryCard label="Hoàn thành trên trang" value={summary.completed.toString()} />
             <SummaryCard label="Đang chờ trên trang" value={summary.pending.toString()} />
-            <SummaryCard label="GMV trên trang" value={formatVnd(summary.gmv)} />
+            <SummaryCard label="GMV trên trang" value={compactVnd(summary.gmv)} detail={formatVnd(summary.gmv)} />
           </div>
         </Card>
 
@@ -211,9 +218,9 @@ const AdminBookings = () => {
           <div className="flex items-center justify-between border-b border-lav-100 px-5 py-4">
             <div>
               <div className="font-sans text-xl font-black text-text-dark">Danh sách booking</div>
-              <div className="mt-1 text-sm font-semibold text-text-light">Sắp xếp mới nhất trước, hỗ trợ tìm kiếm và lọc theo kỳ.</div>
+              <div className="mt-1 text-sm font-semibold text-text-light">Bảng gọn theo dòng, tránh tràn dữ liệu dài.</div>
             </div>
-            <button onClick={() => loadBookings(page, filters)} className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-lav-50 text-lav-dark transition hover:bg-lav-100" aria-label="Làm mới">
+            <button onClick={() => loadBookings(page, filters)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-lav-50 text-lav-dark transition hover:bg-lav-100" aria-label="Làm mới">
               <RefreshCw size={17} />
             </button>
           </div>
@@ -224,55 +231,63 @@ const AdminBookings = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1120px] text-left">
+              <table className="w-full min-w-[1020px] table-fixed text-left">
+                <colgroup>
+                  <col className="w-[12%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[18%]" />
+                  <col className="w-[15%]" />
+                  <col className="w-[13%]" />
+                  <col className="w-[9%]" />
+                  <col className="w-[5%]" />
+                </colgroup>
                 <thead>
-                  <tr className="border-b border-lav-100 bg-lav-50/50 text-xs font-black uppercase tracking-wider text-text-light">
-                    <th className="px-5 py-3">Booking</th>
-                    <th className="px-5 py-3">Khách hàng</th>
-                    <th className="px-5 py-3">Nurse</th>
-                    <th className="px-5 py-3">Dịch vụ</th>
-                    <th className="px-5 py-3">Lịch hẹn</th>
-                    <th className="px-5 py-3">Thanh toán</th>
-                    <th className="px-5 py-3">Trạng thái</th>
-                    <th className="px-5 py-3 text-right">Thao tác</th>
+                  <tr className="border-b border-lav-100 bg-lav-50/60 text-[11px] font-black uppercase tracking-wide text-text-light">
+                    <th className="px-4 py-3">Booking</th>
+                    <th className="px-4 py-3">Khách hàng</th>
+                    <th className="px-4 py-3">Nurse</th>
+                    <th className="px-4 py-3">Dịch vụ</th>
+                    <th className="px-4 py-3">Lịch hẹn</th>
+                    <th className="px-4 py-3">Thanh toán</th>
+                    <th className="px-4 py-3">Trạng thái</th>
+                    <th className="px-4 py-3 text-right"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-lav-100">
                   {bookings.map((booking) => (
                     <tr key={booking.id} className="transition hover:bg-lav-50/40">
-                      <td className="px-5 py-4">
-                        <div className="font-black text-text-dark">{booking.bookingKey}</div>
+                      <td className="px-4 py-3 align-top">
+                        <div className="text-sm font-black leading-5 text-text-dark">{booking.bookingKey}</div>
                         <div className="mt-1 text-xs font-bold text-text-light">ID {shortId(booking.id)}</div>
                       </td>
-                      <td className="px-5 py-4">
-                        <PersonBlock person={booking.mother} />
-                      </td>
-                      <td className="px-5 py-4">
-                        <PersonBlock person={booking.nurse} />
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="max-w-[210px] font-bold text-text-dark">{booking.service?.serviceName ?? '--'}</div>
+                      <td className="px-4 py-3 align-top"><PersonBlock person={booking.mother} /></td>
+                      <td className="px-4 py-3 align-top"><PersonBlock person={booking.nurse} /></td>
+                      <td className="px-4 py-3 align-top">
+                        <div className="max-w-[210px] truncate text-sm font-black text-text-dark" title={booking.service?.serviceName ?? '--'}>
+                          {booking.service?.serviceName ?? '--'}
+                        </div>
                         <div className="mt-1 text-xs font-semibold text-text-light">{booking.service?.groupName ?? '--'}</div>
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="inline-flex items-center gap-2 font-bold text-text-dark">
+                      <td className="px-4 py-3 align-top">
+                        <div className="inline-flex items-center gap-1.5 text-sm font-black text-text-dark">
                           <CalendarDays size={15} className="text-lav-dark" /> {formatDate(booking.startAt)}
                         </div>
-                        <div className="mt-1 text-xs font-semibold text-text-light">Tạo lúc {formatDate(booking.createdAt)}</div>
+                        <div className="mt-1 text-[11px] font-semibold text-text-light">Tạo lúc {formatDate(booking.createdAt)}</div>
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="font-black text-text-dark">{formatVnd(booking.grossAmount)}</div>
+                      <td className="px-4 py-3 align-top">
+                        <div className="text-sm font-black text-text-dark">{formatVnd(booking.grossAmount)}</div>
                         <div className="mt-1 text-xs font-bold text-sky-700">App {formatVnd(booking.appPaymentAmount)}</div>
                         <div className="mt-1 text-[11px] font-semibold text-text-light">{paymentLabel[booking.paymentOption]}</div>
                       </td>
-                      <td className="px-5 py-4">
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-black ring-1 ${statusTone[booking.status]}`}>
+                      <td className="px-4 py-3 align-top">
+                        <span className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-black ring-1 ${statusTone[booking.status]}`}>
                           {statusLabel[booking.status]}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-right">
-                        <button onClick={() => openDetail(booking)} className="inline-flex items-center gap-2 rounded-xl bg-lav-50 px-3 py-2 text-xs font-black text-lav-dark transition hover:bg-lav-100">
-                          <Eye size={15} /> Chi tiết
+                      <td className="px-4 py-3 text-right align-top">
+                        <button onClick={() => openDetail(booking)} className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-lav-50 text-lav-dark transition hover:bg-lav-100" aria-label="Xem chi tiết">
+                          <Eye size={15} />
                         </button>
                       </td>
                     </tr>
@@ -317,12 +332,8 @@ const AdminBookings = () => {
                     {statusLabel[selectedBooking.status]}
                   </span>
                 </DetailSection>
-                <DetailSection title="Khách hàng">
-                  <PersonBlock person={selectedBooking.mother} large />
-                </DetailSection>
-                <DetailSection title="Nurse">
-                  <PersonBlock person={selectedBooking.nurse} large />
-                </DetailSection>
+                <DetailSection title="Khách hàng"><PersonBlock person={selectedBooking.mother} large /></DetailSection>
+                <DetailSection title="Nurse"><PersonBlock person={selectedBooking.nurse} large /></DetailSection>
                 <DetailSection title="Dịch vụ">
                   <div className="font-black text-text-dark">{selectedBooking.service?.serviceName ?? '--'}</div>
                   <div className="mt-1 text-sm font-semibold text-text-light">{selectedBooking.service?.groupName ?? '--'}</div>
@@ -353,17 +364,34 @@ const AdminBookings = () => {
   );
 };
 
-const SummaryCard = ({ label, value }: { label: string; value: string }) => (
-  <div className="rounded-2xl border border-lav-100 bg-lav-50/40 px-4 py-3">
+const DateInput = ({ label, value, onChange }: { label: string; value?: string; onChange: (value: string) => void }) => (
+  <label className="relative block">
+    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-wide text-text-light">{label}</span>
+    <input
+      type="date"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className="h-10 w-full rounded-xl border border-lav-100 bg-white px-3 pb-1 pt-4 text-sm font-black text-text-dark outline-none transition focus:border-lav-acc focus:ring-4 focus:ring-lav-50"
+    />
+  </label>
+);
+
+const SummaryCard = ({ label, value, detail }: { label: string; value: string; detail?: string }) => (
+  <div className="rounded-2xl border border-lav-100 bg-white px-4 py-3 shadow-sm">
     <div className="text-[11px] font-black uppercase tracking-wider text-text-light">{label}</div>
-    <div className="mt-1 text-xl font-black text-text-dark">{value}</div>
+    <div className="mt-1 truncate text-xl font-black text-text-dark" title={detail ?? value}>{value}</div>
+    {detail && <div className="mt-0.5 truncate text-xs font-bold text-text-light">{detail}</div>}
   </div>
 );
 
 const PersonBlock = ({ person, large = false }: { person?: { fullName?: string; phone?: string; email?: string }; large?: boolean }) => (
-  <div>
-    <div className={`${large ? 'text-base' : 'text-sm'} font-black text-text-dark`}>{person?.fullName || '--'}</div>
-    <div className="mt-1 text-xs font-semibold text-text-light">{person?.phone || person?.email || '--'}</div>
+  <div className="min-w-0">
+    <div className={`${large ? 'text-base' : 'text-sm'} truncate font-black text-text-dark`} title={person?.fullName || '--'}>
+      {person?.fullName || '--'}
+    </div>
+    <div className="mt-1 truncate text-xs font-semibold text-text-light" title={person?.phone || person?.email || '--'}>
+      {person?.phone || person?.email || '--'}
+    </div>
   </div>
 );
 
