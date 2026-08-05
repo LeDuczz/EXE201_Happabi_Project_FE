@@ -1,6 +1,7 @@
 import { CalendarDays, Eye, Loader2, RefreshCw, Search, SlidersHorizontal, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   getAdminBookingDetail,
   getAdminBookings,
@@ -64,6 +65,8 @@ const formatDate = (value?: string) => {
 const shortId = (value?: string) => value ? `${value.slice(0, 8)}...` : '--';
 
 const AdminBookings = () => {
+  const [searchParams] = useSearchParams();
+  const urlQuery = searchParams.get('query') ?? '';
   const [bookings, setBookings] = useState<AdminBooking[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,7 +76,7 @@ const AdminBookings = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [filters, setFilters] = useState<AdminBookingFilters>({
-    query: '',
+    query: urlQuery,
     status: '',
     paymentOption: '',
     createdFrom: '',
@@ -83,6 +86,11 @@ const AdminBookings = () => {
   });
   const pageSize = 12;
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setFilters((current) => current.query === urlQuery ? current : { ...current, query: urlQuery });
+    setPage(0);
+  }, [urlQuery]);
 
   const loadBookings = useCallback(async (nextPage: number, nextFilters: AdminBookingFilters) => {
     setIsLoading(true);

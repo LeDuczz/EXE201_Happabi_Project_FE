@@ -1,5 +1,6 @@
-import { ArrowDownLeft, ArrowUpRight, CheckCircle2, Loader2, RefreshCw, Upload, Wallet as WalletIcon, XCircle } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, CheckCircle2, ExternalLink, Loader2, RefreshCw, Upload, Wallet as WalletIcon, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getAdminWallet, type AdminWallet, type AdminWalletFilters, type AdminWalletTransactionType } from '../../api/adminWalletApi';
 import { withdrawalApi, type WithdrawalRequest } from '../../api/withdrawalApi';
 import Card from '../../components/common/Card';
@@ -39,6 +40,7 @@ const formatDate = (value?: string) => {
 };
 
 const AdminWalletPage = () => {
+  const navigate = useNavigate();
   const [wallet, setWallet] = useState<AdminWallet | null>(null);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -124,6 +126,10 @@ const AdminWalletPage = () => {
 
   const transactions = wallet?.transactions?.content ?? [];
   const pendingWithdrawals = withdrawals.filter((item) => item.status === 'PENDING');
+
+  const openBooking = (bookingQuery: string) => {
+    navigate(`/admin/bookings?query=${encodeURIComponent(bookingQuery)}`);
+  };
 
   return (
     <>
@@ -293,7 +299,7 @@ const AdminWalletPage = () => {
                 <thead>
                   <tr className="border-b border-lav-100 bg-lav-50 text-[11px] font-black uppercase tracking-widest text-text-light">
                     <th className="px-5 py-4">Thời gian</th>
-                    <th className="px-5 py-4">Tham chiếu</th>
+                    <th className="px-5 py-4">Booking</th>
                     <th className="px-5 py-4">Loại</th>
                     <th className="px-5 py-4 text-right">Tác động ví</th>
                     <th className="px-5 py-4 text-right">Số dư sau</th>
@@ -306,7 +312,31 @@ const AdminWalletPage = () => {
                     return (
                       <tr key={transaction.id} className="transition hover:bg-lav-50/60">
                         <td className="px-5 py-4 text-sm font-semibold text-text-mid">{formatDate(transaction.createdAt)}</td>
-                        <td className="px-5 py-4 font-mono text-xs font-bold text-text-light">{transaction.bookingId}</td>
+                        <td className="px-5 py-4">
+                          {transaction.booking ? (
+                            <button
+                              type="button"
+                              onClick={() => openBooking(transaction.booking?.bookingKey || transaction.bookingId)}
+                              className="group max-w-[260px] text-left"
+                            >
+                              <div className="inline-flex items-center gap-1.5 font-mono text-xs font-black text-lav-dark group-hover:underline">
+                                {transaction.booking.bookingKey}
+                                <ExternalLink size={12} />
+                              </div>
+                              <div className="mt-1 truncate text-xs font-bold text-text-dark">
+                                {transaction.booking.motherName || '--'}
+                              </div>
+                              <div className="mt-0.5 truncate text-[11px] font-semibold text-text-light">
+                                {transaction.booking.serviceName || transaction.booking.nurseName || '--'}
+                              </div>
+                            </button>
+                          ) : (
+                            <div>
+                              <div className="font-mono text-xs font-bold text-text-light">{transaction.bookingId}</div>
+                              <div className="mt-1 text-[11px] font-semibold text-text-light">Không liên kết booking</div>
+                            </div>
+                          )}
+                        </td>
                         <td className="px-5 py-4">
                           <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-black ${isPositive ? 'bg-green-50 text-green-600' : 'bg-rose-50 text-rose-600'}`}>
                             {isPositive ? <ArrowUpRight size={12} /> : <ArrowDownLeft size={12} />}

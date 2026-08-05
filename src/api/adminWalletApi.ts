@@ -10,6 +10,13 @@ export type AdminWalletTransactionType =
 export interface AdminWalletTransaction {
   id: string;
   bookingId: string;
+  booking?: {
+    id: string;
+    bookingKey: string;
+    motherName?: string;
+    nurseName?: string;
+    serviceName?: string;
+  };
   transactionType: AdminWalletTransactionType;
   amount: number;
   walletImpact: number;
