@@ -1,4 +1,4 @@
-import { CalendarDays, CalendarRange, Eye, Loader2, RefreshCw, Search, X } from 'lucide-react';
+﻿import { CalendarDays, CalendarRange, Eye, Loader2, RefreshCw, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -218,7 +218,6 @@ const AdminBookings = () => {
           <div className="flex items-center justify-between border-b border-lav-100 px-5 py-4">
             <div>
               <div className="font-sans text-xl font-black text-text-dark">Danh sách booking</div>
-              <div className="mt-1 text-sm font-semibold text-text-light">Bảng gọn theo dòng, tránh tràn dữ liệu dài.</div>
             </div>
             <button onClick={() => loadBookings(page, filters)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-lav-50 text-lav-dark transition hover:bg-lav-100" aria-label="Làm mới">
               <RefreshCw size={17} />
@@ -258,7 +257,9 @@ const AdminBookings = () => {
                   {bookings.map((booking) => (
                     <tr key={booking.id} className="transition hover:bg-lav-50/40">
                       <td className="px-4 py-3 align-top">
-                        <div className="text-sm font-black leading-5 text-text-dark">{booking.bookingKey}</div>
+                        <div className="max-w-[132px] truncate text-sm font-black leading-5 text-text-dark" title={booking.bookingKey}>
+                          {booking.bookingKey}
+                        </div>
                         <div className="mt-1 text-xs font-bold text-text-light">ID {shortId(booking.id)}</div>
                       </td>
                       <td className="px-4 py-3 align-top"><PersonBlock person={booking.mother} /></td>
