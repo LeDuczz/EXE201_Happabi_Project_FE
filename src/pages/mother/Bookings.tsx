@@ -101,6 +101,11 @@ const MotherBookings = () => {
   const [pendingPayments, setPendingPayments] = useState<BookingSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeBucket, setActiveBucket] = useState<SessionBucket>('UPCOMING');
+  const [bucketCounts, setBucketCounts] = useState<Record<SessionBucket, number | null>>({
+    UPCOMING: null,
+    ACTION_NEEDED: null,
+    HISTORY: null,
+  });
   const [page, setPage] = useState(0);
   const [pageInfo, setPageInfo] = useState({ totalElements: 0, totalPages: 0, number: 0, size: 6 });
   const [reviewsBySession, setReviewsBySession] = useState<Record<string, NurseReview | null>>({});
@@ -111,6 +116,16 @@ const MotherBookings = () => {
   const [paymentActionId, setPaymentActionId] = useState<string | null>(null);
   const [reviewActionId, setReviewActionId] = useState<string | null>(null);
   const [error, setError] = useState('');
+
+  const loadBucketCounts = useCallback(async () => {
+    const counts = await Promise.all(
+      bucketOptions.map(async (bucket) => {
+        const data = await workSessionApi.getMotherSessions(bucket.key, 0, 1);
+        return [bucket.key, data.totalElements ?? 0] as const;
+      }),
+    );
+    setBucketCounts(Object.fromEntries(counts) as Record<SessionBucket, number>);
+  }, []);
 
   const loadSessions = useCallback(async () => {
     setIsLoading(true);
@@ -129,12 +144,13 @@ const MotherBookings = () => {
       });
       setPendingPayments(pending);
       setSelectedId((current) => current ?? data.content?.[0]?.id ?? null);
+      void loadBucketCounts();
     } catch (err) {
       setError(getApiErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
-  }, [activeBucket, page, pageInfo.size]);
+  }, [activeBucket, loadBucketCounts, page, pageInfo.size]);
 
   const payPendingBooking = async (booking: BookingSummary) => {
     const bookingId = booking.bookingId;
@@ -396,7 +412,7 @@ const MotherBookings = () => {
             >
               <div className="text-[12px] font-semibold">{bucket.label}</div>
               <div className="mt-0.5 text-[18px] font-semibold text-text-dark">
-                {activeBucket === bucket.key ? pageInfo.totalElements : '--'}
+                {bucketCounts[bucket.key] ?? (activeBucket === bucket.key ? pageInfo.totalElements : '--')}
               </div>
             </button>
           ))}

@@ -67,7 +67,7 @@ const NurseBookings = () => {
       />
 
       <div className="mb-6 flex items-center justify-between gap-4">
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex gap-2 overflow-x-auto px-1 py-2">
           {tabs.map((tab) => (
             <button
               key={tab.value}
