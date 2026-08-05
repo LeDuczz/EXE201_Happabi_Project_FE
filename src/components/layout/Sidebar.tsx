@@ -55,6 +55,7 @@ const doctorMenus = [
 
 const adminMenus = [
   { id: '/admin/dashboard', icon: <LayoutDashboard size={18} />, label: 'Tổng quan & GMV' },
+  { id: '/admin/bookings', icon: <Calendar size={18} />, label: 'Quản lý booking' },
   { id: '/admin/doctors', icon: <Stethoscope size={18} />, label: 'Tạo tài khoản Doctor' },
   { id: '/admin/users', icon: <Users size={18} />, label: 'Quản lý người dùng' },
   { id: '/admin/wallet', icon: <Wallet size={18} />, label: 'Ví nền tảng' },

@@ -275,7 +275,7 @@ const AdminDashboard = () => {
               title="Booking Operations"
               tone="lavender"
               primaryLabel="Paid today"
-              actionTo="/admin/incidents"
+              actionTo="/admin/bookings"
               metrics={[
                 { label: 'Đã thanh toán hôm nay', value: dashboard.bookingOperations.paidBookingsToday, emphasis: true },
                 { label: 'Chờ check-in', value: dashboard.bookingOperations.waitingCheckInSessions, tone: 'blue' },

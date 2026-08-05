@@ -24,6 +24,7 @@ const MotherNurseCompare = lazy(() => import('./pages/mother/NurseCompare'));
 const MotherBookings = lazy(() => import('./pages/mother/Bookings'));
 const MotherCreateBooking = lazy(() => import('./pages/mother/CreateBooking'));
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
+const AdminBookings = lazy(() => import('./pages/admin/Bookings'));
 const AdminUserManagement = lazy(() => import('./pages/admin/UserManagement'));
 const AdminSystemConfig = lazy(() => import('./pages/admin/SystemConfig'));
 const AdminAuditLogs = lazy(() => import('./pages/admin/AuditLogs'));
@@ -212,6 +213,7 @@ const AppRoutes = () => (
       <Route path="/doctor/profile" element={<RoleRoute allowedRoles={['DOCTOR']}><DoctorProfile /></RoleRoute>} />
 
       <Route path="/admin/dashboard" element={<RoleRoute allowedRoles={['ADMIN']}><AdminDashboard /></RoleRoute>} />
+      <Route path="/admin/bookings" element={<RoleRoute allowedRoles={['ADMIN']}><AdminBookings /></RoleRoute>} />
       <Route path="/admin/doctors" element={<RoleRoute allowedRoles={['ADMIN']}><AdminDoctorAccounts /></RoleRoute>} />
       <Route path="/admin/users" element={<RoleRoute allowedRoles={['ADMIN']}><AdminUserManagement /></RoleRoute>} />
       <Route path="/admin/wallet" element={<RoleRoute allowedRoles={['ADMIN']}><AdminWallet /></RoleRoute>} />
