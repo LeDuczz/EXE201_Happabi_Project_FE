@@ -15,7 +15,7 @@ import {
   Star,
   XCircle,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import bookingService, { type BookingSummary } from '../../api/bookingService';
 import nurseReviewApi from '../../api/nurseReviewApi';
 import workSessionApi from '../../api/workSessionApi';
@@ -96,6 +96,7 @@ const statusClass = (status: WorkSessionStatus) => {
 
 const MotherBookings = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [sessions, setSessions] = useState<WorkSession[]>([]);
   const [pendingPayments, setPendingPayments] = useState<BookingSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -150,9 +151,54 @@ const MotherBookings = () => {
     }
   };
 
+  const cancelPendingPayment = async (booking: BookingSummary) => {
+    const bookingId = booking.bookingId;
+    if (!bookingId) return;
+    setActionId(`cancel-pending-${bookingId}`);
+    setError('');
+    try {
+      await bookingService.cancelByMother(bookingId, 'Hủy thanh toán PayOS');
+      await loadSessions();
+      setActiveBucket('HISTORY');
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setActionId(null);
+    }
+  };
+
   useEffect(() => {
     void loadSessions();
   }, [loadSessions]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const orderCodeParam = params.get('orderCode');
+    const orderCode = Number(orderCodeParam);
+    const status = params.get('status')?.toUpperCase();
+    const isCancelledReturn = params.get('cancel') === 'true' || status === 'CANCELLED' || status === 'CANCELED';
+    if (!isCancelledReturn || !orderCodeParam || !Number.isFinite(orderCode)) return;
+
+    let ignore = false;
+    setPaymentActionId(`payos-cancel-${orderCode}`);
+    bookingService
+      .cancelPaymentReturn(orderCode)
+      .then(() => {
+        if (ignore) return;
+        window.history.replaceState(null, '', location.pathname);
+        void loadSessions();
+      })
+      .catch((err) => {
+        if (!ignore) setError(getApiErrorMessage(err));
+      })
+      .finally(() => {
+        if (!ignore) setPaymentActionId(null);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [loadSessions, location.pathname, location.search]);
 
   useEffect(() => {
     const handleRealtimeNotification = (event: Event) => {
@@ -305,14 +351,25 @@ const MotherBookings = () => {
                       Thanh toán {formatCurrency(booking.appPaymentAmount)} trước {new Date(booking.paymentExpiresAt).toLocaleTimeString('vi-VN')}
                     </div>
                   </div>
-                  <Btn
-                    size="sm"
-                    disabled={paymentActionId === bookingId}
-                    onClick={() => payPendingBooking(booking)}
-                  >
-                    {paymentActionId === bookingId ? <Loader2 className="animate-spin" size={15} /> : <ExternalLink size={15} />}
-                    Thanh toán
-                  </Btn>
+                  <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                    <Btn
+                      size="sm"
+                      variant="outline"
+                      disabled={actionId === `cancel-pending-${bookingId}` || paymentActionId === bookingId}
+                      onClick={() => cancelPendingPayment(booking)}
+                    >
+                      {actionId === `cancel-pending-${bookingId}` ? <Loader2 className="animate-spin" size={15} /> : <XCircle size={15} />}
+                      Hủy đơn
+                    </Btn>
+                    <Btn
+                      size="sm"
+                      disabled={paymentActionId === bookingId || actionId === `cancel-pending-${bookingId}`}
+                      onClick={() => payPendingBooking(booking)}
+                    >
+                      {paymentActionId === bookingId ? <Loader2 className="animate-spin" size={15} /> : <ExternalLink size={15} />}
+                      Thanh toán
+                    </Btn>
+                  </div>
                 </div>
               );
             })}
