@@ -48,6 +48,12 @@ const bookingService = {
         return response.data?.data as BookingPaymentLink;
     },
 
+    cancelPaymentReturn: async (orderCode: number) => {
+        await axiosClient.post('/api/v1/payments/bookings/payos-cancel-return', null, {
+            params: { orderCode },
+        });
+    },
+
     getPendingPayments: async () => {
         const response = await axiosClient.get('/api/v1/bookings/me/pending-payments');
         return response.data?.data as BookingSummary[];
