@@ -17,8 +17,11 @@ export type NotificationType =
   | 'WORK_SESSION_UPDATED'
   | 'PLATFORM_COMMISSION_UPDATED';
 
+export type NotificationRole = 'MOTHER' | 'NURSE' | 'DOCTOR' | 'ADMIN';
+
 export interface AppNotification {
   id: string;
+  recipientRole?: NotificationRole;
   type: NotificationType;
   title: string;
   message: string;
@@ -37,6 +40,7 @@ export interface NotificationListResponse {
 export interface RealtimeNotificationPayload {
   notificationId: string;
   targetUserId: string;
+  recipientRole?: NotificationRole;
   type: NotificationType;
   title: string;
   message: string;

@@ -35,7 +35,7 @@ const formatRelativeTime = (value?: string) => {
 };
 
 const Topbar = ({ title, subtitle }: TopbarProps) => {
-  const { user } = useAuth();
+  const { user, primaryRole } = useAuth();
   const displayName = user?.fullName || user?.phone || 'Người dùng';
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,7 +51,7 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
     setIsLoading(true);
     setError('');
     try {
-      const data = await notificationApi.getMyNotifications();
+      const data = await notificationApi.getMyNotifications(primaryRole);
       setUnreadCount(data.unreadCount);
       setNotifications((data.notifications ?? []).map(localizeNotification));
     } catch {
@@ -64,7 +64,7 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
   useEffect(() => {
     if (!user) return;
     void loadNotifications();
-  }, [user?.id]);
+  }, [primaryRole, user?.id]);
 
   useEffect(() => {
     if (!user) return;
@@ -76,7 +76,7 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
     }, 10000);
 
     return () => window.clearInterval(intervalId);
-  }, [user?.id]);
+  }, [primaryRole, user?.id]);
 
   useEffect(() => {
     const token = localStorage.getItem('happabi_access_token');
@@ -105,8 +105,12 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
     });
 
     socket.on('notification', (payload: RealtimeNotificationPayload) => {
+      if (payload.recipientRole && payload.recipientRole !== primaryRole) {
+        return;
+      }
       const nextNotification = localizeNotification({
         id: payload.notificationId,
+        recipientRole: payload.recipientRole,
         type: payload.type,
         title: payload.title,
         message: payload.message,
@@ -158,7 +162,7 @@ const Topbar = ({ title, subtitle }: TopbarProps) => {
         toastTimerRef.current = null;
       }
     };
-  }, [user?.id]);
+  }, [primaryRole, user?.id]);
 
   useEffect(() => {
     if (isOpen) {

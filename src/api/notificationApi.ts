@@ -1,11 +1,13 @@
 import axiosClient from './axiosClient';
-import type { AppNotification, NotificationListResponse } from '../types/notification';
+import type { AppNotification, NotificationListResponse, NotificationRole } from '../types/notification';
 
 const unwrap = <T>(response: { data: { data: T } }) => response.data.data;
 
 const notificationApi = {
-  async getMyNotifications(): Promise<NotificationListResponse> {
-    const response = await axiosClient.get('/api/v1/notifications');
+  async getMyNotifications(role?: NotificationRole | null): Promise<NotificationListResponse> {
+    const response = await axiosClient.get('/api/v1/notifications', {
+      params: role ? { role } : undefined,
+    });
     return unwrap<NotificationListResponse>(response);
   },
 
